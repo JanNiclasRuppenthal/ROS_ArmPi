@@ -25,7 +25,12 @@ class MinimalSubscriber(Node):
 
         values = valuesSTR[1:-1].split(',')
         servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time = tuple(int(v) for v in values)
-        dance(servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time)
+
+        if (servo_id == 0):
+            initMove()
+            time.sleep(3)
+        else:
+            dance(servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time)
 
 
 def main(args=None):

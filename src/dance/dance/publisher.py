@@ -11,6 +11,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 
 values = [
+    (0, 0, 0, 0, 0, 0, 0),
     (1, 0, 1000, 500, 500, 1000, 1000),
     (2, 0, 1000, 500, 500, 1000, 1000),
     (3, 400, 1000, 500, 500, 1000, 1000),
@@ -31,9 +32,9 @@ class MinimalPublisher(Node):
 
     def timer_callback(self):
         msg = String()
-        temp = Board.getBusServoTemp(self.i)
+        #temp = Board.getBusServoTemp(self.i)
         #msg.data = 'My temp for servo %d: %d' % (self.i, temp)
-        msg.data = '%s' % str(values[self.i - 1])
+        msg.data = '%s' % str(values[self.i])
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
         #self.i = self.i % 6 + 1
@@ -48,10 +49,16 @@ def main(args=None):
     
     send = True
     while rclpy.ok():
-        servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time = values[minimal_publisher.i - 1]
+        servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time = values[minimal_publisher.i]
         minimal_publisher.timer_callback()
-        dance(servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time)
-        minimal_publisher.i = minimal_publisher.i % 6 + 1
+
+        if (servo_id == 0):
+            initMove()
+            time.sleep(3)
+        else:
+            dance(servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time)
+
+        minimal_publisher.i = (minimal_publisher.i + 1) % 7
 
             
         

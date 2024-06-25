@@ -1,5 +1,9 @@
+import time
+
 import rclpy
 from rclpy.node import Node
+
+from .move import dance, initMove
 
 from std_msgs.msg import String
 
@@ -10,17 +14,26 @@ class MinimalSubscriber(Node):
         super().__init__('minimal_subscriber')
         self.subscription = self.create_subscription(
             String,
-            'temp',
+            'dance',
             self.listener_callback,
             10)
         self.subscription  # prevent unused variable warning
 
     def listener_callback(self, msg):
+        valuesSTR = msg.data
         self.get_logger().info('I heard: "%s"' % msg.data)
+
+        values = valuesSTR[1:-1].split(',')
+        servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time = tuple(int(v) for v in values)
+        dance(servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time)
 
 
 def main(args=None):
     rclpy.init(args=args)
+
+    initMove()
+    time.sleep(2)
+
 
     minimal_subscriber = MinimalSubscriber()
 

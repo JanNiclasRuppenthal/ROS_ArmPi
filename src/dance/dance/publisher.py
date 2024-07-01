@@ -1,8 +1,5 @@
 import time
-import sys
-sys.path.append('/home/pi/ArmPi/')
 
-import HiwonderSDK.Board as Board
 from .move import dance, initMove
 
 import rclpy
@@ -26,18 +23,13 @@ class MinimalPublisher(Node):
     def __init__(self):
         super().__init__('minimal_publisher')
         self.publisher_ = self.create_publisher(String, 'dance', 10)
-        #timer_period = 0.5  # seconds
-        #self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 1
 
     def timer_callback(self):
         msg = String()
-        #temp = Board.getBusServoTemp(self.i)
-        #msg.data = 'My temp for servo %d: %d' % (self.i, temp)
         msg.data = '%s' % str(values[self.i])
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
-        #self.i = self.i % 6 + 1
 
 
 def main(args=None):
@@ -46,15 +38,16 @@ def main(args=None):
     time.sleep(2)
 
     minimal_publisher = MinimalPublisher()
-    
-    send = True
-    while rclpy.ok():
+
+    round = 0
+    while round != 3 and rclpy.ok():
         servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time = values[minimal_publisher.i]
         minimal_publisher.timer_callback()
 
         if (servo_id == 0):
             initMove()
             time.sleep(3)
+            round += 1
         else:
             dance(servo_id, start_pulse, middle_pulse, end_pulse, start_time, middle_time, end_time)
 

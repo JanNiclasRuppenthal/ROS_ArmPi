@@ -51,11 +51,9 @@ def getAreaMaxContour(contours):
     return area_max_contour, contour_area_max  # return the maximum area countour
 
 unreachable = False
-__isRunning = True
 count = 0
 color_list = []
 get_roi = False
-__isRunning = False
 detect_color = 'None'
 start_pick_up = False
 start_count_t1 = True
@@ -74,7 +72,6 @@ def run(img):
     global get_roi
     global center_list
     global unreachable
-    global __isRunning
     global start_pick_up
     global rotation_angle
     global last_x, last_y
@@ -84,16 +81,9 @@ def run(img):
     global detect_color, draw_color, color_list
     
     img_copy = img.copy()
-    img_h, img_w = img.shape[:2]
-    cv2.line(img, (0, int(img_h / 2)), (img_w, int(img_h / 2)), (0, 0, 200), 1)
-    cv2.line(img, (int(img_w / 2), 0), (int(img_w / 2), img_h), (0, 0, 200), 1)
-
-    if not __isRunning:
-        return img
-
     frame_resize = cv2.resize(img_copy, size, interpolation=cv2.INTER_NEAREST)
     frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
-    # If it is detected with a aera recognized object, the area will be detected ubtil there is no object
+    # If it is detected with a aera recognized object, the area will be detected until there is no object
     if get_roi and not start_pick_up:
         get_roi = False
         frame_gb = getMaskROI(frame_gb, roi, size)      
@@ -125,11 +115,7 @@ def run(img):
             img_centerx, img_centery = getCenter(rect, roi, size, square_length)  # get the center coordinates of block
              
             world_x, world_y = convertCoordinate(img_centerx, img_centery, size) # convert to world coordinates
-            
-            cv2.drawContours(img, [box], -1, range_rgb[color_area_max], 2)
-            cv2.putText(img, '(' + str(world_x) + ',' + str(world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, range_rgb[color_area_max], 1) # draw center position
-            
+                
             distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) # compare the last coordinate to determine whether to move
             last_x, last_y = world_x, world_y
             if not start_pick_up:
@@ -182,16 +168,15 @@ def run(img):
             if not start_pick_up:
                 draw_color = (0, 0, 0)
                 detect_color = "None"
-    
-    print("Pos: %s, %s" % (world_x, world_y))
-
-    cv2.putText(img, "Color: " + detect_color, (10, img.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.65, draw_color, 2)
     return img
+
+
+def get_coordinates():
+    global world_x, world_y
+    return world_x, world_y
     
 
 def run_camera():
-    global __isRunning
-    __isRunning = True
     __target_color = ('red', 'green', 'blue')
     my_camera = Camera.Camera()
     my_camera.camera_open()
@@ -201,6 +186,7 @@ def run_camera():
             frame = img.copy()
             Frame = run(frame)           
             #cv2.imshow('Frame', Frame)
+            print(str(get_coordinates()))
             key = cv2.waitKey(1)
             if key == 27:
                 break

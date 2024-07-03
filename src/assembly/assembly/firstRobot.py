@@ -3,7 +3,7 @@ sys.path.append('/home/pi/ArmPi/')
 import HiwonderSDK.Board as Board
 from ArmIK.ArmMoveIK import *
 
-from get_position import run_camera
+from get_position import get_coordinates
 
 AK = ArmIK()
 
@@ -16,7 +16,6 @@ def initMove():
 if __name__ == '__main__':
     initMove()
     
-
     print("run camera")
-    run_camera()
+    get_coordinates()
 

@@ -89,6 +89,7 @@ def run(img):
         frame_gb = getMaskROI(frame_gb, roi, size)      
     frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # convert the image to LAB space
 
+    color_area_max = None
     max_area = 0
     areaMaxContour = 0
     
@@ -102,7 +103,14 @@ def run(img):
                 if areaContour is not None:
                     if area > max_area:
                         max_area = area
+                        color_area_max = color
                         areaMaxContour = areaContour
+
+        # Test if the camera could catch a colored cube
+        # Sometimes it can detect a black box of a shadow
+        if color_area_max not in ['red', 'green', 'blue']:
+            print("Color does not match RGB!")
+            return (-1, -1)
             
         if max_area > 2500:  # have found the maximum area
             img_center_x, img_center_y = __get_image_center(areaMaxContour)

@@ -1,9 +1,11 @@
+import time
 import sys
 sys.path.append('/home/pi/ArmPi/')
 import HiwonderSDK.Board as Board
 from ArmIK.ArmMoveIK import *
 
-from get_position import get_coordinates
+
+from coordinates import get_coordinates
 
 AK = ArmIK()
 
@@ -15,7 +17,8 @@ def initMove():
 
 if __name__ == '__main__':
     initMove()
+    time.sleep(2)
     
     print("run camera")
-    get_coordinates()
+    world_X, world_Y = get_coordinates()
 

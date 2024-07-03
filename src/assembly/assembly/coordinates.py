@@ -5,7 +5,7 @@ import time
 import Camera
 import math
 import numpy as np
-#from LABConfig import color_range
+from LABConfig import color_range
 from ArmIK.Transform import *
 from ArmIK.ArmMoveIK import *
 
@@ -15,14 +15,6 @@ from CameraCalibration.CalibrationConfig import *
 #AK = ArmIK()
 
 size = (640, 480)
-
-color_range = {
-'red': [(0, 151, 100), (255, 255, 255)], 
-'green': [(0, 0, 0), (255, 115, 255)], 
-'blue': [(0, 0, 0), (255, 255, 110)], 
-'black': [(0, 0, 0), (56, 255, 255)], 
-'white': [(193, 0, 0), (255, 250, 255)], 
-}
 
 range_rgb = {
     'red':   (0, 0, 255),
@@ -52,6 +44,7 @@ def get_coordinates():
     print(str(pos))
     return pos
 
+
 def __get_position():
     my_camera = Camera.Camera()
     my_camera.camera_open()
@@ -71,13 +64,6 @@ def __get_position():
     cv2.destroyAllWindows()
 
     return pos
-
-def __get_contours(frame_lab, start_color, end_color):
-    frame_mask = cv2.inRange(frame_lab, start_color, end_color)  # mathematical operation on the original image and mask
-    opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6,6),np.uint8))  # Opening (morphology)
-    closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) # Closing (morphology)
-    contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  # find countour
-    return contours
 
 
 def run(img):
@@ -119,14 +105,9 @@ def run(img):
                         areaMaxContour = areaContour
             
         if max_area > 2500:  # have found the maximum area
-            rect = cv2.minAreaRect(areaMaxContour)
-            box = np.int0(cv2.boxPoints(rect))
+            img_center_x, img_center_y = __get_image_center(areaMaxContour)
             
-            roi = getROI(box) # get roi zone
-            get_roi = True
-            img_centerx, img_centery = getCenter(rect, roi, size, square_length)  # get the center coordinates of block
-            
-            world_x, world_y = convertCoordinate(img_centerx, img_centery, size) # convert to world coordinates
+            world_x, world_y = convertCoordinate(img_center_x, img_center_y, size) # convert to world coordinates
                 
             distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) # compare the last coordinate to determine whether to move
             last_x, last_y = world_x, world_y
@@ -155,6 +136,14 @@ def run(img):
             return (-1, -1)
     
 
+def __get_contours(frame_lab, start_color, end_color):
+    frame_mask = cv2.inRange(frame_lab, start_color, end_color)  # mathematical operation on the original image and mask
+    opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6,6),np.uint8))  # Opening (morphology)
+    closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) # Closing (morphology)
+    contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  # find countour
+    return contours
+
+
 # find the maximum area contour
 # the parameter is a list of contours to be compared
 def __getAreaMaxContour(contours):
@@ -170,3 +159,13 @@ def __getAreaMaxContour(contours):
                 area_max_contour = c
 
     return area_max_contour, contour_area_max  # return the maximum area countour
+
+
+def __get_image_center(areaMaxContour):
+    global rect, get_roi
+    rect = cv2.minAreaRect(areaMaxContour)
+    box = np.int0(cv2.boxPoints(rect))
+    roi = getROI(box) # get roi zone
+    get_roi = True
+    img_center_x, img_center_y = getCenter(rect, roi, size, square_length)  # get the center coordinates of block
+    return img_center_x, img_center_y

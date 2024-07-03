@@ -29,7 +29,7 @@ unreachable = False
 count = 0
 color_list = []
 get_roi = False
-detect_color = 'None'
+detected_color = 'None'
 start_count_t1 = True
 
 t1 = 0
@@ -41,8 +41,15 @@ world_x, world_y = -1, -1
 
 def get_coordinates():
     pos = __get_position()
-    print(str(pos))
+    print("Position: %s." % str(pos))
     return pos
+
+def get_detected_color():
+    print("Detected color: %s" % detected_color)
+    return detected_color
+
+def get_rotation_angle():
+    return rotation_angle
 
 
 def __get_position():
@@ -52,7 +59,7 @@ def __get_position():
         img = my_camera.frame
         if img is not None:
             frame = img.copy()
-            pos = run(frame)
+            pos = __calculate_position(frame)
             key = cv2.waitKey(1)
             if key == 27:
                 break
@@ -66,7 +73,7 @@ def __get_position():
     return pos
 
 
-def run(img):
+def __calculate_position(img):
     global roi
     global rect
     global count
@@ -78,7 +85,7 @@ def run(img):
     global world_X, world_Y
     global world_x, world_y
     global start_count_t1, t1
-    global detect_color, color_list
+    global detected_color, color_list
     
     img_copy = img.copy()
     frame_resize = cv2.resize(img_copy, size, interpolation=cv2.INTER_NEAREST)
@@ -111,6 +118,8 @@ def run(img):
         if color_area_max not in ['red', 'green', 'blue']:
             print("Color does not match RGB!")
             return (-1, -1)
+        else:
+            detected_color = color_area_max
             
         if max_area > 2500:  # have found the maximum area
             img_center_x, img_center_y = __get_image_center(areaMaxContour)

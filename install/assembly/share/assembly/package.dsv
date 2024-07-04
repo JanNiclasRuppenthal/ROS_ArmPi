@@ -4,6 +4,3 @@ source;share/assembly/hook/pythonpath.sh
 source;share/assembly/hook/ament_prefix_path.ps1
 source;share/assembly/hook/ament_prefix_path.dsv
 source;share/assembly/hook/ament_prefix_path.sh
-source;../../build/assembly/share/assembly/hook/pythonpath_develop.ps1
-source;../../build/assembly/share/assembly/hook/pythonpath_develop.dsv
-source;../../build/assembly/share/assembly/hook/pythonpath_develop.sh

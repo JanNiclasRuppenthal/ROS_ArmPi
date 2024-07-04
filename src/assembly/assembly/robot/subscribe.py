@@ -2,17 +2,17 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import String
-
+from armpi_interfaces.msg import IDArmPi
 
 class RobotSubscriber(Node):
 
     def __init__(self):
         super().__init__('robot_subscriber')
-        self.subscription = self.create_subscription(String,'delivery',self.callback,10)
+        self.subscription = self.create_subscription(IDArmPi,'delivery',self.callback,10)
         self.subscription  # prevent unused variable warning
 
     def callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+        self.get_logger().info('I heard: "%d"' % msg.id)
 
 __subscriber = None
 

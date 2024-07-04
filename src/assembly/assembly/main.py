@@ -14,7 +14,7 @@ from util.deliver import initMove, deliver
 
 def read_all_arguments():
     ID = int(sys.argv[1])
-    last_robot = bool(sys.argv[2])
+    last_robot = bool(int(sys.argv[2]))
 
     return ID, last_robot
 

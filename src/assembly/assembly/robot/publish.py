@@ -12,10 +12,10 @@ class RobotPublisher(Node):
 
     def create_msgs(self):
         msg_prev = IDArmPi()
-        msg_prev.id = (self.ID + 1)
+        msg_prev.id = (self.ID - 1)
         
         msg_next = IDArmPi()
-        msg_next.id = (self.ID - 1)
+        msg_next.id = (self.ID + 1)
         return msg_prev, msg_next
     
     def send_msgs(self):

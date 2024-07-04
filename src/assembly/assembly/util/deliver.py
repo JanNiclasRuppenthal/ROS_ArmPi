@@ -10,7 +10,7 @@ AK = ArmIK()
 
 size = (640, 480)
 servo1 = 500
-__x_cord = -20
+__x_cord = -30
 __coordinates = {
         'red':   (__x_cord + 0.5, 12 - 0.5, 1.5),
         'green': (__x_cord + 0.5, 6 - 0.5,  1.5),
@@ -28,7 +28,7 @@ def initMove():
     Board.setBusServoPulse(2, 500, 500)
     AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
 
-def deliver(world_X, world_Y, last_robot=False):
+def deliver(world_X, world_Y, last_robot):
     # placement coordinate
     '''
     placement coordinate:

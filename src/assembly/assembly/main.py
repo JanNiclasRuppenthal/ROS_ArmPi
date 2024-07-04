@@ -2,7 +2,10 @@ import sys
 import time
 from threading import Thread
 
-from robot.publish import start_publisher_node
+import rclpy
+
+import rclpy.context
+from robot.publish import create_publisher_node
 from robot.subscribe import start_subscriber_node, destroy_subscriber_node
 
 from util.coordinates import get_coordinates
@@ -17,12 +20,14 @@ def read_all_arguments():
 
 def main():
     ID, last_robot = read_all_arguments()
-
     first_start = ID == 0
 
+
+    rclpy.init()
+    publisher = create_publisher_node(ID, last_robot)
     # start the subscriber node in a thread
-    thread = Thread(target=start_subscriber_node)
-    thread.start()
+    #thread = Thread(target=start_subscriber_node)
+    #thread.start()
 
     initMove()
     time.sleep(2)
@@ -36,7 +41,7 @@ def main():
     time.sleep(1.5)
 
     #publish message
-    start_publisher_node(ID, last_robot)
+    publisher.send_msgs()
 
     #destroy_subscriber_node()
 

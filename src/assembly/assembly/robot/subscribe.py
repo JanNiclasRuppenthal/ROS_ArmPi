@@ -16,20 +16,12 @@ class RobotSubscriber(Node):
 
 __subscriber = None
 
-def start_subscriber_node(args=None):
+def start_subscriber_node(context):
     global __subscriber
 
     print("Started the subscriber node")
-    rclpy.init(args=args)
-
-    __subscriber = RobotSubscriber()
-
-    rclpy.spin(__subscriber)
-
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
-    #destroy_subscriber_node()
+    __subscriber = RobotSubscriber(context = context)
+    return __subscriber
 
 def destroy_subscriber_node():
     global __subscriber

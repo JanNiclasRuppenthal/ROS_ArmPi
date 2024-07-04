@@ -28,7 +28,6 @@ __target_color = ['red', 'green', 'blue']
 unreachable = False
 count = 0
 color_list = []
-get_roi = False
 detected_color = 'None'
 start_count_t1 = True
 
@@ -77,7 +76,6 @@ def __calculate_position(img):
     global roi
     global rect
     global count
-    global get_roi
     global center_list
     global unreachable
     global rotation_angle
@@ -87,6 +85,7 @@ def __calculate_position(img):
     global start_count_t1, t1
     global detected_color, color_list
     
+    get_roi = False
     img_copy = img.copy()
     frame_resize = cv2.resize(img_copy, size, interpolation=cv2.INTER_NEAREST)
     frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)

@@ -1,0 +1,12 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from armpi_interfaces/msg/IDArmPi.msg
+// generated code does not contain a copyright notice
+
+
+module armpi_interfaces {
+  module msg {
+    struct IDArmPi {
+      int64 id;
+    };
+  };
+};

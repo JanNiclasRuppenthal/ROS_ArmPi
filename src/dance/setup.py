@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
 		'publisher = dance.publisher:main',
-		'subscriber = dance.subscriber:main',
+		'subscriber = dance.subscriber:main'
         ],
     },
 )

@@ -24,19 +24,7 @@ range_rgb = {
     'white': (255, 255, 255),
 }
 
-__target_color = ['red', 'green', 'blue']
-unreachable = False
-count = 0
-color_list = []
 detected_color = 'None'
-start_count_t1 = True
-
-t1 = 0
-roi = ()
-center_list = []
-last_x, last_y = 0, 0
-draw_color = range_rgb["black"]
-world_x, world_y = -1, -1
 
 def get_coordinates():
     pos = __get_position()
@@ -73,17 +61,15 @@ def __get_position():
 
 
 def __calculate_position(img):
-    global roi
-    global rect
-    global count
-    global center_list
-    global unreachable
+    global detected_color
     global rotation_angle
-    global last_x, last_y
-    global world_X, world_Y
-    global world_x, world_y
-    global start_count_t1, t1
-    global detected_color, color_list
+
+    count = 0
+    t1 = 0
+    roi = ()
+    center_list = []
+    last_x, last_y = 0, 0
+    world_x, world_y = -1, -1
     
     get_roi = False
     img_copy = img.copy()
@@ -101,7 +87,7 @@ def __calculate_position(img):
     
     while True:
         for color in color_range:
-            if color in __target_color:
+            if color in ['red', 'green', 'blue']:
                 contours = __get_contours(frame_lab, color_range[color][0], color_range[color][1])
                 areaContour, area = __getAreaMaxContour(contours)  # find the maximum countour
 
@@ -178,7 +164,7 @@ def __getAreaMaxContour(contours):
 
 
 def __get_image_center(areaMaxContour):
-    global rect, get_roi
+    global rect, get_roi, roi
     rect = cv2.minAreaRect(areaMaxContour)
     box = np.int0(cv2.boxPoints(rect))
     roi = getROI(box) # get roi zone

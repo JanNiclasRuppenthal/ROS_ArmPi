@@ -4,10 +4,10 @@ from armpi_interfaces.msg import IDArmPi
 
 class RobotPublisher(Node):
 
-    def __init__(self, ID, last_robot):
+    def __init__(self, armpi):
         super().__init__('robot_publisher')
-        self.ID = ID
-        self.last_robot = last_robot
+        self.ID = armpi.get_ID()
+        self.last_robot = armpi.get_last_robot_flag()
         self.publisher_ = self.create_publisher(IDArmPi, 'delivery', 10)
 
     def create_msgs(self):
@@ -30,6 +30,6 @@ class RobotPublisher(Node):
             self.get_logger().info('Notifying from: "%d" to "%d"' % (self.ID, message_next_ID.id))
 
 
-def create_publisher_node(ID, last_robot):
-    __publisher = RobotPublisher(ID, last_robot)
+def create_publisher_node(armpi):
+    __publisher = RobotPublisher(armpi)
     return __publisher

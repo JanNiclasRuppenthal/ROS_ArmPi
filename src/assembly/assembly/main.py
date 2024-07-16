@@ -20,13 +20,13 @@ def read_all_arguments():
 
 
 def main():
-    armpi = ArmPi()
     ID, last_robot = read_all_arguments()
+    armpi = ArmPi(ID, last_robot)
     first_start = ID == 0
 
     rclpy.init()
-    publisher = create_publisher_node(ID, last_robot)
-    subscriber = create_subscriber_node(ID, armpi)
+    publisher = create_publisher_node(armpi)
+    subscriber = create_subscriber_node(armpi)
 
     # start the subscriber node in a thread
     thread = Thread(target=subscriber.get_correct_message)

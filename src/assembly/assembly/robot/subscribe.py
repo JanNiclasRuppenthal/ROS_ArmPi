@@ -5,9 +5,9 @@ from armpi_interfaces.msg import IDArmPi
 
 class RobotSubscriber(Node):
 
-    def __init__(self, ID, armpi):
+    def __init__(self, armpi):
         super().__init__('robot_subscriber')
-        self.ID = ID
+        self.ID = armpi.get_ID()
         self.armpi = armpi
         self.subscription = self.create_subscription(IDArmPi,'delivery',self.callback,10)
         self.subscription  # prevent unused variable warning
@@ -17,15 +17,12 @@ class RobotSubscriber(Node):
 
         if (msg.id == self.ID):
             self.armpi.set_delivery_flag(True)
-            print("Set True")
 
     def get_correct_message(self):
         while rclpy.ok():
-            print("before")
             rclpy.spin_once(self)
-            print("after")
 
 
-def create_subscriber_node(ID, armpi):
-    __subscriber = RobotSubscriber(ID, armpi)
+def create_subscriber_node(armpi):
+    __subscriber = RobotSubscriber(armpi)
     return __subscriber

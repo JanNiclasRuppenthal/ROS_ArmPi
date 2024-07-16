@@ -23,12 +23,21 @@ __coordinates_last = {
         'blue':  (-15 + 0.5, 0 - 0.5,  1.5)
     }
 
+__count_placed_colored_cubes = {
+    'red':   0,
+    'green': 0,
+    'blue':  0
+}
+
 def initMove():
     Board.setBusServoPulse(1, servo1 - 50, 300)
     Board.setBusServoPulse(2, 500, 500)
     AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
 
 def deliver(world_X, world_Y, last_robot):
+
+    detected_color = get_detected_color()
+
     # placement coordinate
     '''
     placement coordinate:
@@ -36,7 +45,10 @@ def deliver(world_X, world_Y, last_robot):
     -35.2 = 35.7 + 0.5 is unreachable 
     '''
     goal_coordinates = __coordinates if (not last_robot) else __coordinates_last
-    goal_coord_x, goal_coord_y, goal_coord_z = goal_coordinates[get_detected_color()]
+    goal_coord_x, goal_coord_y, goal_coord_z = goal_coordinates[detected_color]
+
+    if (last_robot):
+        goal_coord_z += __count_placed_colored_cubes[detected_color] * 2.5
         
     # Remove to target postion, high is 6 cm, through return result to judge whether it can reach the specified location 
     # if the running time is not given，it is automatically calculated and returned by the result
@@ -78,5 +90,7 @@ def deliver(world_X, world_Y, last_robot):
 
         AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), -90, -90, 0, 800)
         time.sleep(0.8)
+
+        __count_placed_colored_cubes[detected_color] += 1
     else:
         print("Could not reach the coordinates %s" % str(world_X, world_Y))

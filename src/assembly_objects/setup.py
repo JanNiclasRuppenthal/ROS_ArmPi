@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'assembly'
+package_name = 'assembly_objects'
 
 setup(
     name=package_name,
@@ -16,11 +16,10 @@ setup(
     maintainer='pi',
     maintainer_email='jan.rupp06@web.de',
     description='TODO: Package description',
-    license='TODO: License declaration',
+    license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'main = assembly.main:main'
         ],
     },
 )

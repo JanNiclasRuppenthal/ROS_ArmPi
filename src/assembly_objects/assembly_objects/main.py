@@ -57,6 +57,28 @@ def go_to_waiting_position(ID):
     time.sleep(result[2]/1000) 
     print(result)
 
+def put_down_assembled_object():
+    # The goal position is the green field left to the robot
+    goal_coord_x, goal_coord_y, goal_coord_z = (-15 + 0.5, 6 - 0.5,  1.5)
+
+    result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90) # ArmPi goes to the goal coordinates with z = 12
+    time.sleep(result[2]/1000)
+        
+    #servo2_angle = getAngle(goal_coord_x, goal_coord_y, -90)
+    #Board.setBusServoPulse(2, servo2_angle, 500)
+    #time.sleep(0.5)
+
+    AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, goal_coord_z + 3), 10, 10, -90, 500) # ArmPi goes down to z = goal_coord_z + 3
+    time.sleep(0.5)
+    
+    AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, goal_coord_z), 10, 10, -90, 1000) # ArmPi is at the next coordinates
+    time.sleep(0.8)
+
+    open_claw()
+
+    AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90, 800)
+    time.sleep(0.8)
+
 def process_first_robot(armpi, ready_publisher, pos_publisher):
     grab_the_object() #TODO: get the position of the object with the camera
     go_to_waiting_position(armpi.get_ID())
@@ -72,7 +94,9 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
     while (not armpi.get_ready_flag()):
         time.sleep(0.1)
 
-    print("Do something")
+    put_down_assembled_object()
+
+    initMove()
 
 
 def process_second_robot(armpi, ready_publisher, pos_publisher):
@@ -101,8 +125,7 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
     # go to the init position again
     initMove()
 
-
-    #TODO: Send message to another robot
+    # send to the next robot that it can proceed
     ready_publisher.send_msg()
 
 def spin_executor(executor):
@@ -110,6 +133,7 @@ def spin_executor(executor):
 
 
 def main():
+    #TODO scenarioID for horizontal or vertical
     ID, scenarioID = read_all_arguments()
 
     armpi = ArmPi(ID)
@@ -127,7 +151,7 @@ def main():
     executor.add_node(ready_subscriber)
     executor.add_node(pos_subscriber)
 
-    # start all the subscriber node in a thread
+    # start the executor in a thread for spinning all subscriber nodes
     thread = Thread(target=spin_executor, args=(executor, ))
     thread.start()
 

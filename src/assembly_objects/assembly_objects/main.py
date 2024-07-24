@@ -26,14 +26,17 @@ def read_all_arguments():
 
     return ID, scenarioID
 
+def open_claw():
+    Board.setBusServoPulse(1, 200, 500)
+    time.sleep(0.5)
+
 def grab_the_object():
     # Go to the position of the object with z = 7
     result = AK.setPitchRangeMoving((0, 12.5, 7), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
-    Board.setBusServoPulse(1, 200, 500)
-    time.sleep(0.5)
+    open_claw()
 
     # Go to the position of the object with z = 1
     result = AK.setPitchRangeMoving((0, 12.5, 1), -90, -90, 0)
@@ -69,8 +72,6 @@ def process_first_robot(ID):
     grab_the_object() #TODO: get the position of the object with the camera
     go_to_waiting_position(ID)
 
-
-    
     # Go into the right position
     result = AK.setPitchRangeMoving((0, 28, 10), 10, 10, 0)
     time.sleep(result[2]/1000) 
@@ -97,16 +98,30 @@ def process_second_robot(ID):
     grab_the_object()
     go_to_waiting_position(ID)
 
-    while (not armpi.got_position_flag()):
+    while (not armpi.get_got_position_flag()):
         time.sleep(0.1)
 
-    (x, y, z, angle) = armpi.get_position_with_angle
+    (x, y, z, angle) = armpi.get_position_with_angle()
     
     # set the z value a little bit higher so there is no contact between these two objects
     z += 12
-    result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0) # oder doch besser 10?
+    result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0)
     time.sleep(result[2]/1000) 
     print(result)
+
+    time.sleep(1)
+
+    result = AK.setPitchRangeMoving((x, y, z - 6), angle, angle, 0)
+    time.sleep(result[2]/1000) 
+    print(result)
+
+    open_claw()
+
+    # go to the init position again
+    initMove()
+
+
+    #TODO: Send message to another robot
 
 
 

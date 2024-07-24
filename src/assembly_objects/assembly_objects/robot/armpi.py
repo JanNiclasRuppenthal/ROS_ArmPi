@@ -11,9 +11,12 @@ class ArmPi():
     def get_ready_flag(self):
         return self.__ready
     
-    def got_position_flag(self):
+    def get_got_position_flag(self):
         return self.__got_position
     
+    def set_got_position_flag(self, flag):
+        self.__got_position = flag
+
     def set_position_with_angle(self, x, y, z, angle):
         self.__position_with_angle = (x, y, z, angle)
 

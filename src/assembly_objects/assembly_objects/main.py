@@ -105,10 +105,11 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
     #TODO: Send message to another robot
     ready_publisher.send_msg()
 
+def spin_executor(executor):
+        executor.spin()
 
 
 def main():
-
     ID, scenarioID = read_all_arguments()
 
     armpi = ArmPi(ID)
@@ -127,8 +128,8 @@ def main():
     executor.add_node(pos_subscriber)
 
     # start all the subscriber node in a thread
-    thread_ready = Thread(target=ready_subscriber.get_correct_message)
-    thread_ready.start()
+    thread = Thread(target=spin_executor, args=(executor, ))
+    thread.start()
 
     if ID == 0:
         process_first_robot(armpi, ready_publisher, pos_publisher)

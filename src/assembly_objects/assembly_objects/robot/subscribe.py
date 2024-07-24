@@ -16,10 +16,6 @@ class RobotSubscriber(Node):
     def get_armpi(self):
         return self.__armpi
 
-    def get_correct_message(self):
-        while rclpy.ok():
-            rclpy.spin(self)
-
 class ReadySubscriber(RobotSubscriber):
     def __init__(self, armpi):
         super().__init__('ready_subscriber', armpi)

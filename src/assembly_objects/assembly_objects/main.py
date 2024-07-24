@@ -1,4 +1,6 @@
 import sys
+
+import rclpy.executors
 sys.path.append('/home/pi/ArmPi/')
 
 import time
@@ -10,8 +12,8 @@ import rclpy
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from robot.armpi import ArmPi
-from robot.publish import create_publisher_node
-from robot.subscribe import create_subscriber_node
+from robot.publish import create_ready_publisher_node, create_pos_publisher_node
+from robot.subscribe import create_ready_subscriber_node, create_pos_subscriber_node
 
 AK = ArmIK()
 
@@ -55,22 +57,9 @@ def go_to_waiting_position(ID):
     time.sleep(result[2]/1000) 
     print(result)
 
-def process_first_robot(ID):
-    armpi = ArmPi(ID)
-
-    initMove()
-    time.sleep(2)
-
-    rclpy.init()
-    publisher = create_publisher_node(armpi)
-    subscriber = create_subscriber_node(armpi)
-
-    # start the subscriber node in a thread
-    thread = Thread(target=subscriber.get_correct_message)
-    thread.start()
-
+def process_first_robot(armpi, ready_publisher, pos_publisher):
     grab_the_object() #TODO: get the position of the object with the camera
-    go_to_waiting_position(ID)
+    go_to_waiting_position(armpi.get_ID())
 
     # Go into the right position
     result = AK.setPitchRangeMoving((0, 28, 10), 10, 10, 0)
@@ -78,25 +67,17 @@ def process_first_robot(ID):
     print(result)
 
     #TODO: Replace the coordinates with the estimated coordinates from the camera
-    publisher.send_msgs(0.0, 28.0, 10.0, 10)
+    pos_publisher.send_msg(0.0, 28.0, 10.0, 10)
+
+    while (not armpi.get_ready_flag()):
+        time.sleep(0.1)
+
+    print("Do something")
 
 
-def process_second_robot(ID):
-    armpi = ArmPi(ID)
-
-    initMove()
-    time.sleep(2)
-
-    rclpy.init()
-    publisher = create_publisher_node(armpi)
-    subscriber = create_subscriber_node(armpi)
-
-    # start the subscriber node in a thread
-    thread = Thread(target=subscriber.get_correct_message)
-    thread.start()
-
+def process_second_robot(armpi, ready_publisher, pos_publisher):
     grab_the_object()
-    go_to_waiting_position(ID)
+    go_to_waiting_position(armpi.get_ID())
 
     while (not armpi.get_got_position_flag()):
         time.sleep(0.1)
@@ -122,6 +103,7 @@ def process_second_robot(ID):
 
 
     #TODO: Send message to another robot
+    ready_publisher.send_msg()
 
 
 
@@ -129,10 +111,29 @@ def main():
 
     ID, scenarioID = read_all_arguments()
 
+    armpi = ArmPi(ID)
+
+    initMove()
+    time.sleep(2)
+
+    rclpy.init()
+    ready_publisher = create_ready_publisher_node(armpi)
+    pos_publisher = create_pos_publisher_node(armpi)
+    ready_subscriber = create_ready_subscriber_node(armpi)
+    pos_subscriber = create_pos_subscriber_node(armpi)
+
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(ready_subscriber)
+    executor.add_node(pos_subscriber)
+
+    # start all the subscriber node in a thread
+    thread_ready = Thread(target=ready_subscriber.get_correct_message)
+    thread_ready.start()
+
     if ID == 0:
-        process_first_robot(ID)
+        process_first_robot(armpi, ready_publisher, pos_publisher)
     else:
-        process_second_robot(ID)
+        process_second_robot(armpi, ready_publisher, pos_publisher)
 
 
 

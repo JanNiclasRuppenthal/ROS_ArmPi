@@ -7,6 +7,9 @@ class ArmPi():
 
     def get_ID(self):
         return self.__ID
+    
+    def set_ready_flag(self, flag):
+        self.__ready = flag
 
     def get_ready_flag(self):
         return self.__ready

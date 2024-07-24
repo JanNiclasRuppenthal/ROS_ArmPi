@@ -1,12 +1,23 @@
 class ArmPi():
     def __init__(self, ID):
-        self.ID = ID
-        self.ready = False 
+        self.__ID = ID
+        self.__ready = False 
+        self.__got_position = False
+        self.__position_with_angle = None
 
     def get_ID(self):
-        return self.ID
+        return self.__ID
 
     def get_ready_flag(self):
-        return self.ready
+        return self.__ready
+    
+    def got_position_flag(self):
+        return self.__got_position
+    
+    def set_position_with_angle(self, x, y, z, angle):
+        self.__position_with_angle = (x, y, z, angle)
+
+    def get_position_with_angle(self):
+        return self.__position_with_angle
 
     

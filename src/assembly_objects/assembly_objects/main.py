@@ -97,9 +97,16 @@ def process_second_robot(ID):
     grab_the_object()
     go_to_waiting_position(ID)
 
-    #result = AK.setPitchRangeMoving((0, 28, 22), 12, 12, 0) oder doch besser 10?
-    #time.sleep(result[2]/1000) 
-    #print(result)
+    while (not armpi.got_position_flag()):
+        time.sleep(0.1)
+
+    (x, y, z, angle) = armpi.get_position_with_angle
+    
+    # set the z value a little bit higher so there is no contact between these two objects
+    z += 12
+    result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0) # oder doch besser 10?
+    time.sleep(result[2]/1000) 
+    print(result)
 
 
 

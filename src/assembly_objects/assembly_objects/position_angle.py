@@ -23,7 +23,7 @@ def calculate_position_and_angle():
     my_camera = Camera.Camera()
     my_camera.camera_open()
 
-    calculated_points = (0 ,0)
+    calculated_points = (0, 0)
     calculated_angles = 0
     number_of_data_points = 0
     
@@ -82,9 +82,9 @@ def calculate_position_and_angle():
 
                 angle = rect[2]
 
-                # Calculate position in real-world coordinates
+                # Calculate position in real-world coordinates (linear interpolation)
                 pos_x = -(23/2) + (final_x * (23 / 720))
-                pos_y = 28 - (final_y * (16 / 480))
+                pos_y = 12 + (final_y * (16 / 480))
 
                 #TODO: Write this sum python like
                 calculated_points = (calculated_points[0] + pos_x, calculated_points[1] + pos_y)

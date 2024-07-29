@@ -110,6 +110,8 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
     while (not armpi.get_ready_flag()):
         time.sleep(0.1)
 
+    armpi.set_ready_flag(False)
+
     put_down_assembled_object()
 
     initMove()
@@ -122,6 +124,8 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
 
     while (not armpi.get_got_position_flag()):
         time.sleep(0.1)
+
+    armpi.set_got_position_flag(False)
 
     (x, y, z, angle) = armpi.get_position_with_angle()
     
@@ -175,10 +179,11 @@ def main():
     thread = Thread(target=spin_executor, args=(executor, ))
     thread.start()
 
-    if ID == 0:
-        process_first_robot(armpi, ready_publisher, pos_publisher)
-    else:
-        process_second_robot(armpi, ready_publisher, pos_publisher)
+    while (True):
+        if ID == 0:
+            process_first_robot(armpi, ready_publisher, pos_publisher)
+        else:
+            process_second_robot(armpi, ready_publisher, pos_publisher)
 
 
 

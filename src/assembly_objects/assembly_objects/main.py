@@ -56,7 +56,7 @@ def grab_the_object(ID, x, y, angle, rotation_direction):
     time.sleep(result[2]/1000) 
     print(result)
 
-    grab_pulse = 575 if (ID == 0) else 525
+    grab_pulse = 575
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
     time.sleep(0.5)
@@ -101,11 +101,11 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
     go_to_waiting_position(armpi.get_ID())
 
     # Go into the right position
-    result = AK.setPitchRangeMoving((x, y+12, 10), 10, 10, 0)
+    result = AK.setPitchRangeMoving((x, 28, 10), 10, 10, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
-    pos_publisher.send_msg(x, y+12, 10.0, 10)
+    pos_publisher.send_msg(x, 28.0, 10.0, 10)
 
     while (not armpi.get_ready_flag()):
         time.sleep(0.1)
@@ -127,13 +127,16 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
     
     # set the z value a little bit higher so there is no contact between these two objects
     z += 12
-    result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0)
+
+    # we need to mirror the x coordinate
+    # because both robots face each other
+    result = AK.setPitchRangeMoving((-x, y, z), angle, angle, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
     time.sleep(1)
 
-    result = AK.setPitchRangeMoving((x, y, z - 6), angle, angle, 0)
+    result = AK.setPitchRangeMoving((-x, y, z - 6), angle, angle, 0)
     time.sleep(result[2]/1000) 
     print(result)
 

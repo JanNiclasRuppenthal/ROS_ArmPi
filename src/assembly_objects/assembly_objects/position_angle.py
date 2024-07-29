@@ -90,6 +90,7 @@ def calculate_position_and_angle():
                 calculated_points = (calculated_points[0] + pos_x, calculated_points[1] + pos_y)
                 calculated_angles += angle
                 number_of_data_points += 1
+                print("Got Position!")
 
 
             # Display the resulting frame

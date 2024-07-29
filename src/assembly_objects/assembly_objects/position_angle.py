@@ -100,6 +100,11 @@ def calculate_position_and_angle():
             #if key == 27:  # ESC key
             #    break
 
+    # Determine the rotation direction
+    if bottom_points[0][0] < bottom_points[1][0]:
+        rotation_direction = 1
+    else:
+        rotation_direction = -1
 
     #TODO: Write this mean python like
     point = calculated_points[0] / 20, calculated_points[1] / 20
@@ -111,6 +116,8 @@ def calculate_position_and_angle():
 
     print("Point to grab: " + str(point))
     print("Angle to grab: " + str(angle))
+    print(f"Rotation direction: {rotation_direction}")
+    x = point[0]
+    y = point[1]
 
-
-    return point, angle
+    return x, y, angle, rotation_direction

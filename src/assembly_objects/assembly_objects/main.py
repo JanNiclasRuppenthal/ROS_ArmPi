@@ -14,6 +14,7 @@ import HiwonderSDK.Board as Board
 from robot.armpi import ArmPi
 from robot.publish import create_ready_publisher_node, create_pos_publisher_node
 from robot.subscribe import create_ready_subscriber_node, create_pos_subscriber_node
+from position_angle import calculate_position_and_angle
 
 AK = ArmIK()
 
@@ -32,21 +33,32 @@ def open_claw():
     Board.setBusServoPulse(1, 200, 500)
     time.sleep(0.5)
 
-def grab_the_object():
+def grab_the_object(ID, x, y, angle, rotation_direction):
     # Go to the position of the object with z = 7
-    result = AK.setPitchRangeMoving((0, 12.5, 7), -90, -90, 0)
+    result = AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
     open_claw()
 
+    # calculate the difference from the computed pulse and 500
+    servo2_angle_diff = abs(500 - getAngle(x, y, angle))
+    
+    # if it the object is right rotated the add the pulse to 500
+    # else subtract the difference from 500
+    servo2_angle_pulse = 500 + (rotation_direction * servo2_angle_diff)
+    print(servo2_angle_pulse)
+    Board.setBusServoPulse(2, servo2_angle_pulse, 500)
+    time.sleep(0.8)
+
     # Go to the position of the object with z = 1
-    result = AK.setPitchRangeMoving((0, 12.5, 1), -90, -90, 0)
+    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
+    grab_pulse = 575 if (ID == 0) else 525
     #close the claw
-    Board.setBusServoPulse(1, 575, 500)
+    Board.setBusServoPulse(1, grab_pulse, 500)
     time.sleep(0.5)
 
 def go_to_waiting_position(ID):
@@ -56,6 +68,10 @@ def go_to_waiting_position(ID):
     result = AK.setPitchRangeMoving((0, 12.5, 10 + ID*10), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
+
+    # rotate the claw again
+    Board.setBusServoPulse(2, 500, 500)
+    time.sleep(0.8)
 
 def put_down_assembled_object():
     # The goal position is the green field left to the robot
@@ -80,16 +96,16 @@ def put_down_assembled_object():
     time.sleep(0.8)
 
 def process_first_robot(armpi, ready_publisher, pos_publisher):
-    grab_the_object() #TODO: get the position of the object with the camera
+    x, y, angle, rotation_direction = calculate_position_and_angle()
+    grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
 
     # Go into the right position
-    result = AK.setPitchRangeMoving((0, 28, 10), 10, 10, 0)
+    result = AK.setPitchRangeMoving((x, y+12, 10), 10, 10, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
-    #TODO: Replace the coordinates with the estimated coordinates from the camera
-    pos_publisher.send_msg(0.0, 28.0, 10.0, 10)
+    pos_publisher.send_msg(x, y+12, 10.0, 10)
 
     while (not armpi.get_ready_flag()):
         time.sleep(0.1)
@@ -100,7 +116,8 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
 
 
 def process_second_robot(armpi, ready_publisher, pos_publisher):
-    grab_the_object()
+    x, y, angle, rotation_direction = calculate_position_and_angle()
+    grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
 
     while (not armpi.get_got_position_flag()):

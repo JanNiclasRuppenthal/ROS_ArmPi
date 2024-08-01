@@ -97,6 +97,14 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
 
+    # signal to the other robot that this robot is ready
+    ready_publisher.send_msg()
+    while (not armpi.get_ready_flag()):
+        ready_publisher.send_msg()
+        time.sleep(1)
+    
+    armpi.set_ready_flag(False)
+
     # Go into the right position
     result = AK.setPitchRangeMoving((x, 30, 10), 10, 10, 0)
     time.sleep(result[2]/1000) 
@@ -118,6 +126,14 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
     x, y, angle, rotation_direction = calculate_position_and_angle()
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
+
+    # signal to the other robot that this robot is ready
+    ready_publisher.send_msg()
+    while (not armpi.get_ready_flag()):
+        ready_publisher.send_msg()
+        time.sleep(1)
+    
+    armpi.set_ready_flag(False)
 
     while (not armpi.get_got_position_flag()):
         time.sleep(0.1)

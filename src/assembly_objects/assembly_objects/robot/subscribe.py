@@ -23,7 +23,8 @@ class ReadySubscriber(RobotSubscriber):
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):
-        if msg.id != self.get_ID():
+        # if it is not the same ID and it does not recieved a ready message before
+        if msg.id != self.get_ID() and not self.get_armpi().get_ready_flag():
             self.get_logger().info('I heard: "%s"' % str(msg))
 
             self.get_armpi().set_ready_flag(True)

@@ -76,7 +76,7 @@ def calculate_position_and_angle():
                 final_x = center_x + (mid_bottom_x - center_x) // 2
                 final_y = center_y + (mid_bottom_y - center_y) // 2
 
-                # mark the middle point between the center and bottom point with an rectangle (green)
+                # mark the middle point between the center and bottom point with an rectangle (blue)
                 final_x, final_y = np.int0([final_x, final_y])
                 cv2.rectangle(frame_out, (final_x, final_y), (final_x + 10, final_y + 10), (255, 0, 0), 2)
 
@@ -84,7 +84,7 @@ def calculate_position_and_angle():
 
                 # Calculate position in real-world coordinates (linear interpolation)
                 pos_x = -(23/2) + (final_x * (23 / 720))
-                pos_y = 12 + (final_y * (16 / 480))
+                pos_y = 12 + ((final_y-480) * (16 / -480))
 
                 #TODO: Write this sum python like
                 calculated_points = (calculated_points[0] + pos_x, calculated_points[1] + pos_y)
@@ -108,8 +108,8 @@ def calculate_position_and_angle():
         rotation_direction = -1
 
     #TODO: Write this mean python like
-    point = calculated_points[0] / 20, calculated_points[1] / 20
-    angle = calculated_angles / 20
+    point = calculated_points[0] / number_of_data_points, calculated_points[1] / number_of_data_points
+    angle = calculated_angles / number_of_data_points
 
     # Release the camera and close all OpenCV windows
     my_camera.camera_close()

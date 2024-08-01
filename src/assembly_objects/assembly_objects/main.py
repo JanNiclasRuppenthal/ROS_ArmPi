@@ -52,11 +52,11 @@ def grab_the_object(ID, x, y, angle, rotation_direction):
     time.sleep(0.8)
 
     # Go to the position of the object with z = 1
-    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0)
+    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0, 500)
     time.sleep(result[2]/1000) 
     print(result)
 
-    grab_pulse = 575
+    grab_pulse = 575 if ID == 0 else 450
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
     time.sleep(0.5)
@@ -79,10 +79,6 @@ def put_down_assembled_object():
 
     result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90) # ArmPi goes to the goal coordinates with z = 12
     time.sleep(result[2]/1000)
-        
-    #servo2_angle = getAngle(goal_coord_x, goal_coord_y, -90)
-    #Board.setBusServoPulse(2, servo2_angle, 500)
-    #time.sleep(0.5)
 
     AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, goal_coord_z + 3), 10, 10, -90, 500) # ArmPi goes down to z = goal_coord_z + 3
     time.sleep(0.5)
@@ -101,11 +97,11 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
     go_to_waiting_position(armpi.get_ID())
 
     # Go into the right position
-    result = AK.setPitchRangeMoving((x, 28, 10), 10, 10, 0)
+    result = AK.setPitchRangeMoving((x, 30, 10), 10, 10, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
-    pos_publisher.send_msg(x, 28.0, 10.0, 10)
+    pos_publisher.send_msg(x, 30.0, 10.0, 10)
 
     while (not armpi.get_ready_flag()):
         time.sleep(0.1)
@@ -145,6 +141,11 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
     print(result)
 
     open_claw()
+
+    # move back to y = 25
+    result = AK.setPitchRangeMoving((-x, 25, z - 6), angle, angle, 0)
+    time.sleep(result[2]/1000) 
+    print(result)
 
     # go to the init position again
     initMove()

@@ -21,7 +21,8 @@ AK = ArmIK()
 def initMove():
     Board.setBusServoPulse(1, 500 - 50, 300)
     Board.setBusServoPulse(2, 500, 500)
-    AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
+    result = AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
+    time.sleep(result[2]/1000) 
 
 def read_all_arguments():
     ID = int(sys.argv[1])
@@ -52,7 +53,7 @@ def grab_the_object(ID, x, y, angle, rotation_direction):
     time.sleep(0.8)
 
     # Go to the position of the object with z = 1
-    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0, 500)
+    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 
@@ -164,7 +165,6 @@ def main():
     armpi = ArmPi(ID)
 
     initMove()
-    time.sleep(2)
 
     rclpy.init()
     ready_publisher = create_ready_publisher_node(armpi)

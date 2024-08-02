@@ -12,11 +12,14 @@ import rclpy
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from robot.armpi import ArmPi
-from robot.publish import create_ready_publisher_node, create_pos_publisher_node
-from robot.subscribe import create_ready_subscriber_node, create_pos_subscriber_node
+from robot.publish import create_ready_publisher_node, create_finish_publisher_node, create_pos_publisher_node
+from robot.subscribe import create_ready_subscriber_node, create_finish_subscriber_node, create_pos_subscriber_node
 from position_angle import calculate_position_and_angle
 
 AK = ArmIK()
+rclpy.init()
+executor = rclpy.executors.MultiThreadedExecutor()
+shutdown_status = False
 
 def initMove():
     Board.setBusServoPulse(1, 500 - 50, 300)
@@ -92,14 +95,31 @@ def put_down_assembled_object():
     AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90, 800)
     time.sleep(0.8)
 
-def process_first_robot(armpi, ready_publisher, pos_publisher):
+def process_first_robot(armpi, ready_publisher, finish_publisher, pos_publisher):
+    global shutdown_status
     x, y, angle, rotation_direction = calculate_position_and_angle()
+
+    # found no object in the field
+    if (x == -1 and y == -1):
+        finish_publisher.send_msg()
+        executor.shutdown()
+        shutdown_status = True
+        return
+
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
 
     # signal to the other robot that this robot is ready
     ready_publisher.send_msg()
     while (not armpi.get_ready_flag()):
+
+        if armpi.get_finish_flag():
+            put_down_assembled_object()
+            initMove()
+            executor.shutdown()
+            shutdown_status = True
+            return
+
         ready_publisher.send_msg()
         time.sleep(1)
     
@@ -122,14 +142,31 @@ def process_first_robot(armpi, ready_publisher, pos_publisher):
     initMove()
 
 
-def process_second_robot(armpi, ready_publisher, pos_publisher):
+def process_second_robot(armpi, ready_publisher, finish_publisher, pos_publisher):
+    global shutdown_status
     x, y, angle, rotation_direction = calculate_position_and_angle()
+
+    # found no object in the field
+    if (x == -1 and y == -1):
+        finish_publisher.send_msg()
+        executor.shutdown()
+        shutdown_status = True
+        return
+
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
 
     # signal to the other robot that this robot is ready
     ready_publisher.send_msg()
     while (not armpi.get_ready_flag()):
+
+        if armpi.get_finish_flag():
+            put_down_assembled_object()
+            initMove()
+            executor.shutdown()
+            shutdown_status = True
+            return
+
         ready_publisher.send_msg()
         time.sleep(1)
     
@@ -170,11 +207,28 @@ def process_second_robot(armpi, ready_publisher, pos_publisher):
     # send to the next robot that it can proceed
     ready_publisher.send_msg()
 
-def spin_executor(executor):
-        executor.spin()
+def spin_executor(executor, ready_subscriber, finish_subscriber, pos_subscriber):
+    executor.add_node(ready_subscriber)
+    executor.add_node(finish_subscriber)
+    executor.add_node(pos_subscriber)
+
+    executor.spin()
+
+    try:
+        #shutdown nodes an rclpy contex
+        if ready_subscriber:
+            ready_subscriber.destroy_node()
+        if finish_subscriber:
+            finish_subscriber.destroy_node()
+        if pos_subscriber:
+            pos_subscriber.destroy_node()
+        rclpy.shutdown()
+    except Exception as e:
+        print("Here after shutdown")
 
 
 def main():
+    global shutdown_status
     #TODO scenarioID for horizontal or vertical
     ID, scenarioID = read_all_arguments()
 
@@ -182,27 +236,33 @@ def main():
 
     initMove()
 
-    rclpy.init()
     ready_publisher = create_ready_publisher_node(armpi)
+    finish_publisher = create_finish_publisher_node(armpi)
     pos_publisher = create_pos_publisher_node(armpi)
     ready_subscriber = create_ready_subscriber_node(armpi)
+    finish_subscriber = create_finish_subscriber_node(armpi)
     pos_subscriber = create_pos_subscriber_node(armpi)
 
-    executor = rclpy.executors.MultiThreadedExecutor()
-    executor.add_node(ready_subscriber)
-    executor.add_node(pos_subscriber)
 
     # start the executor in a thread for spinning all subscriber nodes
-    thread = Thread(target=spin_executor, args=(executor, ))
+    thread = Thread(target=spin_executor, args=(executor, ready_subscriber, finish_subscriber, pos_subscriber, ))
     thread.start()
 
     while (True):
         if ID == 0:
-            process_first_robot(armpi, ready_publisher, pos_publisher)
+            process_first_robot(armpi, ready_publisher, finish_publisher, pos_publisher)
         else:
-            process_second_robot(armpi, ready_publisher, pos_publisher)
+            process_second_robot(armpi, ready_publisher, finish_publisher, pos_publisher)
+
+        if shutdown_status:
+            thread.join()
+            break
 
 
 
 if __name__ == '__main__':
+    #try:
     main()
+        #raise Exception("Useless exception")
+    #except Exception as e:
+        #print(f"Catch my own Exception: {e}")

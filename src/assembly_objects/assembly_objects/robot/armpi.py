@@ -1,7 +1,8 @@
 class ArmPi():
     def __init__(self, ID):
         self.__ID = ID
-        self.__ready = False 
+        self.__ready = False
+        self.__finish = False
         self.__got_position = False
         self.__position_with_angle = None
 
@@ -13,6 +14,12 @@ class ArmPi():
 
     def get_ready_flag(self):
         return self.__ready
+
+    def set_finish_flag(self, flag):
+        self.__finish = flag
+
+    def get_finish_flag(self):
+        return self.__finish
     
     def get_got_position_flag(self):
         return self.__got_position

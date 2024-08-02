@@ -4,6 +4,7 @@ sys.path.append('/home/pi/ArmPi/')
 import Camera
 import math
 import numpy as np
+import time
 
 def getAreaMaxContour(contours):
     contour_area_temp = 0
@@ -26,6 +27,8 @@ def calculate_position_and_angle():
     calculated_points = (0, 0)
     calculated_angles = 0
     number_of_data_points = 0
+
+    start_time = time.time()
     
     while number_of_data_points < 20:
         img = my_camera.frame
@@ -90,6 +93,7 @@ def calculate_position_and_angle():
                 calculated_points = (calculated_points[0] + pos_x, calculated_points[1] + pos_y)
                 calculated_angles += angle
                 number_of_data_points += 1
+                start_time = time.time()
                 print("Got Position!")
 
 
@@ -100,6 +104,10 @@ def calculate_position_and_angle():
             #key = cv2.waitKey(30)
             #if key == 27:  # ESC key
             #    break
+
+        # only wait for 5 seconds
+        if time.time() - start_time >= 5:
+            return -1, -1, -1, -1
 
     # Determine the rotation direction
     if bottom_points[0][0] < bottom_points[1][0]:

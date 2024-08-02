@@ -101,6 +101,8 @@ def process_second_robot(armpi, ready_publisher, finish_publisher, pos_publisher
 
     (x, y, z, angle) = armpi.get_position_with_angle()
 
+    # set the z value a little bit higher so there is no contact between these two objects
+    z += 12
     assemble_objects(x, y, z, angle)
     move_back(x, z, angle)
 

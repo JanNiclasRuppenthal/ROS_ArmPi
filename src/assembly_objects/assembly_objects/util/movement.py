@@ -62,9 +62,6 @@ def go_to_assemble_position(x, y, z, angle):
     print(result)
 
 def assemble_objects(x, y, z, angle):
-    # set the z value a little bit higher so there is no contact between these two objects
-    z += 12
-
     # we need to mirror the x coordinate
     # because both robots face each other
     result = AK.setPitchRangeMoving((-x, y, z), angle, angle, 0)

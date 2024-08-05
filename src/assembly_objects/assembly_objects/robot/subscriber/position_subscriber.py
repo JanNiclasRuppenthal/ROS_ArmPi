@@ -13,8 +13,6 @@ class PositionSubscriber(RobotSubscriber):
 
             (x, y, z, angle) = (msg.x, msg.y, msg.z, msg.angle)
             self.get_armpi().set_position_with_angle(x, y, z, angle)
-            self.get_armpi().set_got_position_flag(True)
-
 
 def create_pos_subscriber_node(armpi):
     __subscriber = PositionSubscriber(armpi)

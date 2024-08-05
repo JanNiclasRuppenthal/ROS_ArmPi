@@ -47,7 +47,8 @@ def go_to_waiting_position(ID):
     # Go up again (waiting-position)
     # ID = 0 -> z = 10
     # ID = 1 -> z = 20
-    result = AK.setPitchRangeMoving((0, 12.5, 10 + ID*10), -90, -90, 0)
+    z_waiting = 10 if ID == 0 else 20
+    result = AK.setPitchRangeMoving((0, 12.5, z_waiting), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 

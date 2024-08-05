@@ -20,6 +20,10 @@ def getAreaMaxContour(contours):
 
     return area_max_contour, contour_area_max 
 
+def close_camera_and_window(my_camera):
+    my_camera.camera_close()
+    cv2.destroyAllWindows()
+
 def calculate_position_and_angle():
     my_camera = Camera.Camera()
     my_camera.camera_open()
@@ -107,6 +111,7 @@ def calculate_position_and_angle():
 
         # only wait for 5 seconds
         if time.time() - start_time >= 5:
+            close_camera_and_window(my_camera)
             return -1, -1, -1, -1
 
     # Determine the rotation direction
@@ -120,8 +125,7 @@ def calculate_position_and_angle():
     angle = calculated_angles / number_of_data_points
 
     # Release the camera and close all OpenCV windows
-    my_camera.camera_close()
-    cv2.destroyAllWindows()
+    close_camera_and_window(my_camera)
 
     print("Point to grab: " + str(point))
     print("Angle to grab: " + str(angle))

@@ -25,8 +25,7 @@ rclpy.init()
 def read_all_arguments():
     ID = int(sys.argv[1])
     number_of_robots = int(sys.argv[2])
-    scenarioID = int(sys.argv[3])
-    return ID, number_of_robots, scenarioID
+    return ID, number_of_robots
 
 def end_scenario(executor, x, y, angle, rotation_direction):
     put_down_grabbed_object(x, y, angle, rotation_direction)
@@ -131,8 +130,7 @@ def create_all_nodes(armpi):
 
 
 def main():
-    #TODO scenarioID for horizontal or vertical
-    ID, number_of_robots, scenarioID = read_all_arguments()
+    ID, number_of_robots = read_all_arguments()
 
     armpi = ArmPi(ID, number_of_robots)
 
@@ -166,8 +164,4 @@ def main():
 
 
 if __name__ == '__main__':
-    #try:
     main()
-        #raise Exception("Useless exception")
-    #except Exception as e:
-        #print(f"Catch my own Exception: {e}")

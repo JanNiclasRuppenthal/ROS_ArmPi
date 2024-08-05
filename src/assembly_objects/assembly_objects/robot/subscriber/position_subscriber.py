@@ -1,10 +1,10 @@
-from .Asubscribe import RobotSubscriber
+from robot.subscriber.Asubscribe import RobotSubscriber
 from armpi_interfaces.msg import PositionWithAngle
 
 class PositionSubscriber(RobotSubscriber):
     def __init__(self, armpi):
         super().__init__('position_subscriber', armpi)
-        self.__subscription = self.create_subscription(PositionWithAngle,'position',self.callback,10)
+        self.__subscription = self.create_subscription(PositionWithAngle, 'position', self.callback,10)
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):

@@ -1,4 +1,4 @@
-from .Apublish import RobotPublisher
+from robot.publisher.Apublish import RobotPublisher
 from armpi_interfaces.msg import PositionWithAngle
 
 class PositionPublisher(RobotPublisher):

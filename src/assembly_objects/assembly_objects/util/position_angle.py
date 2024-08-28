@@ -31,10 +31,11 @@ def calculate_position_and_angle():
     calculated_points = (0, 0)
     calculated_angles = 0
     number_of_data_points = 0
+    max_number_of_data_points = 4000
 
     start_time = time.time()
     
-    while number_of_data_points < 20:
+    while number_of_data_points < max_number_of_data_points:
         img = my_camera.frame
         if img is not None:
             frame = img.copy()
@@ -93,7 +94,7 @@ def calculate_position_and_angle():
                 pos_x = -(23/2) + (final_x * (23 / 720))
                 pos_y = 12 + ((final_y-480) * (16 / -480))
 
-                #TODO: Write this sum python like
+                
                 calculated_points = (calculated_points[0] + pos_x, calculated_points[1] + pos_y)
                 calculated_angles += angle
                 number_of_data_points += 1
@@ -101,6 +102,7 @@ def calculate_position_and_angle():
                 print("Got Position!")
 
 
+            ''' Comment this out, if you want to see the frames
             # Display the resulting frame
             #cv2.imshow('Frame', frame_out)
 
@@ -108,10 +110,15 @@ def calculate_position_and_angle():
             #key = cv2.waitKey(30)
             #if key == 27:  # ESC key
             #    break
+            '''
 
         # only wait for 5 seconds
         if time.time() - start_time >= 5:
             close_camera_and_window(my_camera)
+
+            if number_of_data_points != 0:
+                break
+
             return -1, -1, -1, -1
 
     # Determine the rotation direction
@@ -120,15 +127,15 @@ def calculate_position_and_angle():
     else:
         rotation_direction = -1
 
-    #TODO: Write this mean python like
+    
     point = calculated_points[0] / number_of_data_points, calculated_points[1] / number_of_data_points
     angle = calculated_angles / number_of_data_points
 
     # Release the camera and close all OpenCV windows
     close_camera_and_window(my_camera)
 
-    print("Point to grab: " + str(point))
-    print("Angle to grab: " + str(angle))
+    print(f"Point to grab: {str(point)}")
+    print(f"Angle to grab: {str(angle)}")
     print(f"Rotation direction: {rotation_direction}")
     x = point[0]
     y = point[1]

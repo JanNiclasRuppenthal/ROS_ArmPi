@@ -31,7 +31,7 @@ def calculate_position_and_angle():
     calculated_points = (0, 0)
     calculated_angles = 0
     number_of_data_points = 0
-    max_number_of_data_points = 4000
+    max_number_of_data_points = 20
 
     start_time = time.time()
     

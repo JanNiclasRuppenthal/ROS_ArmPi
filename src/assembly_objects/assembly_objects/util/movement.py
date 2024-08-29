@@ -38,17 +38,14 @@ def grab_the_object(ID, x, y, angle, rotation_direction):
     time.sleep(result[2]/1000) 
     print(result)
 
-    grab_pulse = 575 if ID == 0 else 450
+    grab_pulse = 0 if ID == 0 else 450
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
     time.sleep(0.5)
 
 def go_to_waiting_position(ID):
     # Go up again (waiting-position)
-    # ID = 0 -> z = 10
-    # ID = 1 -> z = 20
-    z_waiting = 10 if ID == 0 else 20
-    result = AK.setPitchRangeMoving((0, 12.5, z_waiting), -90, -90, 0)
+    result = AK.setPitchRangeMoving((0, 12.5, 10), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
@@ -59,6 +56,11 @@ def go_to_waiting_position(ID):
 def go_to_assemble_position(x, y, z, angle):
     # Go into the right position
     result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0)
+    time.sleep(result[2]/1000) 
+    print(result)
+
+def go_to_upper_position():
+    result = AK.setPitchRangeMoving((0, 12.5, 20), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 

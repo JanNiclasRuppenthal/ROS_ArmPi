@@ -12,10 +12,12 @@ from robot.publisher.ready_publisher import create_ready_publisher_node
 from robot.publisher.done_publisher import create_done_publisher_node
 from robot.publisher.end_publisher import create_end_publisher_node
 from robot.publisher.position_publisher import create_pos_publisher_node
+from robot.publisher.object_type_publisher import create_object_type_publisher_node
 from robot.subscriber.ready_subscriber import create_ready_subscriber_node
 from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.end_subscriber import create_end_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
+from robot.subscriber.object_type_subscriber import create_object_type_subscriber_node
 from util.position_angle import calculate_position_and_angle
 from util.executor_subscriptions import MultiExecutor
 from util.movement import *
@@ -32,8 +34,8 @@ def end_scenario(executor, x, y, angle, rotation_direction):
     initMove()
     executor.execute_shutdown()
 
-def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, executor):
-    x, y, angle, rotation_direction = calculate_position_and_angle()
+def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor):
+    x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
 
     # found no object in the field
     if (x == -1 and y == -1):
@@ -41,8 +43,13 @@ def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher
         executor.execute_shutdown()
         return
 
+    armpi.set_object_type(object_type)
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
+
+    #TODO: send the object type to the other robot
+    obj_publisher.send_msg()
+    #TODO: what happens if both have the same type?
 
     # wait until every other robot has grabbed the object and is ready
     while (not armpi.get_ready_flag()):
@@ -71,7 +78,7 @@ def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher
 
 
 def process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher, executor):
-    x, y, angle, rotation_direction = calculate_position_and_angle()
+    x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
 
     # found no object in the field
     if (x == -1 and y == -1):
@@ -117,13 +124,15 @@ def create_all_nodes(armpi):
     done_publisher = create_done_publisher_node(armpi)
     end_publisher = create_end_publisher_node(armpi)
     pos_publisher = create_pos_publisher_node(armpi)
+    object_type_publisher = create_object_type_publisher_node(armpi)
     ready_subscriber = create_ready_subscriber_node(armpi)
     done_subscriber = create_done_subscriber_node(armpi)
     end_subscriber = create_end_subscriber_node(armpi)
     pos_subscriber = create_pos_subscriber_node(armpi)
+    object_type_subscriber = create_object_type_subscriber_node(armpi)
 
-    publisher_nodes = [ready_publisher, done_publisher , end_publisher, pos_publisher]
-    subscriber_nodes = [ready_subscriber, done_subscriber, end_subscriber, pos_subscriber]
+    publisher_nodes = [ready_publisher, done_publisher , end_publisher, pos_publisher, object_type_publisher]
+    subscriber_nodes = [ready_subscriber, done_subscriber, end_subscriber, pos_subscriber, object_type_subscriber]
     all_nodes = publisher_nodes + subscriber_nodes
 
     return publisher_nodes, subscriber_nodes, all_nodes
@@ -141,6 +150,7 @@ def main():
     done_publisher = publisher_nodes_list[1]
     finish_publisher = publisher_nodes_list[2]
     pos_publisher = publisher_nodes_list[3]
+    obj_publisher = publisher_nodes_list[4]
 
     executor = MultiExecutor(subscriber_nodes_list)
 
@@ -150,7 +160,7 @@ def main():
 
     while (True):
         if ID == 0:
-            process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, executor)
+            process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor)
         else:
             process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher, executor)
 

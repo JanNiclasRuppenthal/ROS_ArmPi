@@ -6,6 +6,7 @@ class ArmPi():
         self.__done = False
         self.__finish = False
         self.__position_with_angle = None
+        self.__object_type = None
 
     def get_ID(self):
         return self.__ID
@@ -36,5 +37,13 @@ class ArmPi():
 
     def get_position_with_angle(self):
         return self.__position_with_angle
+    
+    def set_object_type(self, obj_type):
+        self.__object_type = obj_type
+    
+    def get_object_type(self):
+        return self.__object_type
+
+    
 
     

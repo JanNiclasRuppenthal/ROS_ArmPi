@@ -6,10 +6,18 @@ import math
 import numpy as np
 import time
 
+from util.object_type import get_object_type
+
 
 def close_camera_and_window(my_camera):
     my_camera.camera_close()
     cv2.destroyAllWindows()
+
+# euclidean distance
+def calculate_distance(point_a, point_b):
+    x_pow = math.pow(point_b[0] - point_a[0], 2)
+    y_pow = math.pow(point_b[1] - point_a[1], 2)
+    return math.sqrt(x_pow + y_pow)
 
 def calculate_position_and_angle():
     my_camera = Camera.Camera()
@@ -51,6 +59,10 @@ def calculate_position_and_angle():
 
                 cv2.drawContours(frame_out, [box], 0, (0, 255, 0), 2)
 
+                length01 = calculate_distance(box[0], box[1])
+                length02 = calculate_distance(box[1], box[2])
+                min_length = min(length01, length02)
+
                 # sort the points of the box with their y coordinate
                 box = sorted(box, key=lambda p: p[1])
 
@@ -91,10 +103,10 @@ def calculate_position_and_angle():
                 pos_y = 12 + ((final_y-480) * (16 / -480))
 
                 
-                data_list += [(pos_x, pos_y, angle, rotation_direction)]
+                data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
                 number_of_data_points += 1
                 start_time = time.time()
-                print("Got position, angle and rotation direction!")
+                #print("Got position, angle and rotation direction!")
          
             '''
             # Display the resulting frame
@@ -107,7 +119,7 @@ def calculate_position_and_angle():
             '''
 
         # only wait for 5 seconds
-        if time.time() - start_time >= 5:
+        if time.time() - start_time >= 5000:
             close_camera_and_window(my_camera)
 
             if number_of_data_points != 0:
@@ -123,6 +135,7 @@ def calculate_position_and_angle():
     point = left_data[0], left_data[1]
     angle = left_data[2]
     rotation_direction = left_data[3]
+    object_type = get_object_type(min_length)
 
     # Release the camera and close all OpenCV windows
     close_camera_and_window(my_camera)
@@ -130,5 +143,6 @@ def calculate_position_and_angle():
     print(f"Point to grab: {str(point)}")
     print(f"Angle to grab: {str(angle)}")
     print(f"Rotation direction: {rotation_direction}")
+    print(f"Object type: {object_type}")
 
-    return point[0], point[1], angle, rotation_direction
+    return point[0], point[1], angle, rotation_direction, object_type

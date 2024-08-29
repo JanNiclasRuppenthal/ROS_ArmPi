@@ -119,7 +119,7 @@ def calculate_position_and_angle():
             '''
 
         # only wait for 5 seconds
-        if time.time() - start_time >= 5000:
+        if time.time() - start_time >= 5:
             close_camera_and_window(my_camera)
 
             if number_of_data_points != 0:

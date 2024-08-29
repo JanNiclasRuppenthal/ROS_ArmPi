@@ -6,19 +6,6 @@ import math
 import numpy as np
 import time
 
-def getAreaMaxContour(contours):
-    contour_area_temp = 0
-    contour_area_max = 0
-    area_max_contour = None
-
-    for c in contours:  
-        contour_area_temp = math.fabs(cv2.contourArea(c)) 
-        if contour_area_temp > contour_area_max:
-            contour_area_max = contour_area_temp
-            if contour_area_temp > 200:  
-                area_max_contour = c
-
-    return area_max_contour, contour_area_max 
 
 def close_camera_and_window(my_camera):
     my_camera.camera_close()
@@ -28,10 +15,9 @@ def calculate_position_and_angle():
     my_camera = Camera.Camera()
     my_camera.camera_open()
 
-    calculated_points = (0, 0)
-    calculated_angles = 0
     number_of_data_points = 0
-    max_number_of_data_points = 20
+    max_number_of_data_points = 33
+    data_list = []
 
     start_time = time.time()
     
@@ -51,11 +37,15 @@ def calculate_position_and_angle():
 
             # Find contours in the edge-detected image
             contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            frame_out = frame.copy()               
-            areaMaxContour, area_max = getAreaMaxContour(contours)
-            if area_max > 500:
-                x, y, w, h = cv2.boundingRect(areaMaxContour)
-                rect = cv2.minAreaRect(areaMaxContour)
+            frame_out = frame.copy()
+
+            for contour in contours:
+                contour_area = math.fabs(cv2.contourArea(contour)) 
+                if contour_area < 400: # contour is too small
+                    continue
+
+                x, y, w, h = cv2.boundingRect(contour)
+                rect = cv2.minAreaRect(contour)
                 box = cv2.boxPoints(rect)
                 box = np.int0(box)
 
@@ -66,6 +56,12 @@ def calculate_position_and_angle():
 
                 # the last two points have the highest y coordinate
                 bottom_points = box[2:] 
+
+                # Determine the rotation direction
+                if bottom_points[0][0] < bottom_points[1][0]:
+                    rotation_direction = 1
+                else:
+                    rotation_direction = -1
 
                 # calculate the middle point between these two bottom points
                 mid_bottom_x = (bottom_points[0][0] + bottom_points[1][0]) // 2
@@ -95,21 +91,19 @@ def calculate_position_and_angle():
                 pos_y = 12 + ((final_y-480) * (16 / -480))
 
                 
-                calculated_points = (calculated_points[0] + pos_x, calculated_points[1] + pos_y)
-                calculated_angles += angle
+                data_list += [(pos_x, pos_y, angle, rotation_direction)]
                 number_of_data_points += 1
                 start_time = time.time()
-                print("Got Position!")
-
-
-            ''' Comment this out, if you want to see the frames
+                print("Got position, angle and rotation direction!")
+         
+            '''
             # Display the resulting frame
-            #cv2.imshow('Frame', frame_out)
+            cv2.imshow('Frame', frame_out)
 
             # Break the loop on 'ESC' key press
-            #key = cv2.waitKey(30)
-            #if key == 27:  # ESC key
-            #    break
+            key = cv2.waitKey(30)
+            if key == 27:  # ESC key
+                break
             '''
 
         # only wait for 5 seconds
@@ -121,15 +115,14 @@ def calculate_position_and_angle():
 
             return -1, -1, -1, -1
 
-    # Determine the rotation direction
-    if bottom_points[0][0] < bottom_points[1][0]:
-        rotation_direction = 1
-    else:
-        rotation_direction = -1
 
+    # Sort the data after their x coordinates
+    sorted_data = sorted(data_list, key=lambda d: d[0])
+    left_data = sorted_data[0]
     
-    point = calculated_points[0] / number_of_data_points, calculated_points[1] / number_of_data_points
-    angle = calculated_angles / number_of_data_points
+    point = left_data[0], left_data[1]
+    angle = left_data[2]
+    rotation_direction = left_data[3]
 
     # Release the camera and close all OpenCV windows
     close_camera_and_window(my_camera)
@@ -137,7 +130,5 @@ def calculate_position_and_angle():
     print(f"Point to grab: {str(point)}")
     print(f"Angle to grab: {str(angle)}")
     print(f"Rotation direction: {rotation_direction}")
-    x = point[0]
-    y = point[1]
 
-    return x, y, angle, rotation_direction
+    return point[0], point[1], angle, rotation_direction

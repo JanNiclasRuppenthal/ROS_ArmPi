@@ -125,7 +125,7 @@ def calculate_position_and_angle():
             if number_of_data_points != 0:
                 break
 
-            return -1, -1, -1, -1
+            return -1, -1, -1, -1, -1
 
 
     # Sort the data after their x coordinates

@@ -142,14 +142,14 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
             obj_publisher.send_msg()
             time.sleep(1)
 
-        if object_type != armpi.get_object_type_other_robot():
+        if object_type.value != armpi.get_object_type_value_other_robot():
             break
 
         #TODO: implement the logic if the two types are the same
 
     armpi.set_object_type_flag(False)
     
-    if object_type.value < armpi.get_object_type_other_robot().value:
+    if object_type.value < armpi.get_object_type_value_other_robot():
         (assemble_x, assemble_y, assemble_z, assemble_angle) = (x, 30, 10, 10)
         go_to_assemble_position(assemble_x, assemble_y, assemble_z, assemble_angle)
         pos_publisher.send_msg(float(assemble_x), float(assemble_y), float(assemble_z), assemble_angle)

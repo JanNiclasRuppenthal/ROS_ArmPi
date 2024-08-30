@@ -8,8 +8,8 @@ AK = ArmIK()
 
 grab_pulse_ID_01 = {
     ObjectType.SMALL : 575,
-    ObjectType.MEDIUM : 525,
-    ObjectType.LARGE : 450
+    ObjectType.MEDIUM : 500,
+    ObjectType.LARGE : 400
 }
 
 grab_pulse_ID_02 = {

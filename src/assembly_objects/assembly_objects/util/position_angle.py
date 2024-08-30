@@ -131,11 +131,13 @@ def calculate_position_and_angle():
     # Sort the data after their x coordinates
     sorted_data = sorted(data_list, key=lambda d: d[0])
     left_data = sorted_data[0]
+
+    print(left_data)
     
     point = left_data[0], left_data[1]
     angle = left_data[2]
     rotation_direction = left_data[3]
-    object_type = get_object_type(min_length)
+    object_type = get_object_type(left_data[4])
 
     # Release the camera and close all OpenCV windows
     close_camera_and_window(my_camera)

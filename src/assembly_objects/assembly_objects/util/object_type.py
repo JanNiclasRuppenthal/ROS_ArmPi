@@ -8,11 +8,11 @@ class ObjectType(Enum):
 
 
 def get_object_type(min_length):
-    if 24 <= min_length <= 53:
+    if 24 <= min_length <= 54:
         return ObjectType.SMALL
-    elif 63 <= min_length <= 92:
+    elif 63 <= min_length <= 93:
         return ObjectType.MEDIUM
-    elif 112 <= min_length <= 141:
+    elif 112 <= min_length <= 142:
         return ObjectType.LARGE
     else:
         return ObjectType.NONE

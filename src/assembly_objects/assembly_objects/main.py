@@ -34,6 +34,7 @@ def end_scenario(executor, x, y, angle, rotation_direction):
     initMove()
     executor.execute_shutdown()
 
+'''
 def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor):
     x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
 
@@ -46,10 +47,6 @@ def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher
     armpi.set_object_type(object_type)
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
     go_to_waiting_position(armpi.get_ID())
-
-    #TODO: send the object type to the other robot
-    obj_publisher.send_msg()
-    #TODO: what happens if both have the same type?
 
     # wait until every other robot has grabbed the object and is ready
     while (not armpi.get_ready_flag()):
@@ -117,6 +114,71 @@ def process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher
 
     # send to the next robot that it can proceed
     done_publisher.send_msg()
+'''
+
+
+def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor):
+    x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
+
+    # found no object in the field
+    if (x == -1 and y == -1):
+        finish_publisher.send_msg()
+        executor.execute_shutdown()
+        return
+
+    armpi.set_object_type(object_type)
+    grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction, object_type)
+    go_to_waiting_position()
+
+    while True:
+        obj_publisher.send_msg()
+
+        while not armpi.get_object_type_flag():
+
+            if armpi.get_finish_flag():
+                end_scenario(executor, x, y, angle, rotation_direction)
+                return
+
+            obj_publisher.send_msg()
+            time.sleep(1)
+
+        if object_type != armpi.get_object_type_other_robot():
+            break
+
+        #TODO: implement the logic if the two types are the same
+
+    armpi.set_object_type_flag(False)
+    
+    if object_type.value < armpi.get_object_type_other_robot().value:
+        (assemble_x, assemble_y, assemble_z, assemble_angle) = (x, 30, 10, 10)
+        go_to_assemble_position(assemble_x, assemble_y, assemble_z, assemble_angle)
+        pos_publisher.send_msg(float(assemble_x), float(assemble_y), float(assemble_z), assemble_angle)
+
+        done_publisher.send_msg()
+
+        while (not armpi.get_done_flag()): # all robots are done
+            time.sleep(0.1)
+
+        armpi.set_done_flag(False)
+        put_down_assembled_object()
+        initMove()
+
+    else:
+        go_to_upper_position()
+        while (not armpi.get_done_flag()):
+            time.sleep(0.1)
+
+        armpi.set_done_flag(False)
+
+        (x, y, z, angle) = armpi.get_position_with_angle()
+
+        # set the z value a little bit higher so there is no contact between these two objects
+        z += 12
+        assemble_objects(x, y, z, angle)
+        move_back(x, z, angle)
+
+        # send to the next robot that it can proceed
+        done_publisher.send_msg()
 
 
 def create_all_nodes(armpi):
@@ -159,10 +221,15 @@ def main():
     thread.start()
 
     while (True):
+        '''
         if ID == 0:
             process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor)
         else:
-            process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher, executor)
+            process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher, executor) 
+        '''
+        
+
+        process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor)
 
         if executor.get_shutdown_status():
             for node in all_nodes_list:

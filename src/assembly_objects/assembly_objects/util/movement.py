@@ -2,8 +2,21 @@ import time
 
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
+from util.object_type import ObjectType
 
 AK = ArmIK()
+
+grab_pulse_ID_01 = {
+    ObjectType.SMALL : 575,
+    ObjectType.MEDIUM : 525,
+    ObjectType.LARGE : 450
+}
+
+grab_pulse_ID_02 = {
+    ObjectType.SMALL : 650,
+    ObjectType.MEDIUM : 575,
+    ObjectType.LARGE : 450
+}
 
 def initMove():
     Board.setBusServoPulse(1, 500 - 50, 300)
@@ -15,7 +28,7 @@ def open_claw():
     Board.setBusServoPulse(1, 200, 500)
     time.sleep(0.5)
 
-def grab_the_object(ID, x, y, angle, rotation_direction):
+def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
     # Go to the position of the object with z = 7
     result = AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
     time.sleep(result[2]/1000) 
@@ -38,12 +51,18 @@ def grab_the_object(ID, x, y, angle, rotation_direction):
     time.sleep(result[2]/1000) 
     print(result)
 
-    grab_pulse = 0 if ID == 0 else 450
+    grab_pulse = 0 
+    
+    if (ID == 0):
+        grab_pulse = grab_pulse_ID_01[object_type]
+    else:
+        grab_pulse = grab_pulse_ID_02[object_type]
+
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
     time.sleep(0.5)
 
-def go_to_waiting_position(ID):
+def go_to_waiting_position():
     # Go up again (waiting-position)
     result = AK.setPitchRangeMoving((0, 12.5, 10), -90, -90, 0)
     time.sleep(result[2]/1000) 

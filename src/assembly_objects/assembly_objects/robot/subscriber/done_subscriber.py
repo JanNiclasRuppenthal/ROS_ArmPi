@@ -12,10 +12,9 @@ class DoneSubscriber(RobotSubscriber):
         if msg.id != self.get_ID():
             self.get_logger().info('I heard a done message from robot with ID: "%s"' % str(msg.id))
             self.get_armpi().get_assemble_queue().pop()
-            self.get_logger().info('here is the new queue: "%s"' % str(self.get_armpi().get_assemble_queue()))
 
             if (self.get_armpi().get_assemble_queue().empty()):
-                self.get_armpi().get_assemble_queue().clear_dict()
+                self.get_armpi().get_assemble_queue().reset()
 
 
 

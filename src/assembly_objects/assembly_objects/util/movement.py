@@ -9,7 +9,7 @@ AK = ArmIK()
 grab_pulse_ID_01 = {
     ObjectType.SMALL : 575,
     ObjectType.MEDIUM : 500,
-    ObjectType.LARGE : 400
+    ObjectType.LARGE : 400 #TODO: Grab large object a little bit higher
 }
 
 grab_pulse_ID_02 = {
@@ -141,7 +141,7 @@ def __put_object_at(x, y, z):
     time.sleep(0.8)
 
     #TODO: open the claw a little bit and move back
-    
+
     open_claw()
 
     AK.setPitchRangeMoving((x, y, 12), 10, 10, -90, 800)

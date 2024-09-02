@@ -19,11 +19,13 @@ class AssemblyQueueSubscriber(RobotSubscriber):
             self.get_armpi().set_number_of_objects_next_robot(msg.number_objects)
             self.get_armpi().get_assemble_queue().add_id_object_type_value(msg.id, msg.type)
 
+        
         for flag in self.__assemble_list:
             if not flag:
                 return
             
         self.get_armpi().set_assemble_queue_flag(True)
+        self.__assemble_list = ([False] * (self.get_armpi().get_number_of_robots()))
 
 
 def create_assembly_queue_subscriber_node(armpi):

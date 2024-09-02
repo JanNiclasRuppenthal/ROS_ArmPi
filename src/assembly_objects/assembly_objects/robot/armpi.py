@@ -51,7 +51,7 @@ class ArmPi():
     def get_object_type(self):
         return self.__object_type
     
-    def set_set_assemble_queue_flag(self, flag):
+    def set_assemble_queue_flag(self, flag):
         self.__assemble_queue_flag = flag
 
     def get_assemble_queue_flag(self):

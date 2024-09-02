@@ -14,6 +14,9 @@ class DoneSubscriber(RobotSubscriber):
             self.get_armpi().get_assemble_queue().pop()
             self.get_logger().info('here is the new queue: "%s"' % str(self.get_armpi().get_assemble_queue()))
 
+            if (self.get_armpi().get_assemble_queue().empty()):
+                self.get_armpi().get_assemble_queue().clear_dict()
+
 
 
 def create_done_subscriber_node(armpi):

@@ -71,7 +71,9 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
         if not armpi.get_assemble_queue().test_duplicates_in_queue():
             break
 
-        # The assemble queue contains duplicates
+        
+
+        '''# The assemble queue contains duplicates
         if armpi.get_number_of_objects() > armpi.get_number_of_objects_next_robot():
             # put the object to the depot
             put_object_to_depot() #TODO: it would be better if the robot puts it down and grabs the next object
@@ -82,7 +84,7 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
                 put_object_to_depot()
                 return
         else:
-            armpi.set_assemble_queue_flag(False)
+            armpi.set_assemble_queue_flag(False)'''
 
 
     armpi.set_assemble_queue_flag(False)

@@ -1,3 +1,5 @@
+from util.object_type import ObjectType
+
 class AssembleQueue():
     def __init__(self):
         self.__queue = []
@@ -6,8 +8,6 @@ class AssembleQueue():
 
     def add_id_object_type_value(self, id, object_type_value):
         self.__id_object_dict[id] = object_type_value
-
-        print(self.__id_object_dict)
 
 
     def calculate_assemble_queue(self):
@@ -21,7 +21,7 @@ class AssembleQueue():
 
     def test_duplicates_in_queue(self):
         set_of_queue = set(self.__queue)
-        return len(self.__queue) == len(set_of_queue)
+        return len(self.__queue) != len(set_of_queue)
     
     def get_queue(self):
         return self.__queue
@@ -33,7 +33,10 @@ class AssembleQueue():
         return self.__queue[0]
     
     def pop(self):
-        self.__qeueu.pop()
+        self.__queue.pop(0)
 
     def empty(self):
         return len(self.__queue) == 0
+    
+    def clear_dict(self):
+        self.__id_object_dict.clear()

@@ -12,7 +12,7 @@ class ObjectFinder():
 
     def __init__(self):
         self.__my_camera = Camera.Camera()
-        self.__point = -1
+        self.__point = (-1, -1)
         self.__angle = -1
         self.__rotation_direction = -1
         self.__object_type = -1

@@ -69,14 +69,15 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
         if object_type.value != armpi.get_object_type_value_next_robot():
             break
 
-        #TODO: implement the logic if the two types are the same
-
-        if number_of_objects > armpi.set_number_of_objects_next_robot():
+        if armpi.get_number_of_objects() > armpi.get_number_of_objects_next_robot():
             # put the object to the depot
-            put_object_to_depot()
-        elif armpi.get_ID() == 1:
-            # put the object to the depot
-            put_object_to_depot()
+            put_object_to_depot() #TODO: it would be better if the robot puts it down and grabs the next object
+            return
+        elif armpi.get_number_of_objects() > armpi.get_number_of_objects_next_robot():
+            if armpi.get_ID() == 1: #TODO: If the robot has a higher ID
+                # put the object to the depot
+                put_object_to_depot()
+                return
         else:
             armpi.set_object_type_flag(False)
 
@@ -155,14 +156,6 @@ def main():
     thread.start()
 
     while (True):
-        '''
-        if ID == 0:
-            process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor)
-        else:
-            process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher, executor) 
-        '''
-        
-
         process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor)
 
         if executor.get_shutdown_status():

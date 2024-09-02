@@ -12,13 +12,13 @@ from robot.publisher.ready_publisher import create_ready_publisher_node
 from robot.publisher.done_publisher import create_done_publisher_node
 from robot.publisher.end_publisher import create_end_publisher_node
 from robot.publisher.position_publisher import create_pos_publisher_node
-from robot.publisher.object_type_publisher import create_object_type_publisher_node
+from robot.publisher.assembly_queue_publisher import create_assembly_queue_publisher_node
 from robot.subscriber.ready_subscriber import create_ready_subscriber_node
 from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.end_subscriber import create_end_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
-from robot.subscriber.object_type_subscriber import create_object_type_subscriber_node
-from util.position_angle import calculate_position_and_angle
+from robot.subscriber.assembly_queue_subscriber import create_assembly_queue_subscriber_node
+from util.object_finder import ObjectFinder
 from util.executor_subscriptions import MultiExecutor
 from util.movement import *
 
@@ -34,9 +34,14 @@ def end_scenario(executor, x, y, angle, rotation_direction):
     initMove()
     executor.execute_shutdown()
 
-'''
-def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor):
-    x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
+def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor):
+    obj_finder = ObjectFinder()
+    obj_finder.calculate_object_parameters()
+    x, y = obj_finder.get_position()
+    angle = obj_finder.get_angle()
+    rotation_direction = obj_finder.get_rotation_direction()
+    object_type = obj_finder.get_object_type()
+    number_of_objects = obj_finder.get_number_of_objects()
 
     # found no object in the field
     if (x == -1 and y == -1):
@@ -45,93 +50,12 @@ def process_first_robot(armpi, ready_publisher, done_publisher, finish_publisher
         return
 
     armpi.set_object_type(object_type)
-    grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
-    go_to_waiting_position(armpi.get_ID())
-
-    # wait until every other robot has grabbed the object and is ready
-    while (not armpi.get_ready_flag()):
-
-        # end scenario if one robot could not find an object in its view
-        if armpi.get_finish_flag():
-            end_scenario(executor, x, y, angle, rotation_direction)
-            return
-
-        time.sleep(0.1)
-
-    ready_publisher.send_msg()
-    armpi.set_ready_flag(False)
-
-    (assemble_x, assemble_y, assemble_z, assemble_angle) = (x, 30, 10, 10)
-    go_to_assemble_position(assemble_x, assemble_y, assemble_z, assemble_angle)
-    pos_publisher.send_msg(float(assemble_x), float(assemble_y), float(assemble_z), assemble_angle)
-    done_publisher.send_msg()
-
-    while (not armpi.get_done_flag()): # all robots are done
-        time.sleep(0.1)
-
-    armpi.set_done_flag(False)
-    put_down_assembled_object()
-    initMove()
-
-
-def process_other_robot(armpi, ready_publisher, done_publisher, finish_publisher, executor):
-    x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
-
-    # found no object in the field
-    if (x == -1 and y == -1):
-        finish_publisher.send_msg()
-        executor.execute_shutdown()
-        return
-
-    grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction)
-    go_to_waiting_position(armpi.get_ID())
-
-    # signal to the first robot that this robot is ready
-    # and wait until the first robot is ready
-    ready_publisher.send_msg()
-    while (not armpi.get_ready_flag()):
-
-        if armpi.get_finish_flag():
-            end_scenario(executor, x, y, angle, rotation_direction)
-            return
-
-        ready_publisher.send_msg()
-        time.sleep(1)
-    
-    armpi.set_ready_flag(False)
-
-    while (not armpi.get_done_flag()):
-        time.sleep(0.1)
-
-    armpi.set_done_flag(False)
-
-    (x, y, z, angle) = armpi.get_position_with_angle()
-
-    # set the z value a little bit higher so there is no contact between these two objects
-    z += 12
-    assemble_objects(x, y, z, angle)
-    move_back(x, z, angle)
-
-    # send to the next robot that it can proceed
-    done_publisher.send_msg()
-'''
-
-
-def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor):
-    x, y, angle, rotation_direction, object_type = calculate_position_and_angle()
-
-    # found no object in the field
-    if (x == -1 and y == -1):
-        finish_publisher.send_msg()
-        executor.execute_shutdown()
-        return
-
-    armpi.set_object_type(object_type)
+    armpi.set_number_of_objects(number_of_objects - 1) # - 1 beacause we grab one object
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction, object_type)
     go_to_waiting_position()
 
     while True:
-        obj_publisher.send_msg()
+        assemble_publisher.send_msg()
 
         while not armpi.get_object_type_flag():
 
@@ -139,17 +63,27 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
                 end_scenario(executor, x, y, angle, rotation_direction)
                 return
 
-            obj_publisher.send_msg()
+            assemble_publisher.send_msg()
             time.sleep(1)
 
-        if object_type.value != armpi.get_object_type_value_other_robot():
+        if object_type.value != armpi.get_object_type_value_next_robot():
             break
 
         #TODO: implement the logic if the two types are the same
 
+        if number_of_objects > armpi.set_number_of_objects_next_robot():
+            # put the object to the depot
+            put_object_to_depot()
+        elif armpi.get_ID() == 1:
+            # put the object to the depot
+            put_object_to_depot()
+        else:
+            armpi.set_object_type_flag(False)
+
+
     armpi.set_object_type_flag(False)
     
-    if object_type.value < armpi.get_object_type_value_other_robot():
+    if object_type.value < armpi.get_object_type_value_next_robot():
         (assemble_x, assemble_y, assemble_z, assemble_angle) = (x, 30, 10, 10)
         go_to_assemble_position(assemble_x, assemble_y, assemble_z, assemble_angle)
         pos_publisher.send_msg(float(assemble_x), float(assemble_y), float(assemble_z), assemble_angle)
@@ -186,15 +120,15 @@ def create_all_nodes(armpi):
     done_publisher = create_done_publisher_node(armpi)
     end_publisher = create_end_publisher_node(armpi)
     pos_publisher = create_pos_publisher_node(armpi)
-    object_type_publisher = create_object_type_publisher_node(armpi)
+    assembly_queue_publisher = create_assembly_queue_publisher_node(armpi)
     ready_subscriber = create_ready_subscriber_node(armpi)
     done_subscriber = create_done_subscriber_node(armpi)
     end_subscriber = create_end_subscriber_node(armpi)
     pos_subscriber = create_pos_subscriber_node(armpi)
-    object_type_subscriber = create_object_type_subscriber_node(armpi)
+    assembly_queue_subscriber = create_assembly_queue_subscriber_node(armpi)
 
-    publisher_nodes = [ready_publisher, done_publisher , end_publisher, pos_publisher, object_type_publisher]
-    subscriber_nodes = [ready_subscriber, done_subscriber, end_subscriber, pos_subscriber, object_type_subscriber]
+    publisher_nodes = [ready_publisher, done_publisher , end_publisher, pos_publisher, assembly_queue_publisher]
+    subscriber_nodes = [ready_subscriber, done_subscriber, end_subscriber, pos_subscriber, assembly_queue_subscriber]
     all_nodes = publisher_nodes + subscriber_nodes
 
     return publisher_nodes, subscriber_nodes, all_nodes
@@ -212,7 +146,7 @@ def main():
     done_publisher = publisher_nodes_list[1]
     finish_publisher = publisher_nodes_list[2]
     pos_publisher = publisher_nodes_list[3]
-    obj_publisher = publisher_nodes_list[4]
+    assemble_publisher = publisher_nodes_list[4]
 
     executor = MultiExecutor(subscriber_nodes_list)
 
@@ -229,7 +163,7 @@ def main():
         '''
         
 
-        process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, obj_publisher, executor)
+        process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor)
 
         if executor.get_shutdown_status():
             for node in all_nodes_list:

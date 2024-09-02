@@ -1,6 +1,6 @@
+msg/AssemblyQueue.idl
+msg/AssemblyQueue.msg
 msg/IDArmPi.idl
 msg/IDArmPi.msg
-msg/ObjectType.idl
-msg/ObjectType.msg
 msg/PositionWithAngle.idl
 msg/PositionWithAngle.msg

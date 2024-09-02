@@ -7,8 +7,10 @@ class ArmPi():
         self.__finish_flag = False
         self.__position_with_angle = None
         self.__object_type = None
-        self.__object_type_value_other_robot = None
+        self.__object_type_value_next_robot = None
         self.__object_type_flag = False
+        self.__number_of_objects = -1
+        self.__number_of_objects_next_robot = -1
 
     def get_ID(self):
         return self.__ID
@@ -52,11 +54,23 @@ class ArmPi():
     def get_object_type_flag(self):
         return self.__object_type_flag
     
-    def get_object_type_value_other_robot(self):
-        return self.__object_type_value_other_robot
+    def get_object_type_value_next_robot(self):
+        return self.__object_type_value_next_robot
     
-    def set_object_type_value_other_robot(self, obj_type):
-        self.__object_type_value_other_robot = obj_type
+    def set_object_type_value_next_robot(self, obj_type):
+        self.__object_type_value_next_robot = obj_type
+
+    def get_number_of_objects(self):
+        return self.__number_of_objects
+    
+    def set_number_of_objects(self, number):
+        self.__number_of_objects = number
+
+    def get_number_of_objects_next_robot(self):
+        return self.__number_of_objects_next_robot
+    
+    def set_number_of_objects_next_robot(self, number):
+        self.__number_of_objects_next_robot = number
     
 
     

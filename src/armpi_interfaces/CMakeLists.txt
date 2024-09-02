@@ -13,8 +13,8 @@ find_package(rosidl_default_generators REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/AssemblyQueue.msg"
   "msg/IDArmPi.msg"
-  "msg/ObjectType.msg"
   "msg/PositionWithAngle.msg"
 )
 

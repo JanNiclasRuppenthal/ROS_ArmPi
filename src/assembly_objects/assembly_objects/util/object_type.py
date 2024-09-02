@@ -7,7 +7,7 @@ class ObjectType(Enum):
     NONE = -1
 
 
-def get_object_type(min_length):
+def calculate_object_type(min_length):
     if 24 <= min_length <= 54:
         return ObjectType.SMALL
     elif 63 <= min_length <= 93:

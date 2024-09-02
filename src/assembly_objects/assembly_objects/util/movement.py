@@ -149,3 +149,21 @@ def put_down_assembled_object():
 
     AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90, 800)
     time.sleep(0.8)
+
+def put_object_to_depot():
+    # The goal position is the green field left to the robot
+    goal_coord_x, goal_coord_y, goal_coord_z = (15 + 0.5, 6 - 0.5,  1.5)
+
+    result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90) # ArmPi goes to the goal coordinates with z = 12
+    time.sleep(result[2]/1000)
+
+    AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, goal_coord_z + 3), 10, 10, -90, 500) # ArmPi goes down to z = goal_coord_z + 3
+    time.sleep(0.5)
+    
+    AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, goal_coord_z), 10, 10, -90, 1000) # ArmPi is at the next coordinates
+    time.sleep(0.8)
+
+    open_claw()
+
+    AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), 10, 10, -90, 800)
+    time.sleep(0.8)

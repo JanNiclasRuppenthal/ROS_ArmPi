@@ -1,0 +1,16 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from armpi_interfaces/msg/AssemblyQueue.msg
+// generated code does not contain a copyright notice
+
+
+module armpi_interfaces {
+  module msg {
+    struct AssemblyQueue {
+      int64 id;
+
+      int64 type;
+
+      int64 number_objects;
+    };
+  };
+};

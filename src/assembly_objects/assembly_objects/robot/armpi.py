@@ -1,3 +1,5 @@
+from util.assemble_queue import AssembleQueue
+
 class ArmPi():
     def __init__(self, ID, number_of_robots):
         self.__ID = ID
@@ -8,9 +10,10 @@ class ArmPi():
         self.__position_with_angle = None
         self.__object_type = None
         self.__object_type_value_next_robot = None
-        self.__object_type_flag = False
+        self.__assemble_queue_flag = False
         self.__number_of_objects = -1
         self.__number_of_objects_next_robot = -1
+        self.__assemble_queue = AssembleQueue()
 
     def get_ID(self):
         return self.__ID
@@ -48,11 +51,11 @@ class ArmPi():
     def get_object_type(self):
         return self.__object_type
     
-    def set_object_type_flag(self, flag):
-        self.__object_type_flag = flag
+    def set_set_assemble_queue_flag(self, flag):
+        self.__assemble_queue_flag = flag
 
-    def get_object_type_flag(self):
-        return self.__object_type_flag
+    def get_assemble_queue_flag(self):
+        return self.__assemble_queue_flag
     
     def get_object_type_value_next_robot(self):
         return self.__object_type_value_next_robot
@@ -71,6 +74,9 @@ class ArmPi():
     
     def set_number_of_objects_next_robot(self, number):
         self.__number_of_objects_next_robot = number
+
+    def get_assemble_queue(self):
+        return self.__assemble_queue
     
 
     

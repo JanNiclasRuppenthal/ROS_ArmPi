@@ -48,16 +48,17 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
         finish_publisher.send_msg()
         executor.execute_shutdown()
         return
-
+    
+    armpi.get_assemble_queue().add_id_object_type_value(armpi.get_ID(), object_type.value)
     armpi.set_object_type(object_type)
-    armpi.set_number_of_objects(number_of_objects - 1) # - 1 beacause we grab one object
+    armpi.set_number_of_objects(number_of_objects - 1) # decrement the number because we grabbed one object already
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction, object_type)
     go_to_waiting_position()
 
     while True:
         assemble_publisher.send_msg()
 
-        while not armpi.get_object_type_flag():
+        while not armpi.get_assemble_queue_flag():
 
             if armpi.get_finish_flag():
                 end_scenario(executor, x, y, angle, rotation_direction)
@@ -66,9 +67,11 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
             assemble_publisher.send_msg()
             time.sleep(1)
 
-        if object_type.value != armpi.get_object_type_value_next_robot():
+        armpi.get_assemble_queue().calculate_assemble_queue()
+        if not armpi.get_assemble_queue().test_duplicates_in_queue():
             break
 
+        # The assemble queue contains duplicates
         if armpi.get_number_of_objects() > armpi.get_number_of_objects_next_robot():
             # put the object to the depot
             put_object_to_depot() #TODO: it would be better if the robot puts it down and grabs the next object
@@ -79,28 +82,27 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
                 put_object_to_depot()
                 return
         else:
-            armpi.set_object_type_flag(False)
+            armpi.set_assemble_queue_flag(False)
 
 
-    armpi.set_object_type_flag(False)
+    armpi.set_assemble_queue_flag(False)
     
-    if object_type.value < armpi.get_object_type_value_next_robot():
+    if armpi.get_ID() == armpi.get_assemble_queue().first():
         (assemble_x, assemble_y, assemble_z, assemble_angle) = (x, 30, 10, 10)
         go_to_assemble_position(assemble_x, assemble_y, assemble_z, assemble_angle)
         pos_publisher.send_msg(float(assemble_x), float(assemble_y), float(assemble_z), assemble_angle)
 
         done_publisher.send_msg()
 
-        while (not armpi.get_done_flag()): # all robots are done
+        while (not armpi.get_assemble_queue().empty()): # all robots are done
             time.sleep(0.1)
 
-        armpi.set_done_flag(False)
         put_down_assembled_object()
         initMove()
 
     else:
         go_to_upper_position()
-        while (not armpi.get_done_flag()):
+        while (not armpi.get_ID() == armpi.get_assemble_queue().first()):
             time.sleep(0.1)
 
         armpi.set_done_flag(False)

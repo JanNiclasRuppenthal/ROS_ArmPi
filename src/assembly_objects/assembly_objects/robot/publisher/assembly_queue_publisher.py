@@ -9,8 +9,8 @@ class AssemblyQueuePublisher(RobotPublisher):
     def create_msg(self):
         msg = AssemblyQueue()
         msg.id = self.get_ID()
-        msg.type = self.get_Armpi().get_object_type().value
-        msg.number_objects = self.get_Armpi().get_number_of_objects()
+        msg.type = self.get_armpi().get_object_type().value
+        msg.number_objects = self.get_armpi().get_number_of_objects()
         return msg
     
     def send_msg(self):

@@ -10,6 +10,6 @@ class RobotPublisher(Node):
     def get_ID(self):
         return self.__ID
     
-    def get_Armpi(self):
+    def get_armpi(self):
         return self.__armpi
     

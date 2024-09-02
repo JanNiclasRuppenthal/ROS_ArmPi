@@ -14,6 +14,7 @@ class DonePublisher(RobotPublisher):
     def send_msg(self):
         message = self.create_msg()
         self.__publisher.publish(message)
+        self.get_armpi().get_assemble_queue().pop()
         self.get_logger().info('Send done message from ID %d' % (message.id))
 
 

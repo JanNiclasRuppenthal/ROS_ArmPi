@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'assembly_objects'
+package_name = 'assemble_objects'
 
 setup(
     name=package_name,

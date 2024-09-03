@@ -52,7 +52,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
         return
     
     armpi.set_object_type(object_type)
-    armpi.set_number_of_objects(number_of_objects - 1) # decrement the number because we grabbed one object already
+    armpi.set_number_of_objects(number_of_objects - 1 - object_id) # decrement the number because we grabbed one object already
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction, object_type)
     go_to_waiting_position()
 

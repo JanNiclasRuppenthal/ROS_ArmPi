@@ -12,12 +12,12 @@ from robot.publisher.ready_publisher import create_ready_publisher_node
 from robot.publisher.done_publisher import create_done_publisher_node
 from robot.publisher.end_publisher import create_end_publisher_node
 from robot.publisher.position_publisher import create_pos_publisher_node
-from robot.publisher.assembly_queue_publisher import create_assembly_queue_publisher_node
+from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
 from robot.subscriber.ready_subscriber import create_ready_subscriber_node
 from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.end_subscriber import create_end_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
-from robot.subscriber.assembly_queue_subscriber import create_assembly_queue_subscriber_node
+from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
 from util.object_finder import ObjectFinder
 from util.executor_subscriptions import MultiExecutor
 from util.movement import *
@@ -139,12 +139,12 @@ def create_all_nodes(armpi):
     done_publisher = create_done_publisher_node(armpi)
     end_publisher = create_end_publisher_node(armpi)
     pos_publisher = create_pos_publisher_node(armpi)
-    assembly_queue_publisher = create_assembly_queue_publisher_node(armpi)
+    assembly_queue_publisher = create_assemble_queue_publisher_node(armpi)
     ready_subscriber = create_ready_subscriber_node(armpi)
     done_subscriber = create_done_subscriber_node(armpi)
     end_subscriber = create_end_subscriber_node(armpi)
     pos_subscriber = create_pos_subscriber_node(armpi)
-    assembly_queue_subscriber = create_assembly_queue_subscriber_node(armpi)
+    assembly_queue_subscriber = create_assemble_queue_subscriber_node(armpi)
 
     publisher_nodes = [ready_publisher, done_publisher , end_publisher, pos_publisher, assembly_queue_publisher]
     subscriber_nodes = [ready_subscriber, done_subscriber, end_subscriber, pos_subscriber, assembly_queue_subscriber]

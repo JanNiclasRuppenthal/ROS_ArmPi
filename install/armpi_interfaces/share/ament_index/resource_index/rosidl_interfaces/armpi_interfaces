@@ -1,5 +1,5 @@
-msg/AssemblyQueue.idl
-msg/AssemblyQueue.msg
+msg/AssembleQueue.idl
+msg/AssembleQueue.msg
 msg/IDArmPi.idl
 msg/IDArmPi.msg
 msg/PositionWithAngle.idl

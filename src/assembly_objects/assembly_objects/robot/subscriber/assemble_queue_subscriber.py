@@ -1,12 +1,11 @@
 from robot.subscriber.Asubscribe import RobotSubscriber
-from armpi_interfaces.msg import AssemblyQueue
+from armpi_interfaces.msg import AssembleQueue
 
-class AssemblyQueueSubscriber(RobotSubscriber):
+class AssembleQueueSubscriber(RobotSubscriber):
     def __init__(self, armpi):
-        super().__init__('assembly_queue_subscriber', armpi)
-        self.__subscription = self.create_subscription(AssemblyQueue, 'assembly_queue', self.callback,10)
+        super().__init__('assembl_queue_subscriber', armpi)
+        self.__subscription = self.create_subscription(AssembleQueue, 'assemble_queue', self.callback,10)
         self.__subscription  # prevent unused variable warning
-        self.__assemble_list = ([False] * (armpi.get_number_of_robots()))
 
     def callback(self, msg):
         # if it is not the same ID and it does not received a assemble queue message before
@@ -16,6 +15,6 @@ class AssemblyQueueSubscriber(RobotSubscriber):
         self.get_armpi().get_assemble_queue().add_assemble_request(msg.id, msg.type, msg.number_objects)
 
 
-def create_assembly_queue_subscriber_node(armpi):
-    __subscriber = AssemblyQueueSubscriber(armpi)
+def create_assemble_queue_subscriber_node(armpi):
+    __subscriber = AssembleQueueSubscriber(armpi)
     return __subscriber

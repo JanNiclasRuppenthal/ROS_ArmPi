@@ -151,9 +151,3 @@ def put_down_assembled_object():
     # The goal position is the green field left to the robot
     goal_coord_x, goal_coord_y, goal_coord_z = (-15 + 0.5, 6 - 0.5,  1.5)
     __put_object_at(goal_coord_x, goal_coord_y, goal_coord_z)
-    
-
-def put_object_to_depot():
-    goal_coord_x, goal_coord_y, goal_coord_z = (15 + 0.5, 6 - 0.5,  1.5)
-    __put_object_at(goal_coord_x, goal_coord_y, goal_coord_z)
-    initMove()

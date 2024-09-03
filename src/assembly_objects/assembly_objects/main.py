@@ -23,6 +23,7 @@ from util.executor_subscriptions import MultiExecutor
 from util.movement import *
 
 rclpy.init()
+object_id = 0
 
 def read_all_arguments():
     ID = int(sys.argv[1])
@@ -34,13 +35,14 @@ def end_scenario(executor, x, y, angle, rotation_direction):
     initMove()
     executor.execute_shutdown()
 
-def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor):
+def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor):
+    global object_id
     obj_finder = ObjectFinder()
     obj_finder.calculate_object_parameters()
-    x, y = obj_finder.get_position()
-    angle = obj_finder.get_angle()
-    rotation_direction = obj_finder.get_rotation_direction()
-    object_type = obj_finder.get_object_type()
+    x, y = obj_finder.get_position_of_ith_object(object_id)
+    angle = obj_finder.get_angle_of_ith_object(object_id)
+    rotation_direction = obj_finder.get_rotation_direction_of_ith_object(object_id)
+    object_type = obj_finder.get_object_type_of_ith_object(object_id)
     number_of_objects = obj_finder.get_number_of_objects()
 
     # found no object in the field
@@ -49,7 +51,6 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
         executor.execute_shutdown()
         return
     
-    #armpi.get_assemble_queue().add_assemble_request(armpi.get_ID(), object_type.value, number_of_objects - 1)
     armpi.set_object_type(object_type)
     armpi.set_number_of_objects(number_of_objects - 1) # decrement the number because we grabbed one object already
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction, object_type)
@@ -85,20 +86,17 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
             Skip the first robot because is has the lowest number of objects in its view 
             and the lowest ID
             '''
-            print("duplicates: " + str(dict_duplicates[obj_type.value]))
             dict_duplicates[obj_type.value].pop(0)
-
-            print("duplicates: " + str(dict_duplicates[obj_type.value]))
 
             for id in [id for (id, num_obj) in dict_duplicates[obj_type.value]]:
                 if id == armpi.get_ID():
                     put_down_object = True
-                
-                #armpi.get_assemble_queue().remove_ID_from_queue(id)
 
         armpi.get_assemble_queue().reset()
         if put_down_object:
-            put_object_to_depot() #TODO: it would be better if the robot puts it down and grabs the next object
+            put_down_grabbed_object(x, y, angle, rotation_direction)
+            initMove()
+            object_id += 1
             return
 
     
@@ -133,6 +131,7 @@ def process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, p
         done_publisher.send_msg()
 
     armpi.get_assemble_queue().reset()
+    object_id = 0
 
 
 def create_all_nodes(armpi):
@@ -175,7 +174,7 @@ def main():
     thread.start()
 
     while (True):
-        process_scenario(armpi, ready_publisher, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor)
+        process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor)
 
         if executor.get_shutdown_status():
             for node in all_nodes_list:

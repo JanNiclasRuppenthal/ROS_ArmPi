@@ -14,7 +14,6 @@ class AssembleQueue():
 
     def add_assemble_request(self, id, object_type_value, number_objects):
         self.__assemble_dict[id] = (object_type_value, number_objects)
-        print(self.__assemble_dict)
 
 
     def calculate_assemble_queue(self):
@@ -32,7 +31,6 @@ class AssembleQueue():
         self.__queue = [entry[0] for entry in entrys]
 
     def test_duplicates_in_queue(self):
-        print("set: " + str(self.__set_obj_type))
         return len(self.__queue) != len(self.__set_obj_type)
     
     def get_dict_with_duplicates(self):
@@ -73,9 +71,3 @@ class AssembleQueue():
     
     def count(self):
         return len(self.__assemble_dict)
-    
-    def clear_dict(self):
-        self.__assemble_dict.clear()
-
-    def clear_set(self):
-        self.__set_obj_type.clear()

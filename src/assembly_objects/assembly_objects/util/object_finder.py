@@ -12,11 +12,8 @@ class ObjectFinder():
 
     def __init__(self):
         self.__my_camera = Camera.Camera()
-        self.__point = (-1, -1)
-        self.__angle = -1
-        self.__rotation_direction = -1
-        self.__object_type = -1
-        self.__number_of_objects = -1
+        self.__sorted_data = []
+        self.__object_to_parameter = {}
 
 
     def __close_camera_and_window(self):
@@ -29,10 +26,11 @@ class ObjectFinder():
         y_pow = math.pow(point_b[1] - point_a[1], 2)
         return math.sqrt(x_pow + y_pow)
 
-    def __count_objects(self, data):
+    def __collect_data_to_dictionary(self):
         count = 0
         position_of_objects = []
-        for (x, y) in [(d[0], d[1]) for d in data]:
+        for data in self.__sorted_data:
+            (x, y)  = (data[0], data[1])
             found_new_object = True
             for (prev_x, prev_y) in position_of_objects:
                 if abs(x - prev_x) <= 0.5 and abs(y - prev_y) <= 0.5:
@@ -41,12 +39,14 @@ class ObjectFinder():
 
             
             if found_new_object:
+                self.__object_to_parameter[count] = []
                 count += 1
 
             position_of_objects.append((x, y))
+            self.__object_to_parameter[count - 1].append(data)
 
-        return count
-
+        # Setup one default tuple
+        self.__object_to_parameter[count] = [(-1, -1, -1, -1, -1)]
 
     def calculate_object_parameters(self):
         self.__my_camera.camera_open()
@@ -149,43 +149,59 @@ class ObjectFinder():
             if time.time() - start_time >= 5:
                 self.__close_camera_and_window()
 
-                if number_of_data_points != 0:
-                    break
-
-                return
+                break
 
 
         # Sort the data after their x coordinates
-        sorted_data = sorted(data_list, key=lambda d: d[0])
-        left_data = sorted_data[0]
-        
-        self.__point = left_data[0], left_data[1]
-        self.__angle = left_data[2]
-        self.__rotation_direction = left_data[3]
-        self.__object_type = calculate_object_type(left_data[4])
-        self.__number_of_objects = self.__count_objects(sorted_data)
+        self.__sorted_data = sorted(data_list, key=lambda d: d[0])
+        self.__collect_data_to_dictionary()
 
         # Release the camera and close all OpenCV windows
         self.__close_camera_and_window()
 
-        print(f"Point to grab: {str(self.__point)}")
-        print(f"Angle to grab: {str(self.__angle)}")
-        print(f"Rotation direction: {self.__rotation_direction}")
-        print(f"Object type: {self.__object_type}")
-        print(f"Get number of found objects: {self.__number_of_objects}")
 
+    def get_position_of_ith_object(self, i):
+        points = [(data[0], data[1]) for data in self.__object_to_parameter[i]]
 
-    def get_position(self):
-        return self.__point[0], self.__point[1]
+        mean_x = sum([x for (x, y) in points]) / len(points)
+        mean_y = sum([y for (x, y) in points]) / len(points)
+
+        print(f"Point to grab: (x = %0.2f, y = %0.2f)" % (mean_x, mean_y))
+
+        return mean_x, mean_y
     
-    def get_angle(self):
-        return self.__angle
+    def get_angle_of_ith_object(self, i):
+        angles = [(data[2]) for data in self.__object_to_parameter[i]]
+
+        mean_angle = sum(angles) / len(angles)
+
+        print(f"Angle to grab: alpha = %0.2f" % mean_angle)
+
+        return mean_angle
     
-    def get_rotation_direction(self):
-        return self.__rotation_direction
+    def get_rotation_direction_of_ith_object(self, i):
+        # The value should be for one object consistent.
+        # Therefore we do not need to calculate the mean of the roation direction
+        # So we can just use the first value in the list
+
+        rotation_direction = self.__object_to_parameter[i][0][3]
+
+        print(f"Rotation direction: %d" % rotation_direction)
+
+        return rotation_direction
     
-    def get_object_type(self):
-        return self.__object_type
+    def get_object_type_of_ith_object(self, i):
+        lengths = [(data[4]) for data in self.__object_to_parameter[i]]
+
+        mean_length = sum(lengths) / len(lengths)
+        object_type = calculate_object_type(mean_length)
+
+        print(f"Angle to grab: alpha = %s" % object_type)
+
+        return object_type
     
     def get_number_of_objects(self):
-        return self.__number_of_objects
+        # Decrement the length because we have always one default entry [(-1, -1, -1, -1, -1)] 
+
+        number_of_objects = len(self.__object_to_parameter) - 1
+        return number_of_objects

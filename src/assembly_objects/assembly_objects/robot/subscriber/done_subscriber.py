@@ -13,9 +13,6 @@ class DoneSubscriber(RobotSubscriber):
             self.get_logger().info('I heard a done message from robot with ID: "%s"' % str(msg.id))
             self.get_armpi().get_assemble_queue().pop()
 
-            if (self.get_armpi().get_assemble_queue().empty()):
-                self.get_armpi().get_assemble_queue().reset()
-
 
 
 def create_done_subscriber_node(armpi):

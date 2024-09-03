@@ -30,8 +30,8 @@ def read_all_arguments():
     number_of_robots = int(sys.argv[2])
     return ID, number_of_robots
 
-def end_scenario(executor, x, y, angle, rotation_direction):
-    put_down_grabbed_object(x, y, angle, rotation_direction)
+def end_scenario(executor, x, y, angle, rotation_direction, object_type):
+    put_down_grabbed_object(x, y, angle, rotation_direction, object_type)
     initMove()
     executor.execute_shutdown()
 
@@ -62,7 +62,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
         while armpi.get_assemble_queue().count() != armpi.get_number_of_robots():
 
             if armpi.get_finish_flag():
-                end_scenario(executor, x, y, angle, rotation_direction)
+                end_scenario(executor, x, y, angle, rotation_direction, object_type)
                 return
 
             assemble_publisher.send_msg()
@@ -70,7 +70,6 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
 
         armpi.get_assemble_queue().calculate_assemble_queue()
         if not armpi.get_assemble_queue().test_duplicates_in_queue():
-            print("No duplicates!")
             break
 
 
@@ -94,7 +93,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
 
         armpi.get_assemble_queue().reset()
         if put_down_object:
-            put_down_grabbed_object(x, y, angle, rotation_direction)
+            put_down_grabbed_object(x, y, angle, rotation_direction, object_type)
             initMove()
             object_id += 1
             return

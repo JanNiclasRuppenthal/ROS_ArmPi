@@ -6,14 +6,14 @@ from util.object_type import ObjectType
 
 AK = ArmIK()
 
-grab_pulse_ID_01 = {
-    ObjectType.SMALL : 575,
+grab_pulse_ID_0 = {
+    ObjectType.SMALL : 600,
     ObjectType.MEDIUM : 500,
-    ObjectType.LARGE : 400 #TODO: Grab large object a little bit higher
+    ObjectType.LARGE : 400
 }
 
-grab_pulse_ID_02 = {
-    ObjectType.SMALL : 650,
+grab_pulse_ID_1 = {
+    ObjectType.SMALL : 660,
     ObjectType.MEDIUM : 575,
     ObjectType.LARGE : 450
 }
@@ -46,17 +46,23 @@ def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
     Board.setBusServoPulse(2, servo2_angle_pulse, 500)
     time.sleep(0.8)
 
-    # Go to the position of the object with z = 1
-    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0, 600)
+    # Go to the position of the object
+    z = 0
+    if object_type == ObjectType.SMALL:
+        z = 1.2
+    else:
+        z = 1.5
+    
+    result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 
     grab_pulse = 0 
     
     if (ID == 0):
-        grab_pulse = grab_pulse_ID_01[object_type]
+        grab_pulse = grab_pulse_ID_0[object_type]
     else:
-        grab_pulse = grab_pulse_ID_02[object_type]
+        grab_pulse = grab_pulse_ID_1[object_type]
 
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
@@ -107,7 +113,7 @@ def move_back(x, z, angle):
     # go to the init position again
     initMove()
 
-def put_down_grabbed_object(x, y, angle, rotation_direction):
+def put_down_grabbed_object(x, y, angle, rotation_direction, object_type):
     # Go to the position of the object with z = 7
     result = AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
     time.sleep(result[2]/1000) 
@@ -119,12 +125,16 @@ def put_down_grabbed_object(x, y, angle, rotation_direction):
     # if it the object is right rotated the add the pulse to 500
     # else subtract the difference from 500
     servo2_angle_pulse = 500 + (rotation_direction * servo2_angle_diff)
-    print(servo2_angle_pulse)
     Board.setBusServoPulse(2, servo2_angle_pulse, 500)
     time.sleep(0.8)
 
-    # Go to the position of the object with z = 1
-    result = AK.setPitchRangeMoving((x, y, 1), -90, -90, 0, 600)
+    # Go to the position of the object
+    z = 0
+    if object_type == ObjectType.SMALL:
+        z = 1.2
+    else:
+        z = 1.5
+    result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 
@@ -139,8 +149,6 @@ def __put_object_at(x, y, z):
     
     AK.setPitchRangeMoving((x, y, z), 10, 10, -90, 1000) # ArmPi is at the next coordinates
     time.sleep(0.8)
-
-    #TODO: open the claw a little bit and move back
 
     open_claw()
 

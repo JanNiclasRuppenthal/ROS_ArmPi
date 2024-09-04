@@ -86,22 +86,21 @@ class ObjectFinder():
                     box = np.int0(box)
 
                     cv2.drawContours(frame_out, [box], 0, (0, 255, 0), 2)
-
                     length01 = self.__calculate_distance(box[0], box[1])
                     length02 = self.__calculate_distance(box[1], box[2])
-                    min_length = min(length01, length02)
+                    min_length = length01
+                    rotation_direction = -1
+                    if (min_length > length02):
+                        min_length = length02
+                        rotation_direction = 1
+
+                    print(min_length)
 
                     # sort the points of the box with their y coordinate
                     box = sorted(box, key=lambda p: p[1])
 
                     # the last two points have the highest y coordinate
                     bottom_points = box[2:] 
-
-                    # Determine the rotation direction
-                    if bottom_points[0][0] < bottom_points[1][0]:
-                        rotation_direction = 1
-                    else:
-                        rotation_direction = -1
 
                     # calculate the middle point between these two bottom points
                     mid_bottom_x = (bottom_points[0][0] + bottom_points[1][0]) // 2
@@ -126,10 +125,20 @@ class ObjectFinder():
 
                     angle = rect[2]
 
+                    # calculate the angle based on the rotation direction of the object
+                    if rotation_direction == 1:
+                        # If the object is right-rotated, then we need to subtract 90 from the angle
+                        # because the angle from cv2.minAreaRect is between the contour and the y-axis
+                        angle = angle
+                    else:
+                        # If the object is left-rotated, then we need to subtract 90 from the angle
+                        # because the angle from cv2.minAreaRect is between the contour and the x-axis
+                        angle = 90 - angle
+
+
                     # Calculate position in real-world coordinates (linear interpolation)
                     pos_x = -(23/2) + (final_x * (23 / 720))
                     pos_y = 12 + ((final_y-480) * (16 / -480))
-
                     
                     data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
                     number_of_data_points += 1
@@ -204,4 +213,7 @@ class ObjectFinder():
         # Decrement the length because we have always one default entry [(-1, -1, -1, -1, -1)] 
 
         number_of_objects = len(self.__object_to_parameter) - 1
+
+        print(f"Number of objects c = %d" % number_of_objects)
+        
         return number_of_objects

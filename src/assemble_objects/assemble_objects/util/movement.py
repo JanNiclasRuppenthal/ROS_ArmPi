@@ -3,6 +3,7 @@ import time
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from util.object_type import ObjectType
+import math
 
 AK = ArmIK()
 
@@ -25,8 +26,22 @@ def initMove():
     time.sleep(result[2]/1000) 
 
 def open_claw():
-    Board.setBusServoPulse(1, 200, 500)
+    Board.setBusServoPulse(1, 100, 500)
     time.sleep(0.5)
+
+def __convert_angle_to_pulse(x, y, angle, rotation_direction):
+    # We need to declare that the y-Axis has a degree of zero degreees and not 90 degrees
+    # Because of that we need to subtract 90 to the result of atan2
+    angle_from_origin_to_object = 90 - round(math.degrees(math.atan2(y, abs(x))), 1)
+
+    # If the object has a positive x coordinate, then the servo needs to decrement its pulse
+    # so that the arm is aligned with the x-axis
+    if x > 0:
+        angle_from_origin_to_object = -angle_from_origin_to_object
+
+    calculated_angle = (angle_from_origin_to_object + rotation_direction * angle)
+    pulse = int(500 + calculated_angle * (1000 / 240))
+    return pulse
 
 def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
     # Go to the position of the object with z = 7
@@ -36,14 +51,7 @@ def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
 
     open_claw()
 
-    # calculate the difference from the computed pulse and 500
-    servo2_angle_diff = abs(500 - getAngle(x, y, angle))
-    
-    # if it the object is right rotated the add the pulse to 500
-    # else subtract the difference from 500
-    servo2_angle_pulse = 500 + (rotation_direction * servo2_angle_diff)
-    print(servo2_angle_pulse)
-    Board.setBusServoPulse(2, servo2_angle_pulse, 500)
+    Board.setBusServoPulse(2, __convert_angle_to_pulse(x, y, angle, rotation_direction), 500)
     time.sleep(0.8)
 
     # Go to the position of the object
@@ -119,13 +127,7 @@ def put_down_grabbed_object(x, y, angle, rotation_direction, object_type):
     time.sleep(result[2]/1000) 
     print(result)
 
-    # calculate the difference from the computed pulse and 500
-    servo2_angle_diff = abs(500 - getAngle(x, y, angle))
-    
-    # if it the object is right rotated the add the pulse to 500
-    # else subtract the difference from 500
-    servo2_angle_pulse = 500 + (rotation_direction * servo2_angle_diff)
-    Board.setBusServoPulse(2, servo2_angle_pulse, 500)
+    Board.setBusServoPulse(2, __convert_angle_to_pulse(x, y, angle, rotation_direction), 500)
     time.sleep(0.8)
 
     # Go to the position of the object

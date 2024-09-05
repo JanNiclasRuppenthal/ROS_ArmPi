@@ -5,15 +5,16 @@ from threading import Thread
 import rclpy
 
 import rclpy.context
-from robot.publish import create_publisher_node
+from robot.publish import create_delivery_publisher_node
 from robot.finish_publisher import create_finish_publisher_node
-from robot.subscribe import create_subscriber_node
+from robot.subscribe import create_delivery_subscriber_node
 from robot.finish_subscriber import create_finish_subscriber_node
 from robot.armpi import ArmPi
 
 from util.coordinates import get_coordinates
 from util.deliver import initMove, deliver
 from util.cam import Cam
+from util.executor_subscriptions import MultiExecutor
 
 def read_all_arguments():
     ID = int(sys.argv[1])
@@ -21,25 +22,21 @@ def read_all_arguments():
 
     return ID, last_robot
 
-def start_spinning(executor):
-    executor.spin()
-
 def main():
     ID, last_robot = read_all_arguments()
     armpi = ArmPi(ID, last_robot)
     first_start = ID == 0
 
     rclpy.init()
-    publisher = create_publisher_node(armpi)
+    delivery_publisher = create_delivery_publisher_node(armpi)
     finish_publisher = create_finish_publisher_node(armpi)
-    subscriber = create_subscriber_node(armpi)
+    delivery_subscriber = create_delivery_subscriber_node(armpi)
     finish_subscriber = create_finish_subscriber_node(armpi)
 
-    executor = rclpy.executors.MultiThreadedExecutor()
-    executor.add_node(subscriber)
-    executor.add_node(finish_subscriber)
+    subscriber_nodes = [delivery_subscriber, finish_subscriber]
+    executor = MultiExecutor(subscriber_nodes)
 
-    thread = Thread(target=start_spinning, args=(executor, ))
+    thread = Thread(target=executor.start_spinning)
     thread.start()
 
     cam = Cam()
@@ -52,8 +49,7 @@ def main():
         if ((armpi.get_finish_flag() or ID == 0) and (-1, -1) == get_coordinates(cam)):
             #finish here
             finish_publisher.send_msgs()
-            executor.shutdown()
-            rclpy.shutdown()
+            executor.execute_shutdown()
             break
 
         if (armpi.get_delivery_flag() or first_start):
@@ -73,7 +69,7 @@ def main():
             time.sleep(1.5)
 
             #publish message
-            publisher.send_msgs()
+            delivery_publisher.send_msgs()
 
     cam.shutdown()
 

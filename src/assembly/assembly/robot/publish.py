@@ -2,10 +2,10 @@ from rclpy.node import Node
 
 from armpi_interfaces.msg import IDArmPi
 
-class RobotPublisher(Node):
+class DeliveryPublisher(Node):
 
     def __init__(self, armpi):
-        super().__init__('robot_publisher')
+        super().__init__('delivery_publisher')
         self.ID = armpi.get_ID()
         self.last_robot = armpi.get_last_robot_flag()
         self.publisher_ = self.create_publisher(IDArmPi, 'delivery', 10)
@@ -30,6 +30,6 @@ class RobotPublisher(Node):
             self.get_logger().info('Notifying from: "%d" to "%d"' % (self.ID, message_next_ID.id))
 
 
-def create_publisher_node(armpi):
-    __publisher = RobotPublisher(armpi)
+def create_delivery_publisher_node(armpi):
+    __publisher = DeliveryPublisher(armpi)
     return __publisher

@@ -35,6 +35,28 @@ def initMove():
     Board.setBusServoPulse(2, 500, 500)
     AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
 
+def __convert_angle_to_pulse(x, y, angle):
+    # We need to declare that the y-Axis has a degree of zero degreees and not 90 degrees
+    # Because of that we need to subtract 90 to the result of atan2
+    angle_from_origin_to_object = 90 - round(math.degrees(math.atan2(y, abs(x))), 1)
+
+    # If the object has a positive x coordinate, then the servo needs to decrement its pulse
+    # so that the arm is aligned with the x-axis
+    if x > 0:
+        angle_from_origin_to_object = -angle_from_origin_to_object
+
+    angle1 = angle 
+    angle2 = angle - 90
+
+    if abs(angle1) < abs(angle2):
+        rotation_angle = abs(angle1)
+    else:
+        rotation_angle = abs(angle2)
+
+    calculated_angle = (angle_from_origin_to_object + rotation_angle)
+    pulse = int(500 + calculated_angle * (1000 / 240))
+    return pulse
+
 def deliver(world_X, world_Y, last_robot):
 
     detected_color = get_detected_color()
@@ -58,9 +80,9 @@ def deliver(world_X, world_Y, last_robot):
     if result != False:
         time.sleep(result[2]/1000) # if it can reach to specified location, then get running time 
 
-        servo2_angle = getAngle(world_X, world_Y, get_rotation_angle()) # calculate angle at that the clamper gripper needs to rotate
         Board.setBusServoPulse(1, servo1 - 280, 500)  # claw open
-        Board.setBusServoPulse(2, servo2_angle, 500) # rotate the second servo
+        pulse = __convert_angle_to_pulse(world_X, world_Y, get_rotation_angle())
+        Board.setBusServoPulse(2, pulse, 500) # rotate the second servo
         time.sleep(0.5)
         
         AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000) # ArmPi goes to the position of the detected cube

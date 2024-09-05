@@ -11,8 +11,6 @@ from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from CameraCalibration.CalibrationConfig import *
 
-#AK = ArmIK()
-
 size = (640, 480)
 
 range_rgb = {

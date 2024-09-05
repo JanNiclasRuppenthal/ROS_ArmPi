@@ -1,12 +1,11 @@
-import rclpy
 from rclpy.node import Node
 
 from armpi_interfaces.msg import IDArmPi
 
-class RobotSubscriber(Node):
+class DeliverySubscriber(Node):
 
     def __init__(self, armpi):
-        super().__init__('robot_subscriber')
+        super().__init__('delivery_subscriber')
         self.ID = armpi.get_ID()
         self.armpi = armpi
         self.subscription = self.create_subscription(IDArmPi,'delivery',self.callback,10)
@@ -19,6 +18,6 @@ class RobotSubscriber(Node):
             self.armpi.set_delivery_flag(True)
 
 
-def create_subscriber_node(armpi):
-    __subscriber = RobotSubscriber(armpi)
+def create_delivery_subscriber_node(armpi):
+    __subscriber = DeliverySubscriber(armpi)
     return __subscriber

@@ -2,7 +2,6 @@ import sys
 sys.path.append('/home/pi/ArmPi/')
 import cv2
 import time
-import Camera
 import math
 import numpy as np
 from LABConfig import color_range
@@ -26,8 +25,8 @@ range_rgb = {
 
 detected_color = 'None'
 
-def get_coordinates():
-    pos = __get_position()
+def get_coordinates(cam):
+    pos = __get_position(cam)
     print("Position: %s." % str(pos))
     return pos
 
@@ -39,11 +38,9 @@ def get_rotation_angle():
     return rotation_angle
 
 
-def __get_position():
-    my_camera = Camera.Camera()
-    my_camera.camera_open()
+def __get_position(cam):
     while True:
-        img = my_camera.frame
+        img = cam.get_camera().frame
         if img is not None:
             frame = img.copy()
             pos = __calculate_position(frame)
@@ -51,11 +48,7 @@ def __get_position():
             if key == 27:
                 break
 
-            if pos != (-1, -1):
-                break
-
-    my_camera.camera_close()
-    cv2.destroyAllWindows()
+            break
 
     return pos
 
@@ -102,7 +95,6 @@ def __calculate_position(img):
         # Sometimes it can detect a black box of a shadow
         if color_area_max not in ['red', 'green', 'blue']:
             print("Color does not match RGB!")
-            return (-1, -1)
         else:
             detected_color = color_area_max
             

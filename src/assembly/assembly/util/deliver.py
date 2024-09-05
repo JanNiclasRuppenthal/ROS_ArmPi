@@ -3,8 +3,9 @@ sys.path.append('/home/pi/ArmPi/')
 import time
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
+import math
 
-from .coordinates import get_detected_color, get_rotation_angle
+from util.coordinates import get_detected_color, get_rotation_angle
 
 AK = ArmIK()
 
@@ -72,7 +73,7 @@ def deliver(world_X, world_Y, last_robot):
         AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  # ArmPi Robot arm up
         time.sleep(1)
 
-        result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), -90, -90, 0) # ArmPi goes to the goal coordinates with z = 12
+        result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), -90, -90, 0, 1000) # ArmPi goes to the goal coordinates with z = 12
         time.sleep(result[2]/1000)
             
         servo2_angle = getAngle(goal_coord_x, goal_coord_y, -90)

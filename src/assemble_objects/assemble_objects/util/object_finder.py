@@ -93,9 +93,7 @@ class ObjectFinder():
                     if (min_length > length02):
                         min_length = length02
                         rotation_direction = 1
-
-                    print(min_length)
-
+                    
                     # sort the points of the box with their y coordinate
                     box = sorted(box, key=lambda p: p[1])
 

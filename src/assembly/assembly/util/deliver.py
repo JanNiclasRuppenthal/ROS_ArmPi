@@ -100,7 +100,7 @@ def deliver(world_X, world_Y, last_robot):
         result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), -90, -90, 0) # ArmPi goes to the goal coordinates with z = 12
         time.sleep(result[2]/1000)
             
-        servo2_angle = __convert_angle_to_pulse(goal_coord_x, goal_coord_y, -90)
+        servo2_angle = getAngle(goal_coord_x, goal_coord_y, -90)
         Board.setBusServoPulse(2, servo2_angle, 500)
         time.sleep(0.5)
 

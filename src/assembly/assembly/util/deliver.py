@@ -45,15 +45,17 @@ def __convert_angle_to_pulse(x, y, angle):
     if x > 0:
         angle_from_origin_to_object = -angle_from_origin_to_object
 
-    angle1 = angle 
-    angle2 = angle - 90
+    angle_right = angle 
+    angle_left = angle - 90
 
-    if abs(angle1) < abs(angle2):
-        rotation_angle = abs(angle1)
+    if abs(angle_right) < abs(angle_left):
+        rotation_angle = abs(angle_right)
+        rotation_direction = 1
     else:
-        rotation_angle = abs(angle2)
+        rotation_angle = abs(angle_left)
+        rotation_direction = -1
 
-    calculated_angle = (angle_from_origin_to_object + rotation_angle)
+    calculated_angle = (angle_from_origin_to_object + rotation_direction * rotation_angle)
     pulse = int(500 + calculated_angle * (1000 / 240))
     return pulse
 
@@ -81,8 +83,8 @@ def deliver(world_X, world_Y, last_robot):
         time.sleep(result[2]/1000) # if it can reach to specified location, then get running time 
 
         Board.setBusServoPulse(1, servo1 - 280, 500)  # claw open
-        pulse = __convert_angle_to_pulse(world_X, world_Y, get_rotation_angle())
-        Board.setBusServoPulse(2, pulse, 500) # rotate the second servo
+        servo2_pulse = __convert_angle_to_pulse(world_X, world_Y, get_rotation_angle())
+        Board.setBusServoPulse(2, servo2_pulse, 500) # rotate the second servo
         time.sleep(0.5)
         
         AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000) # ArmPi goes to the position of the detected cube
@@ -98,7 +100,7 @@ def deliver(world_X, world_Y, last_robot):
         result = AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), -90, -90, 0) # ArmPi goes to the goal coordinates with z = 12
         time.sleep(result[2]/1000)
             
-        servo2_angle = getAngle(goal_coord_x, goal_coord_y, -90)
+        servo2_angle = __convert_angle_to_pulse(goal_coord_x, goal_coord_y, -90)
         Board.setBusServoPulse(2, servo2_angle, 500)
         time.sleep(0.5)
 

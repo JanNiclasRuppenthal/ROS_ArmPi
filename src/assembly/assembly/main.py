@@ -50,28 +50,25 @@ def main():
             #finish here
             finish_publisher.send_msgs()
             executor.execute_shutdown()
+            cam.shutdown()
             break
 
         if (armpi.get_delivery_flag() or first_start):
-            armpi.set_delivery_flag(False)
 
             if (first_start):
                 first_start = False
         
             world_X, world_Y = get_coordinates(cam)
 
-            if (world_X == -1 and world_Y == -1):
-                continue
+            if (world_X != -1 and world_Y != -1):
+                deliver(world_X, world_Y, last_robot)
+                
+                initMove()  # back to initial position
+                time.sleep(1.5)
 
-            deliver(world_X, world_Y, last_robot)
-            
-            initMove()  # back to initial position
-            time.sleep(1.5)
-
-            #publish message
-            delivery_publisher.send_msgs()
-
-    cam.shutdown()
+                #publish message
+                delivery_publisher.send_msgs()
+                armpi.set_delivery_flag(False)
 
 if __name__ == '__main__':
     main()

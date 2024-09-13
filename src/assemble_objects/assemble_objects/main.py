@@ -1,6 +1,4 @@
 import sys
-sys.path.append('/home/pi/ArmPi/')
-
 import time
 
 from threading import Thread

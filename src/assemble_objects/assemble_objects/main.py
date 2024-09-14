@@ -109,7 +109,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
         while (not armpi.get_assemble_queue().empty()): # all robots are done
             time.sleep(0.1)
 
-        put_down_assembled_object()
+        put_down_assembled_object(object_type)
         initMove()
 
     else:

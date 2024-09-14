@@ -29,6 +29,25 @@ def open_claw():
     Board.setBusServoPulse(1, 100, 500)
     time.sleep(0.5)
 
+def __get_z_coordinate(object_type):
+    result = 0
+    if object_type == ObjectType.SMALL:
+        result = 1.2
+    else:
+        result = 1.5
+    
+    return result
+
+def __determine_pulse(ID, object_type):
+    result = 0 
+    
+    if (ID == 0):
+        result = grab_pulse_ID_0[object_type]
+    else:
+        result = grab_pulse_ID_1[object_type]
+
+    return result
+
 def __convert_angle_to_pulse(x, y, angle, rotation_direction):
     # We need to declare that the y-Axis has a degree of zero degreees and not 90 degrees
     # Because of that we need to subtract 90 to the result of atan2
@@ -55,22 +74,13 @@ def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
     time.sleep(0.8)
 
     # Go to the position of the object
-    z = 0
-    if object_type == ObjectType.SMALL:
-        z = 1.2
-    else:
-        z = 1.5
+    z = __get_z_coordinate(object_type)
     
     result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 
-    grab_pulse = 0 
-    
-    if (ID == 0):
-        grab_pulse = grab_pulse_ID_0[object_type]
-    else:
-        grab_pulse = grab_pulse_ID_1[object_type]
+    grab_pulse = __determine_pulse(ID, object_type)
 
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
@@ -131,23 +141,22 @@ def put_down_grabbed_object(x, y, angle, rotation_direction, object_type):
     time.sleep(0.8)
 
     # Go to the position of the object
-    z = 0
-    if object_type == ObjectType.SMALL:
-        z = 1.2
-    else:
-        z = 1.5
+    z = __get_z_coordinate(object_type)
+
     result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 
     open_claw()
 
-def __put_object_at(x, y, z):
+def __put_object_at(x, y, z, object_type):
     result = AK.setPitchRangeMoving((x, y, 12), 10, 10, -90) # ArmPi goes to the goal coordinates with z = 12
     time.sleep(result[2]/1000)
 
     AK.setPitchRangeMoving((x, y, z + 3), 10, 10, -90, 500) # ArmPi goes down to z = goal_coord_z + 3
     time.sleep(0.5)
+
+    z = __get_z_coordinate(object_type)
     
     AK.setPitchRangeMoving((x, y, z), 10, 10, -90, 1000) # ArmPi is at the next coordinates
     time.sleep(0.8)
@@ -157,7 +166,7 @@ def __put_object_at(x, y, z):
     AK.setPitchRangeMoving((x, y, 12), 10, 10, -90, 800)
     time.sleep(0.8)
 
-def put_down_assembled_object():
+def put_down_assembled_object(object_type):
     # The goal position is the green field left to the robot
     goal_coord_x, goal_coord_y, goal_coord_z = (-15 + 0.5, 6 - 0.5,  1.5)
-    __put_object_at(goal_coord_x, goal_coord_y, goal_coord_z)
+    __put_object_at(goal_coord_x, goal_coord_y, goal_coord_z, object_type)

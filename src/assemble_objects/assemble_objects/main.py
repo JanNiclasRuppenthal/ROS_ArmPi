@@ -7,11 +7,11 @@ import rclpy
 
 from robot.armpi import ArmPi
 from robot.publisher.done_publisher import create_done_publisher_node
-from robot.publisher.end_publisher import create_end_publisher_node
+from robot.publisher.finish_publisher import create_finish_publisher_node
 from robot.publisher.position_publisher import create_pos_publisher_node
 from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
 from robot.subscriber.done_subscriber import create_done_subscriber_node
-from robot.subscriber.end_subscriber import create_end_subscriber_node
+from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
 from util.object_finder import ObjectFinder
@@ -135,16 +135,16 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
 
 def create_all_nodes(armpi):
     done_publisher = create_done_publisher_node(armpi)
-    end_publisher = create_end_publisher_node(armpi)
+    finish_publisher = create_finish_publisher_node(armpi)
     pos_publisher = create_pos_publisher_node(armpi)
     assembly_queue_publisher = create_assemble_queue_publisher_node(armpi)
     done_subscriber = create_done_subscriber_node(armpi)
-    end_subscriber = create_end_subscriber_node(armpi)
+    finish_subscriber = create_finish_subscriber_node(armpi)
     pos_subscriber = create_pos_subscriber_node(armpi)
     assembly_queue_subscriber = create_assemble_queue_subscriber_node(armpi)
 
-    publisher_nodes = [done_publisher , end_publisher, pos_publisher, assembly_queue_publisher]
-    subscriber_nodes = [done_subscriber, end_subscriber, pos_subscriber, assembly_queue_subscriber]
+    publisher_nodes = [done_publisher , finish_publisher, pos_publisher, assembly_queue_publisher]
+    subscriber_nodes = [done_subscriber, finish_subscriber, pos_subscriber, assembly_queue_subscriber]
     all_nodes = publisher_nodes + subscriber_nodes
 
     return publisher_nodes, subscriber_nodes, all_nodes

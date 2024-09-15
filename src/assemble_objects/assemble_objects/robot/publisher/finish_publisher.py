@@ -1,10 +1,10 @@
 from robot.publisher.Apublish import RobotPublisher
 from armpi_interfaces.msg import IDArmPi
 
-class EndPublisher(RobotPublisher):
+class FinishPublisher(RobotPublisher):
     def __init__(self, armpi):
-        super().__init__('end_publisher', armpi)
-        self.__publisher = self.create_publisher(IDArmPi, 'end', 10)
+        super().__init__('finish_publisher', armpi)
+        self.__publisher = self.create_publisher(IDArmPi, 'finish', 10)
 
     def create_msg(self):
         msg = IDArmPi()
@@ -17,6 +17,6 @@ class EndPublisher(RobotPublisher):
         self.get_logger().info('Send end message from ID %d' % (message.id))
 
 
-def create_end_publisher_node(armpi):
-    __publisher = EndPublisher(armpi)
+def create_finish_publisher_node(armpi):
+    __publisher = FinishPublisher(armpi)
     return __publisher

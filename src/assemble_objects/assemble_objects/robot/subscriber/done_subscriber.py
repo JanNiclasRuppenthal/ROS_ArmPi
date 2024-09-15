@@ -8,7 +8,7 @@ class DoneSubscriber(RobotSubscriber):
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):
-        # if it is not the same ID and it does not received a done message before
+        # if it is the same ID then ignore it
         if msg.id != self.get_ID():
             self.get_logger().info('I heard a done message from robot with ID: "%s"' % str(msg.id))
             self.get_armpi().get_assemble_queue().pop()

@@ -1,6 +1,3 @@
-import sys
-sys.path.append('/home/pi/ArmPi/')
-
 import Camera
 import cv2
 

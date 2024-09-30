@@ -2,10 +2,10 @@ from robot.subscriber.Asubscribe import RobotSubscriber
 from armpi_interfaces.msg import IDArmPi
 
 
-class EndSubscriber(RobotSubscriber):
+class FinishSubscriber(RobotSubscriber):
     def __init__(self, armpi):
-        super().__init__('end_subscriber', armpi)
-        self.__subscription = self.create_subscription(IDArmPi, 'end', self.callback,10)
+        super().__init__('finish_subscriber', armpi)
+        self.__subscription = self.create_subscription(IDArmPi, 'finish', self.callback,10)
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):
@@ -16,6 +16,6 @@ class EndSubscriber(RobotSubscriber):
             self.get_armpi().set_finish_flag(True)
 
 
-def create_end_subscriber_node(armpi):
-    __subscriber = EndSubscriber(armpi)
+def create_finish_subscriber_node(armpi):
+    __subscriber = FinishSubscriber(armpi)
     return __subscriber

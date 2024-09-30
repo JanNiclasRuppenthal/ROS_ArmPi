@@ -1,5 +1,3 @@
-import sys
-sys.path.append('/home/pi/ArmPi/')
 import time
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board

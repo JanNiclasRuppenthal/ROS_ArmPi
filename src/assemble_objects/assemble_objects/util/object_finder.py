@@ -1,6 +1,4 @@
 import cv2
-import sys
-sys.path.append('/home/pi/ArmPi/')
 import Camera
 import math
 import numpy as np

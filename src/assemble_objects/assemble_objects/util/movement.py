@@ -14,7 +14,7 @@ grab_pulse_ID_0 = {
 }
 
 grab_pulse_ID_1 = {
-    ObjectType.SMALL : 660,
+    ObjectType.SMALL : 650,
     ObjectType.MEDIUM : 575,
     ObjectType.LARGE : 450
 }
@@ -74,15 +74,7 @@ def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
     time.sleep(0.8)
 
     # Go to the position of the object
-<<<<<<< HEAD
-    z = 0
-    if object_type == ObjectType.SMALL:
-        z = 1.0
-    else:
-        z = 1.5
-=======
     z = __get_z_coordinate(object_type)
->>>>>>> 42cb954eece50dee8a4a9eab31ecf7b78f2d96c4
     
     result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 

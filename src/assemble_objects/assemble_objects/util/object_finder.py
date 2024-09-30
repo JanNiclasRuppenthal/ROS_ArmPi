@@ -5,6 +5,7 @@ import Camera
 import math
 import numpy as np
 import time
+from LABConfig import *
 
 from util.object_type import calculate_object_type
 
@@ -62,17 +63,21 @@ class ObjectFinder():
             if img is not None:
                 frame = img.copy()
 
-                # Convert to grayscale
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                frame_resize = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_NEAREST)
 
                 # Apply Gaussian Blur to reduce noise and improve edge detection
-                blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+                blurred = cv2.GaussianBlur(frame_resize, (11, 11), 0)
 
-                # Apply Canny Edge Detector
-                edges = cv2.Canny(blurred, 50, 150)
+                frame_lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
 
-                # Find contours in the edge-detected image
-                contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                frame_mask = cv2.inRange(frame_lab, color_range['red'][0], color_range['red'][1])  # mathematical operation on the original image and mask
+                opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6,6),np.uint8))  # Opening (morphology)
+                closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) # Closing (morphology)
+
+
+                # Find contours in the image
+                contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]
+                
                 frame_out = frame.copy()
 
                 for contour in contours:

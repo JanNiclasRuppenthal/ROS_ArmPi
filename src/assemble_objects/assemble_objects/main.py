@@ -20,7 +20,6 @@ from util.object_finder import ObjectFinder
 from util.executor_subscriptions import MultiExecutor
 from util.movement import *
 
-rclpy.init()
 object_id = 0
 
 def read_all_arguments():
@@ -52,6 +51,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
     # If one robot had already send a finish message
     if armpi.get_finish_flag():
         executor.execute_shutdown()
+        return
     
     armpi.set_object_type(object_type)
     armpi.set_number_of_objects(number_of_objects - 1 - object_id) # decrement the number because we grabbed one object already
@@ -158,6 +158,8 @@ def main():
     armpi = ArmPi(ID, number_of_robots)
 
     initMove()
+
+    rclpy.init()
 
     publisher_nodes_list, subscriber_nodes_list, all_nodes_list = create_all_nodes(armpi)
     done_publisher = publisher_nodes_list[0]

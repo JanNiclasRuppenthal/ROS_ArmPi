@@ -57,7 +57,7 @@ def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
     # Go to the position of the object
     z = 0
     if object_type == ObjectType.SMALL:
-        z = 1.2
+        z = 1.0
     else:
         z = 1.5
     

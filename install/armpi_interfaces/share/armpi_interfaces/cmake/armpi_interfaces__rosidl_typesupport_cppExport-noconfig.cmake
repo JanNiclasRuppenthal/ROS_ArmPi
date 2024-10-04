@@ -13,8 +13,8 @@ set_target_properties(armpi_interfaces::armpi_interfaces__rosidl_typesupport_cpp
   IMPORTED_SONAME_NOCONFIG "libarmpi_interfaces__rosidl_typesupport_cpp.so"
   )
 
-list(APPEND _IMPORT_CHECK_TARGETS armpi_interfaces::armpi_interfaces__rosidl_typesupport_cpp )
-list(APPEND _IMPORT_CHECK_FILES_FOR_armpi_interfaces::armpi_interfaces__rosidl_typesupport_cpp "${_IMPORT_PREFIX}/lib/libarmpi_interfaces__rosidl_typesupport_cpp.so" )
+list(APPEND _cmake_import_check_targets armpi_interfaces::armpi_interfaces__rosidl_typesupport_cpp )
+list(APPEND _cmake_import_check_files_for_armpi_interfaces::armpi_interfaces__rosidl_typesupport_cpp "${_IMPORT_PREFIX}/lib/libarmpi_interfaces__rosidl_typesupport_cpp.so" )
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)

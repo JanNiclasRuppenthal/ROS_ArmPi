@@ -2,6 +2,9 @@
 // with input from armpi_interfaces:msg/PositionWithAngle.idl
 // generated code does not contain a copyright notice
 
+// IWYU pragma: private, include "armpi_interfaces/msg/position_with_angle.hpp"
+
+
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__STRUCT_HPP_
 #define ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__STRUCT_HPP_
 

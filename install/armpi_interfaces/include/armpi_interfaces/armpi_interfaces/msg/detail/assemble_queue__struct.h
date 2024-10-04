@@ -2,6 +2,9 @@
 // with input from armpi_interfaces:msg/AssembleQueue.idl
 // generated code does not contain a copyright notice
 
+// IWYU pragma: private, include "armpi_interfaces/msg/assemble_queue.h"
+
+
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__ASSEMBLE_QUEUE__STRUCT_H_
 #define ARMPI_INTERFACES__MSG__DETAIL__ASSEMBLE_QUEUE__STRUCT_H_
 
@@ -13,7 +16,6 @@ extern "C"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
 
 // Constants defined in the message
 

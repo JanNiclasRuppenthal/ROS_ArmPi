@@ -7,5 +7,6 @@
 #include "armpi_interfaces/msg/detail/id_arm_pi__struct.hpp"
 #include "armpi_interfaces/msg/detail/id_arm_pi__builder.hpp"
 #include "armpi_interfaces/msg/detail/id_arm_pi__traits.hpp"
+#include "armpi_interfaces/msg/detail/id_arm_pi__type_support.hpp"
 
 #endif  // ARMPI_INTERFACES__MSG__ID_ARM_PI_HPP_

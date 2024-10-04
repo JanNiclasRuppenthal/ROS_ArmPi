@@ -57,7 +57,7 @@ armpi_interfaces__msg__IDArmPi__copy(
 }
 
 armpi_interfaces__msg__IDArmPi *
-armpi_interfaces__msg__IDArmPi__create()
+armpi_interfaces__msg__IDArmPi__create(void)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   armpi_interfaces__msg__IDArmPi * msg = (armpi_interfaces__msg__IDArmPi *)allocator.allocate(sizeof(armpi_interfaces__msg__IDArmPi), allocator.state);

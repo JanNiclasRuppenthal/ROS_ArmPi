@@ -2,6 +2,9 @@
 // with input from armpi_interfaces:msg/IDArmPi.idl
 // generated code does not contain a copyright notice
 
+// IWYU pragma: private, include "armpi_interfaces/msg/id_arm_pi.h"
+
+
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__ID_ARM_PI__TYPE_SUPPORT_H_
 #define ARMPI_INTERFACES__MSG__DETAIL__ID_ARM_PI__TYPE_SUPPORT_H_
 
@@ -24,7 +27,7 @@ ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(
   armpi_interfaces,
   msg,
   IDArmPi
-)();
+)(void);
 
 #ifdef __cplusplus
 }

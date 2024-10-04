@@ -2,6 +2,9 @@
 // with input from armpi_interfaces:msg/IDArmPi.idl
 // generated code does not contain a copyright notice
 
+// IWYU pragma: private, include "armpi_interfaces/msg/id_arm_pi.hpp"
+
+
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__ID_ARM_PI__BUILDER_HPP_
 #define ARMPI_INTERFACES__MSG__DETAIL__ID_ARM_PI__BUILDER_HPP_
 

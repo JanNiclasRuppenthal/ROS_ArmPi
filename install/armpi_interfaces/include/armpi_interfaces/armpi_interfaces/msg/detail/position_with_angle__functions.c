@@ -89,7 +89,7 @@ armpi_interfaces__msg__PositionWithAngle__copy(
 }
 
 armpi_interfaces__msg__PositionWithAngle *
-armpi_interfaces__msg__PositionWithAngle__create()
+armpi_interfaces__msg__PositionWithAngle__create(void)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   armpi_interfaces__msg__PositionWithAngle * msg = (armpi_interfaces__msg__PositionWithAngle *)allocator.allocate(sizeof(armpi_interfaces__msg__PositionWithAngle), allocator.state);

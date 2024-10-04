@@ -7,5 +7,6 @@
 #include "armpi_interfaces/msg/detail/position_with_angle__struct.hpp"
 #include "armpi_interfaces/msg/detail/position_with_angle__builder.hpp"
 #include "armpi_interfaces/msg/detail/position_with_angle__traits.hpp"
+#include "armpi_interfaces/msg/detail/position_with_angle__type_support.hpp"
 
 #endif  // ARMPI_INTERFACES__MSG__POSITION_WITH_ANGLE_HPP_

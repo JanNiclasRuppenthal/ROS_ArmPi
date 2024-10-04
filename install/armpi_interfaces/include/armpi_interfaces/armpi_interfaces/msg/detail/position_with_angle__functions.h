@@ -2,6 +2,9 @@
 // with input from armpi_interfaces:msg/PositionWithAngle.idl
 // generated code does not contain a copyright notice
 
+// IWYU pragma: private, include "armpi_interfaces/msg/position_with_angle.h"
+
+
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__FUNCTIONS_H_
 #define ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__FUNCTIONS_H_
 
@@ -13,6 +16,12 @@ extern "C"
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "rosidl_runtime_c/action_type_support_struct.h"
+#include "rosidl_runtime_c/message_type_support_struct.h"
+#include "rosidl_runtime_c/service_type_support_struct.h"
+#include "rosidl_runtime_c/type_description/type_description__struct.h"
+#include "rosidl_runtime_c/type_description/type_source__struct.h"
+#include "rosidl_runtime_c/type_hash.h"
 #include "rosidl_runtime_c/visibility_control.h"
 #include "armpi_interfaces/msg/rosidl_generator_c__visibility_control.h"
 
@@ -53,7 +62,7 @@ armpi_interfaces__msg__PositionWithAngle__fini(armpi_interfaces__msg__PositionWi
  */
 ROSIDL_GENERATOR_C_PUBLIC_armpi_interfaces
 armpi_interfaces__msg__PositionWithAngle *
-armpi_interfaces__msg__PositionWithAngle__create();
+armpi_interfaces__msg__PositionWithAngle__create(void);
 
 /// Destroy msg/PositionWithAngle message.
 /**
@@ -92,6 +101,30 @@ bool
 armpi_interfaces__msg__PositionWithAngle__copy(
   const armpi_interfaces__msg__PositionWithAngle * input,
   armpi_interfaces__msg__PositionWithAngle * output);
+
+/// Retrieve pointer to the hash of the description of this type.
+ROSIDL_GENERATOR_C_PUBLIC_armpi_interfaces
+const rosidl_type_hash_t *
+armpi_interfaces__msg__PositionWithAngle__get_type_hash(
+  const rosidl_message_type_support_t * type_support);
+
+/// Retrieve pointer to the description of this type.
+ROSIDL_GENERATOR_C_PUBLIC_armpi_interfaces
+const rosidl_runtime_c__type_description__TypeDescription *
+armpi_interfaces__msg__PositionWithAngle__get_type_description(
+  const rosidl_message_type_support_t * type_support);
+
+/// Retrieve pointer to the single raw source text that defined this type.
+ROSIDL_GENERATOR_C_PUBLIC_armpi_interfaces
+const rosidl_runtime_c__type_description__TypeSource *
+armpi_interfaces__msg__PositionWithAngle__get_individual_type_description_source(
+  const rosidl_message_type_support_t * type_support);
+
+/// Retrieve pointer to the recursive raw sources that defined the description of this type.
+ROSIDL_GENERATOR_C_PUBLIC_armpi_interfaces
+const rosidl_runtime_c__type_description__TypeSource__Sequence *
+armpi_interfaces__msg__PositionWithAngle__get_type_description_sources(
+  const rosidl_message_type_support_t * type_support);
 
 /// Initialize array of msg/PositionWithAngle messages.
 /**

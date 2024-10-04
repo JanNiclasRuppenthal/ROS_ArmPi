@@ -7,5 +7,6 @@
 #include "armpi_interfaces/msg/detail/assemble_queue__struct.hpp"
 #include "armpi_interfaces/msg/detail/assemble_queue__builder.hpp"
 #include "armpi_interfaces/msg/detail/assemble_queue__traits.hpp"
+#include "armpi_interfaces/msg/detail/assemble_queue__type_support.hpp"
 
 #endif  // ARMPI_INTERFACES__MSG__ASSEMBLE_QUEUE_HPP_

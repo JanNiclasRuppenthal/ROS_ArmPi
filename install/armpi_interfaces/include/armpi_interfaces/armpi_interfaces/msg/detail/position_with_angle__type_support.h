@@ -2,6 +2,9 @@
 // with input from armpi_interfaces:msg/PositionWithAngle.idl
 // generated code does not contain a copyright notice
 
+// IWYU pragma: private, include "armpi_interfaces/msg/position_with_angle.h"
+
+
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__TYPE_SUPPORT_H_
 #define ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__TYPE_SUPPORT_H_
 
@@ -24,7 +27,7 @@ ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(
   armpi_interfaces,
   msg,
   PositionWithAngle
-)();
+)(void);
 
 #ifdef __cplusplus
 }

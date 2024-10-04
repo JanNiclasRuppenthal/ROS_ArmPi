@@ -9,6 +9,7 @@
 #include "rosidl_runtime_c/message_type_support_struct.h"
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
 #include "rosidl_typesupport_interface/macros.h"
+#include "armpi_interfaces/msg/detail/assemble_queue__functions.h"
 #include "armpi_interfaces/msg/detail/assemble_queue__struct.hpp"
 #include "rosidl_typesupport_introspection_cpp/field_types.hpp"
 #include "rosidl_typesupport_introspection_cpp/identifier.hpp"
@@ -43,6 +44,7 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember AssembleQueue
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT64,  // type
     0,  // upper bound of string
     nullptr,  // members of sub message
+    false,  // is key
     false,  // is array
     0,  // array size
     false,  // is upper bound
@@ -60,6 +62,7 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember AssembleQueue
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT64,  // type
     0,  // upper bound of string
     nullptr,  // members of sub message
+    false,  // is key
     false,  // is array
     0,  // array size
     false,  // is upper bound
@@ -77,6 +80,7 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember AssembleQueue
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT64,  // type
     0,  // upper bound of string
     nullptr,  // members of sub message
+    false,  // is key
     false,  // is array
     0,  // array size
     false,  // is upper bound
@@ -96,6 +100,7 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMembers AssembleQueu
   "AssembleQueue",  // message name
   3,  // number of fields
   sizeof(armpi_interfaces::msg::AssembleQueue),
+  false,  // has_any_key_member_
   AssembleQueue_message_member_array,  // message members
   AssembleQueue_init_function,  // function to initialize message memory (memory has to be allocated)
   AssembleQueue_fini_function  // function to terminate message instance (will not free memory)
@@ -105,6 +110,9 @@ static const rosidl_message_type_support_t AssembleQueue_message_type_support_ha
   ::rosidl_typesupport_introspection_cpp::typesupport_identifier,
   &AssembleQueue_message_members,
   get_message_typesupport_handle_function,
+  &armpi_interfaces__msg__AssembleQueue__get_type_hash,
+  &armpi_interfaces__msg__AssembleQueue__get_type_description,
+  &armpi_interfaces__msg__AssembleQueue__get_type_description_sources,
 };
 
 }  // namespace rosidl_typesupport_introspection_cpp

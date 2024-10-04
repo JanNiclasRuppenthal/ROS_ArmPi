@@ -5,6 +5,7 @@
 #ifndef ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__ROSIDL_TYPESUPPORT_FASTRTPS_CPP_HPP_
 #define ARMPI_INTERFACES__MSG__DETAIL__POSITION_WITH_ANGLE__ROSIDL_TYPESUPPORT_FASTRTPS_CPP_HPP_
 
+#include <cstddef>
 #include "rosidl_runtime_c/message_type_support_struct.h"
 #include "rosidl_typesupport_interface/macros.h"
 #include "armpi_interfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h"
@@ -54,6 +55,25 @@ get_serialized_size(
 size_t
 ROSIDL_TYPESUPPORT_FASTRTPS_CPP_PUBLIC_armpi_interfaces
 max_serialized_size_PositionWithAngle(
+  bool & full_bounded,
+  bool & is_plain,
+  size_t current_alignment);
+
+bool
+ROSIDL_TYPESUPPORT_FASTRTPS_CPP_PUBLIC_armpi_interfaces
+cdr_serialize_key(
+  const armpi_interfaces::msg::PositionWithAngle & ros_message,
+  eprosima::fastcdr::Cdr &);
+
+size_t
+ROSIDL_TYPESUPPORT_FASTRTPS_CPP_PUBLIC_armpi_interfaces
+get_serialized_size_key(
+  const armpi_interfaces::msg::PositionWithAngle & ros_message,
+  size_t current_alignment);
+
+size_t
+ROSIDL_TYPESUPPORT_FASTRTPS_CPP_PUBLIC_armpi_interfaces
+max_serialized_size_key_PositionWithAngle(
   bool & full_bounded,
   bool & is_plain,
   size_t current_alignment);

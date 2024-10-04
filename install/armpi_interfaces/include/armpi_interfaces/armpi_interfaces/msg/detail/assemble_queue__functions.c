@@ -73,7 +73,7 @@ armpi_interfaces__msg__AssembleQueue__copy(
 }
 
 armpi_interfaces__msg__AssembleQueue *
-armpi_interfaces__msg__AssembleQueue__create()
+armpi_interfaces__msg__AssembleQueue__create(void)
 {
   rcutils_allocator_t allocator = rcutils_get_default_allocator();
   armpi_interfaces__msg__AssembleQueue * msg = (armpi_interfaces__msg__AssembleQueue *)allocator.allocate(sizeof(armpi_interfaces__msg__AssembleQueue), allocator.state);

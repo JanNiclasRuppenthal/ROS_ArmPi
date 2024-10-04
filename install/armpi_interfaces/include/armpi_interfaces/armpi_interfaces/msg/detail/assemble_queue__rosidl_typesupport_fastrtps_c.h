@@ -9,11 +9,23 @@
 #include "rosidl_runtime_c/message_type_support_struct.h"
 #include "rosidl_typesupport_interface/macros.h"
 #include "armpi_interfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h"
+#include "armpi_interfaces/msg/detail/assemble_queue__struct.h"
+#include "fastcdr/Cdr.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
+bool cdr_serialize_armpi_interfaces__msg__AssembleQueue(
+  const armpi_interfaces__msg__AssembleQueue * ros_message,
+  eprosima::fastcdr::Cdr & cdr);
+
+ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
+bool cdr_deserialize_armpi_interfaces__msg__AssembleQueue(
+  eprosima::fastcdr::Cdr &,
+  armpi_interfaces__msg__AssembleQueue * ros_message);
 
 ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
 size_t get_serialized_size_armpi_interfaces__msg__AssembleQueue(
@@ -22,6 +34,22 @@ size_t get_serialized_size_armpi_interfaces__msg__AssembleQueue(
 
 ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
 size_t max_serialized_size_armpi_interfaces__msg__AssembleQueue(
+  bool & full_bounded,
+  bool & is_plain,
+  size_t current_alignment);
+
+ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
+bool cdr_serialize_key_armpi_interfaces__msg__AssembleQueue(
+  const armpi_interfaces__msg__AssembleQueue * ros_message,
+  eprosima::fastcdr::Cdr & cdr);
+
+ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
+size_t get_serialized_size_key_armpi_interfaces__msg__AssembleQueue(
+  const void * untyped_ros_message,
+  size_t current_alignment);
+
+ROSIDL_TYPESUPPORT_FASTRTPS_C_PUBLIC_armpi_interfaces
+size_t max_serialized_size_key_armpi_interfaces__msg__AssembleQueue(
   bool & full_bounded,
   bool & is_plain,
   size_t current_alignment);

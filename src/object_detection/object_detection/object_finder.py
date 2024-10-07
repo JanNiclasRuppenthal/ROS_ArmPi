@@ -5,7 +5,7 @@ import numpy as np
 import time
 from LABConfig import *
 
-from util.object_type import calculate_object_type
+from object_detection.object_type import calculate_object_type
 
 class ObjectFinder():
 
@@ -47,7 +47,63 @@ class ObjectFinder():
         # Setup one default tuple
         self.__object_to_parameter[count] = [(-1, -1, -1, -1, -1)]
 
-    def calculate_object_parameters(self):
+    def __calculate_upper_points(self, frame_out, box, center_x, center_y):
+        # sort the points of the box with their y coordinate
+        box = sorted(box, key=lambda p: p[1])
+
+        # the first two points have the lowest y coordinate
+        upper_points = box[0:2]
+
+        # calculate the middle point between these two bottom points
+        mid_upper_x = (upper_points[0][0] + upper_points[1][0]) // 2
+        mid_upper_y = (upper_points[0][1] + upper_points[1][1]) // 2
+
+        # mark the position with a rectangle (yellow)
+        cv2.rectangle(frame_out, (mid_upper_x, mid_upper_y), (mid_upper_x + 10, mid_upper_y + 10), (0, 255, 255), 2)
+
+        # mark the center with a rectangle (red)
+        cv2.rectangle(frame_out, (center_x, center_y), (center_x + 10, center_y + 10), (0, 0, 255), 2)
+
+        # calucalate the position between the center and bottom points
+        upper_x = center_x + (mid_upper_x - center_x) // 2
+        upper_y = center_y + (mid_upper_y - center_y) // 2
+
+        # mark the middle point between the center and bottom point with an rectangle (blue)
+        upper_x, upper_y = np.int0([upper_x, upper_y])
+        cv2.rectangle(frame_out, (upper_x, upper_y), (upper_x + 10, upper_y + 10), (255, 0, 0), 2)
+
+        return upper_x, upper_y
+    
+
+    def __calculate_bottom_points(self, frame_out, box, center_x, center_y):
+        # sort the points of the box with their y coordinate
+        box = sorted(box, key=lambda p: p[1])
+
+        # the last two points have the highest y coordinate
+        bottom_points = box[2:] 
+
+        # calculate the middle point between these two bottom points
+        mid_bottom_x = (bottom_points[0][0] + bottom_points[1][0]) // 2
+        mid_bottom_y = (bottom_points[0][1] + bottom_points[1][1]) // 2
+
+        # mark the position with a rectangle (yellow)
+        cv2.rectangle(frame_out, (mid_bottom_x, mid_bottom_y), (mid_bottom_x + 10, mid_bottom_y + 10), (0, 255, 255), 2)
+
+        # mark the center with a rectangle (red)
+        cv2.rectangle(frame_out, (center_x, center_y), (center_x + 10, center_y + 10), (0, 0, 255), 2)
+
+        # calucalate the position between the center and bottom points
+        bottom_x = center_x + (mid_bottom_x - center_x) // 2
+        bottom_y = center_y + (mid_bottom_y - center_y) // 2
+
+        # mark the middle point between the center and bottom point with an rectangle (blue)
+        bottom_x, bottom_y = np.int0([bottom_x, bottom_y])
+        cv2.rectangle(frame_out, (bottom_x, bottom_y), (bottom_x + 10, bottom_y + 10), (255, 0, 0), 2)
+
+        return bottom_x, bottom_y
+
+
+    def __calculate_object_parameters(self, upper):
         self.__my_camera.camera_open()
 
         number_of_data_points = 0
@@ -97,32 +153,15 @@ class ObjectFinder():
                         min_length = length02
                         rotation_direction = 1
                     
-                    # sort the points of the box with their y coordinate
-                    box = sorted(box, key=lambda p: p[1])
-
-                    # the last two points have the highest y coordinate
-                    bottom_points = box[2:] 
-
-                    # calculate the middle point between these two bottom points
-                    mid_bottom_x = (bottom_points[0][0] + bottom_points[1][0]) // 2
-                    mid_bottom_y = (bottom_points[0][1] + bottom_points[1][1]) // 2
-
-                    # mark the position with a rectangle (yellow)
-                    cv2.rectangle(frame_out, (mid_bottom_x, mid_bottom_y), (mid_bottom_x + 10, mid_bottom_y + 10), (0, 255, 255), 2)
-
+                   
                     # calculate the center of the rectangle
                     center_x = x + w // 2
                     center_y = y + h // 2
-                    # mark the center with a rectangle (red)
-                    cv2.rectangle(frame_out, (center_x, center_y), (center_x + 10, center_y + 10), (0, 0, 255), 2)
 
-                    # calucalate the position between the center and bottom points
-                    final_x = center_x + (mid_bottom_x - center_x) // 2
-                    final_y = center_y + (mid_bottom_y - center_y) // 2
-
-                    # mark the middle point between the center and bottom point with an rectangle (blue)
-                    final_x, final_y = np.int0([final_x, final_y])
-                    cv2.rectangle(frame_out, (final_x, final_y), (final_x + 10, final_y + 10), (255, 0, 0), 2)
+                    if (upper):
+                        x, y = self.__calculate_upper_points(frame_out, box, center_x, center_y)
+                    else:
+                        x, y = self.__calculate_bottom_points(frame_out, box, center_x, center_y)
 
                     angle = rect[2]
 
@@ -138,8 +177,8 @@ class ObjectFinder():
 
 
                     # Calculate position in real-world coordinates (linear interpolation)
-                    pos_x = -(23/2) + (final_x * (23 / 720))
-                    pos_y = 12 + ((final_y-480) * (16 / -480))
+                    pos_x = -(23/2) + (x * (23 / 720))
+                    pos_y = 12 + ((y-480) * (16 / -480))
                     
                     data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
                     number_of_data_points += 1
@@ -158,8 +197,8 @@ class ObjectFinder():
             # only wait for 5 seconds
             if time.time() - start_time >= 5:
                 self.__close_camera_and_window()
-
                 break
+            
 
 
         # Sort the data after their x coordinates
@@ -168,6 +207,12 @@ class ObjectFinder():
 
         # Release the camera and close all OpenCV windows
         self.__close_camera_and_window()
+
+    def calculate_upper_parameters(self):
+        self.__calculate_object_parameters(upper=True)
+
+    def calculate_bottom_parameters(self):
+        self.__calculate_object_parameters(upper=False)
 
 
     def get_position_of_ith_object(self, i):

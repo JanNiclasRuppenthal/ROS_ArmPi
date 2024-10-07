@@ -14,7 +14,7 @@ from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
-from util.object_finder import ObjectFinder
+from object_detection.object_finder import ObjectFinder
 from util.executor_subscriptions import MultiExecutor
 from util.movement import *
 
@@ -33,7 +33,7 @@ def end_scenario(executor, x, y, angle, rotation_direction, object_type):
 def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor):
     global object_id
     obj_finder = ObjectFinder()
-    obj_finder.calculate_object_parameters()
+    obj_finder.calculate_bottom_parameters()
     x, y = obj_finder.get_position_of_ith_object(object_id)
     angle = obj_finder.get_angle_of_ith_object(object_id)
     rotation_direction = obj_finder.get_rotation_direction_of_ith_object(object_id)

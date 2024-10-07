@@ -2,7 +2,7 @@ import time
 
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
-from util.object_type import ObjectType
+from object_detection.object_type import ObjectType
 import math
 
 AK = ArmIK()

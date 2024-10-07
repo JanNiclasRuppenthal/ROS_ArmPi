@@ -1,4 +1,4 @@
-from util.object_type import ObjectType
+from object_detection.object_type import ObjectType
 
 class AssembleQueue():
     def __init__(self):

@@ -1,10 +1,10 @@
 from movement.grab import *
-from util.object_finder import ObjectFinder
+from object_detection.object_finder import ObjectFinder
 
 
 
 obj_finder = ObjectFinder()
-obj_finder.calculate_object_parameters()
+obj_finder.calculate_upper_parameters()
 x, y = obj_finder.get_position_of_ith_object(0)
 angle = obj_finder.get_angle_of_ith_object(0)
 rotation_direction = obj_finder.get_rotation_direction_of_ith_object(0)

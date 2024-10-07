@@ -1,34 +1,26 @@
 import cv2
-import Camera
 import math
 import numpy as np
-import time
-from LABConfig import *
+
 
 from object_detection.object_type import calculate_object_type
 
-class ObjectFinder():
+class AObjectFinder():
 
     def __init__(self):
-        self.__my_camera = Camera.Camera()
-        self.__sorted_data = []
+        self.sorted_data = []
         self.__object_to_parameter = {}
 
-
-    def __close_camera_and_window(self):
-        self.__my_camera.camera_close()
-        cv2.destroyAllWindows()
-
     # euclidean distance
-    def __calculate_distance(self, point_a, point_b):
+    def calculate_distance(self, point_a, point_b):
         x_pow = math.pow(point_b[0] - point_a[0], 2)
         y_pow = math.pow(point_b[1] - point_a[1], 2)
         return math.sqrt(x_pow + y_pow)
 
-    def __collect_data_to_dictionary(self):
+    def collect_data_to_dictionary(self):
         count = 0
         position_of_objects = []
-        for data in self.__sorted_data:
+        for data in self.sorted_data:
             (x, y)  = (data[0], data[1])
             found_new_object = True
             for (prev_x, prev_y) in position_of_objects:
@@ -47,7 +39,7 @@ class ObjectFinder():
         # Setup one default tuple
         self.__object_to_parameter[count] = [(-1, -1, -1, -1, -1)]
 
-    def __calculate_upper_points(self, frame_out, box, center_x, center_y):
+    def calculate_upper_points(self, frame_out, box, center_x, center_y):
         # sort the points of the box with their y coordinate
         box = sorted(box, key=lambda p: p[1])
 
@@ -75,7 +67,7 @@ class ObjectFinder():
         return upper_x, upper_y
     
 
-    def __calculate_bottom_points(self, frame_out, box, center_x, center_y):
+    def calculate_bottom_points(self, frame_out, box, center_x, center_y):
         # sort the points of the box with their y coordinate
         box = sorted(box, key=lambda p: p[1])
 
@@ -101,118 +93,6 @@ class ObjectFinder():
         cv2.rectangle(frame_out, (bottom_x, bottom_y), (bottom_x + 10, bottom_y + 10), (255, 0, 0), 2)
 
         return bottom_x, bottom_y
-
-
-    def __calculate_object_parameters(self, upper):
-        self.__my_camera.camera_open()
-
-        number_of_data_points = 0
-        max_number_of_data_points = 33
-        data_list = []
-
-        start_time = time.time()
-        
-        while number_of_data_points < max_number_of_data_points:
-            img = self.__my_camera.frame
-            if img is not None:
-                frame = img.copy()
-
-                frame_resize = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_NEAREST)
-
-                # Apply Gaussian Blur to reduce noise and improve edge detection
-                blurred = cv2.GaussianBlur(frame_resize, (11, 11), 0)
-
-                frame_lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
-
-                frame_mask = cv2.inRange(frame_lab, color_range['red'][0], color_range['red'][1])  # mathematical operation on the original image and mask
-                opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6,6),np.uint8))  # Opening (morphology)
-                closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) # Closing (morphology)
-
-
-                # Find contours in the image
-                contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]
-                
-                frame_out = frame.copy()
-
-                for contour in contours:
-                    contour_area = math.fabs(cv2.contourArea(contour)) 
-                    if contour_area < 400: # contour is too small
-                        continue
-
-                    x, y, w, h = cv2.boundingRect(contour)
-                    rect = cv2.minAreaRect(contour)
-                    box = cv2.boxPoints(rect)
-                    box = np.int0(box)
-
-                    cv2.drawContours(frame_out, [box], 0, (0, 255, 0), 2)
-                    length01 = self.__calculate_distance(box[0], box[1])
-                    length02 = self.__calculate_distance(box[1], box[2])
-                    min_length = length01
-                    rotation_direction = -1
-                    if (min_length > length02):
-                        min_length = length02
-                        rotation_direction = 1
-                    
-                   
-                    # calculate the center of the rectangle
-                    center_x = x + w // 2
-                    center_y = y + h // 2
-
-                    if (upper):
-                        x, y = self.__calculate_upper_points(frame_out, box, center_x, center_y)
-                    else:
-                        x, y = self.__calculate_bottom_points(frame_out, box, center_x, center_y)
-
-                    angle = rect[2]
-
-                    # calculate the angle based on the rotation direction of the object
-                    if rotation_direction == 1:
-                        # If the object is right-rotated, then we need to subtract 90 from the angle
-                        # because the angle from cv2.minAreaRect is between the contour and the y-axis
-                        angle = angle
-                    else:
-                        # If the object is left-rotated, then we need to subtract 90 from the angle
-                        # because the angle from cv2.minAreaRect is between the contour and the x-axis
-                        angle = 90 - angle
-
-
-                    # Calculate position in real-world coordinates (linear interpolation)
-                    pos_x = -(23/2) + (x * (23 / 720))
-                    pos_y = 12 + ((y-480) * (16 / -480))
-                    
-                    data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
-                    number_of_data_points += 1
-                    start_time = time.time()
-            
-                '''
-                # Display the resulting frame
-                cv2.imshow('Frame', frame_out)
-
-                # Break the loop on 'ESC' key press
-                key = cv2.waitKey(30)
-                if key == 27:  # ESC key
-                    break
-                '''
-
-            # only wait for 5 seconds
-            if time.time() - start_time >= 5:
-                self.__close_camera_and_window()
-                break
-            
-
-
-        # Sort the data after their x coordinates
-        self.__sorted_data = sorted(data_list, key=lambda d: d[0])
-        self.__collect_data_to_dictionary()
-
-        # Release the camera and close all OpenCV windows
-        self.__close_camera_and_window()
-
-    def calculate_upper_parameters(self):
-        self.__calculate_object_parameters(upper=True)
-
-    def calculate_bottom_parameters(self):
-        self.__calculate_object_parameters(upper=False)
 
 
     def get_position_of_ith_object(self, i):
@@ -251,7 +131,7 @@ class ObjectFinder():
         mean_length = sum(lengths) / len(lengths)
         object_type = calculate_object_type(mean_length)
 
-        print(f"Angle to grab: alpha = %s" % object_type)
+        print(f"Type of object: alpha = %s" % object_type)
 
         return object_type
     

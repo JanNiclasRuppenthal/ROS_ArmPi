@@ -1,5 +1,5 @@
 from movement.grab import *
-from object_detection.object_finder import ObjectFinder
+from object_detection.object_finder_stationary import ObjectFinder
 
 
 

@@ -58,8 +58,8 @@ class ObjectFinder(AObjectFinder):
                     box = np.int0(box)
 
                     cv2.drawContours(frame_out, [box], 0, (0, 255, 0), 2)
-                    length01 = self.__calculate_distance(box[0], box[1])
-                    length02 = self.__calculate_distance(box[1], box[2])
+                    length01 = self.calculate_distance(box[0], box[1])
+                    length02 = self.calculate_distance(box[1], box[2])
                     min_length = length01
                     rotation_direction = -1
                     if (min_length > length02):

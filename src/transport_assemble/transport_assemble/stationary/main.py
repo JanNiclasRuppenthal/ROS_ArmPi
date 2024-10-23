@@ -1,4 +1,4 @@
-from movement.grab import *
+from transport_assemble.movement.grab import *
 from object_detection.object_finder_stationary import ObjectFinder
 
 

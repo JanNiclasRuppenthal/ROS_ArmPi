@@ -6,11 +6,12 @@ from std_srvs.srv import Trigger
 from hiwonder_servo_msgs.msg import MultiRawIdPosDur
 from visual_processing.msg import Result
 from visual_processing.srv import SetParam
-from color_tracking.srv import SetTarget #TODO: change that to a new service in armpi_pro_jazzy
 
 from armpi_pro_kinematics import ik_transform
 from armpi_pro import bus_servo_control, pid
 from armpi_pro_service_client.client import call_service
+from armpi_pro_common_service.srv import SetTarget
+
 from distance_ultrasonic.srv import Distance
 
 import time

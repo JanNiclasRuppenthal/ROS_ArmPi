@@ -1,4 +1,4 @@
-from robot.subscriber.Asubscribe import RobotSubscriber
+from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
 from armpi_interfaces.msg import AssembleQueue
 
 class AssembleQueueSubscriber(RobotSubscriber):
@@ -8,7 +8,8 @@ class AssembleQueueSubscriber(RobotSubscriber):
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):
-        self.get_logger().info('I heard a assembly queue message from %d with the following type: "%d" and it has "%d" objects.' % (msg.id, msg.type, msg.number_objects))
+        if self.get_ID() != msg.id:
+            self.get_logger().info('I heard a assembly queue message from %d with the following type: "%d" and it has "%d" objects.' % (msg.id, msg.type, msg.number_objects))
 
         self.get_armpi().set_object_type_value_next_robot(msg.type)
         self.get_armpi().get_assemble_queue().add_assemble_request(msg.id, msg.type, msg.number_objects)

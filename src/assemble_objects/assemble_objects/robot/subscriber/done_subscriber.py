@@ -1,4 +1,4 @@
-from robot.subscriber.Asubscribe import RobotSubscriber
+from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
 from armpi_interfaces.msg import IDArmPi
 
 class DoneSubscriber(RobotSubscriber):

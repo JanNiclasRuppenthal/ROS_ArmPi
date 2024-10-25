@@ -1,5 +1,5 @@
-from transport_assemble.movement.grab import *
-from object_detection.object_finder_stationary import ObjectFinder
+from movement.stationary.pipes.grab import *
+from object_detection.stationary.object_finder import ObjectFinder
 
 
 

@@ -5,16 +5,16 @@ from threading import Thread
 import rclpy
 
 import rclpy.context
-from robot.publish import create_delivery_publisher_node
-from robot.finish_publisher import create_finish_publisher_node
-from robot.subscribe import create_delivery_subscriber_node
-from robot.finish_subscriber import create_finish_subscriber_node
+from robot.publisher.delivery_publisher import create_delivery_publisher_node
+from robot.publisher.finish_publisher import create_finish_publisher_node
+from robot.subscriber.delivery_subscriber import create_delivery_subscriber_node
+from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.armpi import ArmPi
+from common_executor.executor_subscriptions import MultiExecutor
+from movement.stationary.cubes.coordinates import get_coordinates
+from movement.stationary.cubes.deliver import initMove, deliver
 
-from util.coordinates import get_coordinates
-from util.deliver import initMove, deliver
 from util.cam import Cam
-from util.executor_subscriptions import MultiExecutor
 
 def read_all_arguments():
     ID = int(sys.argv[1])

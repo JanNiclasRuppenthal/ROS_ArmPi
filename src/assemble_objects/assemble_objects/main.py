@@ -14,9 +14,10 @@ from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
-from object_detection.object_finder_stationary import ObjectFinder
-from util.executor_subscriptions import MultiExecutor
-from util.movement import *
+from object_detection.stationary.object_finder import ObjectFinder
+from common_executor.executor_subscriptions import MultiExecutor
+from movement.stationary.pipes.grab import *
+
 
 object_id = 0
 

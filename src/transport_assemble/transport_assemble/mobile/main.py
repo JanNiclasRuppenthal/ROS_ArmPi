@@ -1,6 +1,7 @@
 import rclpy
+from rclpy.executors import MultiThreadedExecutor
 
-from std_srvs.srv import *
+from std_srvs.srv import Trigger
 
 from hiwonder_servo_msgs.msg import MultiRawIdPosDur
 from visual_processing.msg import Result
@@ -11,6 +12,9 @@ from armpi_pro_kinematics import ik_transform
 from armpi_pro import bus_servo_control, pid
 from armpi_pro_service_client.client import call_service
 from distance_ultrasonic.srv import Distance
+
+import time
+from threading import Thread
 
 img_w = 640
 img_h = 480
@@ -33,7 +37,7 @@ def initMove():
     target = ik.setPitchRanges((0, 0.12, 0.16), -90, -92, -88) # 逆运动学求解(inverse kinematics solving)
     if target:
         servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 1.5, ((1, 200), (2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
+        bus_servo_control.set_servos(joints_pub, 2, ((1, 50), (2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
  
 def rotate_towards_object(x, y):
     global x_dis, z_dis
@@ -62,11 +66,48 @@ def rotate_towards_object(x, y):
         bus_servo_control.set_servos(joints_pub, 0.02, (
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         
-    return dx, dy
+    return dx, dy, x_dis
+
+def test(x_dis):
+    print("in test")
+    call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
+    print("After first call")
+
+    target = ik.setPitchRanges((0, 0.12, 0.20), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
+    if target:
+        servo_data = target[1]
+        bus_servo_control.set_servos(joints_pub, 1, (
+            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+        time.sleep(2)
+
+    dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
+    dist = (dist_response.distance_cm - 10) / 100
+    print(f"Ultrasonic distance: {dist}")
+    print("After second call")
+
+    target = ik.setPitchRanges((0, 0.12 + dist, 0.18), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
+    print(target)
+    if target:
+        servo_data = target[1]
+        bus_servo_control.set_servos(joints_pub, 1, (
+            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+        time.sleep(2)
+
+    results = []
+    for i in range(0, 100, 10):
+        pulse = x_dis - 50 + i
+        bus_servo_control.set_servos(joints_pub, 0.02, ((6, pulse),))
+        time.sleep(0.5)
+        dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
+        dist = dist_response.distance_cm
+        results += [(pulse, dist)]
+
+    print(sorted(results, key=lambda x: x[1]))
 
 
+dist = None
 def run(msg):
-    global enable_rotation
+    global enable_rotation, dist
 
     x = msg.center_x
     y = msg.center_y
@@ -75,16 +116,22 @@ def run(msg):
     distance_y = 0
 
     # Do not rotate towards the object, if the robot is already aligned to the object
-    #if enable_rotation:
-    distance_x, distance_y = rotate_towards_object(x, y)
+    if enable_rotation:
+        distance_x, distance_y, x_dis = rotate_towards_object(x, y)
 
-    if (abs(distance_x) < 1 and abs(distance_y) < 0.5):
-        #enable_rotation = False
+    print(f"Distance: ({distance_x}, {distance_y})")
+
+    if (enable_rotation and abs(distance_x) < 0.5 and abs(distance_y) < 0.05):
+        enable_rotation = False
         print("here")
-        req = Distance.Request()
-        dist = call_service(node, Distance, '/get_distance', req)
+        t1 = Thread(target=test, args=(x_dis,))
+        t1.start()
+        
+
+          
 
 initMove()
+time.sleep(2.5)
 
 call_service(node, Trigger, '/visual_processing/enter', Trigger.Request())
 result_sub = node.create_subscription(Result, '/visual_processing/result', run, 1)
@@ -94,5 +141,6 @@ req.type = 'transport_scenario'
 req.color = 'green'
 call_service(node, SetParam, '/visual_processing/set_running', req)
 
-
-rclpy.spin(node)
+executor = MultiThreadedExecutor()
+executor.add_node(node)
+executor.spin()

@@ -64,8 +64,9 @@ def rotate_towards_object(x, y):
     target = ik.setPitchRanges((0, 0.12, 0.16), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
     if target:
         servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 0.02, (
+        bus_servo_control.set_servos(joints_pub, 0.5, (
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+        time.sleep(0.5)
         
     return dx, dy, x_dis
 
@@ -82,11 +83,11 @@ def test(x_dis):
         time.sleep(2)
 
     dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    dist = (dist_response.distance_cm - 10) / 100
-    print(f"Ultrasonic distance: {dist}")
+    init_dist = (dist_response.distance_cm - 10) / 100
+    print(f"Ultrasonic distance: {init_dist}")
     print("After second call")
 
-    target = ik.setPitchRanges((0, 0.12 + dist, 0.18), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
+    target = ik.setPitchRanges((0, 0.12 + init_dist, 0.22), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
     print(target)
     if target:
         servo_data = target[1]
@@ -95,16 +96,43 @@ def test(x_dis):
         time.sleep(2)
 
     results = []
-    for i in range(0, 100, 10):
-        pulse = x_dis - 50 + i
-        bus_servo_control.set_servos(joints_pub, 0.02, ((6, pulse),))
+    for i in range(0, 40, 10):
+        pulse = x_dis - 20 + i
+        bus_servo_control.set_servos(joints_pub, 0.2, ((6, pulse),))
         time.sleep(0.5)
         dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
+        time.sleep(1)
         dist = dist_response.distance_cm
         results += [(pulse, dist)]
 
-    print(sorted(results, key=lambda x: x[1]))
+    sorted_results_after_distance = sorted(results, key=lambda x: x[1])
+    print(sorted_results_after_distance)
 
+    pulse, distance = sorted_results_after_distance[0]
+
+    time.sleep(1)
+    bus_servo_control.set_servos(joints_pub, 0.5, ((6, pulse+20),))
+    time.sleep(2)
+    print("Go forward")
+
+    distance = (distance - 2)/100
+
+    target = ik.setPitchRanges((0, 0.12 + init_dist + distance, 0.16), -90, -85, -95)
+    if target:
+        print("reachable")
+        servo_data = target[1]
+        bus_servo_control.set_servos(joints_pub, 1, (
+            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, pulse+20)))
+        time.sleep(2)
+    else:
+        print(f"y: {0.12 + init_dist + distance}")
+        print("Not reachable")
+
+    print("I should be in the correct position")
+
+    time.sleep(0.5)
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 400), ))
+    time.sleep(1)
 
 dist = None
 def run(msg):
@@ -113,8 +141,8 @@ def run(msg):
     x = msg.center_x
     y = msg.center_y
     other_data = msg.data
-    distance_x = 0
-    distance_y = 0
+    distance_x = None
+    distance_y = None
 
     # Do not rotate towards the object, if the robot is already aligned to the object
     if enable_rotation:
@@ -122,7 +150,7 @@ def run(msg):
 
     print(f"Distance: ({distance_x}, {distance_y})")
 
-    if (enable_rotation and abs(distance_x) < 0.5 and abs(distance_y) < 0.05):
+    if (enable_rotation and abs(distance_x) < 1 and abs(distance_y) < 0.05):
         enable_rotation = False
         print("here")
         t1 = Thread(target=test, args=(x_dis,))
@@ -132,7 +160,7 @@ def run(msg):
           
 
 initMove()
-time.sleep(2.5)
+time.sleep(4)
 
 call_service(node, Trigger, '/visual_processing/enter', Trigger.Request())
 result_sub = node.create_subscription(Result, '/visual_processing/result', run, 1)

@@ -95,8 +95,10 @@ def test(x_dis):
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(2)
 
+    '''
+
     results = []
-    for i in range(0, 40, 10):
+    for i in range(0, 60, 10):
         pulse = x_dis - 20 + i
         bus_servo_control.set_servos(joints_pub, 0.2, ((6, pulse),))
         time.sleep(0.5)
@@ -107,13 +109,20 @@ def test(x_dis):
 
     sorted_results_after_distance = sorted(results, key=lambda x: x[1])
     print(sorted_results_after_distance)
+    print(x_dis)
 
-    pulse, distance = sorted_results_after_distance[0]
+    pulse, distance = sorted_results_after_distance[0] 
+    
 
     time.sleep(1)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((6, pulse+20),))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((6, x_dis),))
     time.sleep(2)
+    '''
     print("Go forward")
+
+    dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
+    time.sleep(1)
+    distance = dist_response.distance_cm
 
     distance = (distance - 2)/100
 
@@ -122,7 +131,7 @@ def test(x_dis):
         print("reachable")
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 1, (
-            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, pulse+20)))
+            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(2)
     else:
         print(f"y: {0.12 + init_dist + distance}")
@@ -150,7 +159,9 @@ def run(msg):
 
     print(f"Distance: ({distance_x}, {distance_y})")
 
-    if (enable_rotation and abs(distance_x) < 1 and abs(distance_y) < 0.05):
+    #TODO: What if distance_x is constant? Try to modify the pulse of servo 6
+
+    if (enable_rotation and abs(distance_x) <= 0.75 and abs(distance_y) < 0.05):
         enable_rotation = False
         print("here")
         t1 = Thread(target=test, args=(x_dis,))

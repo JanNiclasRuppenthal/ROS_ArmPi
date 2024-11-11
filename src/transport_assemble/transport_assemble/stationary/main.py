@@ -1,15 +1,5 @@
-from movement.stationary.pipes.grab import *
-from object_detection.stationary.object_finder import ObjectFinder
+from object_detection.stationary.yellow_grabber_detection import GrabberDetection
 
 
-
-obj_finder = ObjectFinder()
-obj_finder.calculate_upper_parameters()
-x, y = obj_finder.get_position_of_ith_object(0)
-angle = obj_finder.get_angle_of_ith_object(0)
-rotation_direction = obj_finder.get_rotation_direction_of_ith_object(0)
-object_type = obj_finder.get_object_type_of_ith_object(0)
-number_of_objects = obj_finder.get_number_of_objects()
-
-grab_the_object(0, x, y, angle, rotation_direction, object_type)
-go_to_delivery_position()
+grabber_detection = GrabberDetection()
+x, y = grabber_detection.calculate_middle_between_grabber()

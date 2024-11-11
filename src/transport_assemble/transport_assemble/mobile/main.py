@@ -140,7 +140,7 @@ def test(x_dis):
     print("I should be in the correct position")
 
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 400), ))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 360), )) #or 400 pulse?
     time.sleep(1)
 
 dist = None

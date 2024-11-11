@@ -1,10 +1,10 @@
-from object_detection.Aobject_finder import AObjectFinder
+from object_detection.Adetection import ADetection
 import cv2
 import numpy as np
 import time
 import math
 
-class ObjectFinder(AObjectFinder):
+class ObjectFinder(ADetection):
 
     def __init__(self):
         super().__init__()

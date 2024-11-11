@@ -1,4 +1,4 @@
-from object_detection.Aobject_finder import AObjectFinder
+from object_detection.Adetection import ADetection
 from LABConfig import *
 import Camera
 import cv2
@@ -6,7 +6,7 @@ import numpy as np
 import time
 import math
 
-class ObjectFinder(AObjectFinder):
+class Detection(ADetection):
 
     def __init__(self):
         super().__init__()
@@ -16,7 +16,12 @@ class ObjectFinder(AObjectFinder):
         self.__my_camera.camera_close()
         cv2.destroyAllWindows()
 
-    def __calculate_object_parameters(self, upper):
+    def _calculate_real_world_coordinates(self, x, y):
+        x_world_coord = -(23/2) + (x * (23 / 720))
+        y_world_coord = 12 + ((y-480) * (16 / -480))
+        return x_world_coord, y_world_coord
+
+    def _calculate_object_parameters(self, upper, color):
         self.__my_camera.camera_open()
 
         number_of_data_points = 0
@@ -37,7 +42,7 @@ class ObjectFinder(AObjectFinder):
 
                 frame_lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
 
-                frame_mask = cv2.inRange(frame_lab, color_range['red'][0], color_range['red'][1])  # mathematical operation on the original image and mask
+                frame_mask = cv2.inRange(frame_lab, color_range[color][0], color_range[color][1])  # mathematical operation on the original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6,6),np.uint8))  # Opening (morphology)
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6,6),np.uint8)) # Closing (morphology)
 
@@ -90,8 +95,7 @@ class ObjectFinder(AObjectFinder):
 
 
                     # Calculate position in real-world coordinates (linear interpolation)
-                    pos_x = -(23/2) + (x * (23 / 720))
-                    pos_y = 12 + ((y-480) * (16 / -480))
+                    pos_x, pos_y = self._calculate_real_world_coordinates(x, y)
                     
                     data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
                     number_of_data_points += 1
@@ -120,10 +124,3 @@ class ObjectFinder(AObjectFinder):
 
         # Release the camera and close all OpenCV windows
         self.__close_camera_and_window()
-
-
-    def calculate_upper_parameters(self):
-        self.__calculate_object_parameters(upper=True)
-
-    def calculate_bottom_parameters(self):
-        self.__calculate_object_parameters(upper=False)

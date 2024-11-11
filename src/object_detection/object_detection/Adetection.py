@@ -5,7 +5,7 @@ import numpy as np
 
 from object_detection.object_type import calculate_object_type
 
-class AObjectFinder():
+class ADetection():
 
     def __init__(self):
         self.sorted_data = []

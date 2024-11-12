@@ -22,8 +22,10 @@ img_h = 480
 x_dis = 500
 Z_DIS = 0.2
 z_dis = Z_DIS
-x_pid = pid.PID(P=0.08, I=0.001, D=0)  # pid初始化(pid initialization)
+x_pid = pid.PID(P=0.08, I=0.001, D=0)  # pid initialization
 z_pid = pid.PID(P=0.00003, I=0, D=0)
+
+DISTANCE_CAMERA_ULTRASONIC = 0.07 # cm
 
 enable_rotation = True
 
@@ -35,112 +37,81 @@ node = rclpy.create_node('init')
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
 
 def initMove():
-    target = ik.setPitchRanges((0, 0.12, 0.16), -90, -92, -88) # 逆运动学求解(inverse kinematics solving)
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 50),))
+    time.sleep(0.5)
+
+    target = ik.setPitchRanges((0, 0.12, 0.16), -90, -92, -88)
     if target:
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 2, ((1, 50), (2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
+        time.sleep(2)
  
 def rotate_towards_object(x, y):
     global x_dis, z_dis
 
-    # X轴追踪(tracking along the X-axis)
-    x_pid.SetPoint = img_w / 2.0  # 设定(set)
-    x_pid.update(x)        # 当前(current)
-    dx = x_pid.output      # 输出(output)
+    # tracking along the X-axis
+    x_pid.SetPoint = img_w / 2.0
+    x_pid.update(x)
+    dx = x_pid.output
     x_dis += int(dx)             
-    # 限幅(Clamping)
+    #
     x_dis = 200 if x_dis < 200 else x_dis
     x_dis = 800 if x_dis > 800 else x_dis
 
-    # Z轴追踪((tracking along the Z-axis)）
-    z_pid.SetPoint = img_h / 2.0  # 设定(set)
-    z_pid.update(y)        # 当前(current)
-    dy = z_pid.output      # 输出(output)
+    #tracking along the Z-axis
+    z_pid.SetPoint = img_h / 2.0
+    z_pid.update(y)
+    dy = z_pid.output
     z_dis += dy
 
     z_dis = 0.22 if z_dis > 0.22 else z_dis
     z_dis = 0.17 if z_dis < 0.17 else z_dis
 
-    target = ik.setPitchRanges((0, 0.12, 0.16), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
+    target = ik.setPitchRanges((0, 0.12, round(z_dis, 4)), -90, -85, -95)
     if target:
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 0.5, (
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(0.5)
         
-    return dx, dy, x_dis
+    return dx, dy, x_dis, z_dis
 
-def test(x_dis):
-    print("in test")
+def grab(x_dis, z_dis):
+    global DISTANCE_CAMERA_ULTRASONIC
+
     call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
-    print("After first call")
+    print("Stop visual_processing service!")
 
-    target = ik.setPitchRanges((0, 0.12, 0.20), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
+    height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
+    print(f"new Height for ultrasonic sensor {height}")
+    target = ik.setPitchRanges((0, 0.12, height), -90, -85, -95)
     if target:
+        print(target)
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 1, (
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(2)
 
     dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    init_dist = (dist_response.distance_cm - 10) / 100
-    print(f"Ultrasonic distance: {init_dist}")
-    print("After second call")
+    distance = (dist_response.distance_cm - 2.5) / 100
+    print(f"Ultrasonic distance: {distance}")
 
-    target = ik.setPitchRanges((0, 0.12 + init_dist, 0.22), -90, -85, -95) # 逆运动学求解（inverse kinematics solving）
-    print(target)
-    if target:
-        servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 1, (
-            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
-        time.sleep(2)
-
-    '''
-
-    results = []
-    for i in range(0, 60, 10):
-        pulse = x_dis - 20 + i
-        bus_servo_control.set_servos(joints_pub, 0.2, ((6, pulse),))
-        time.sleep(0.5)
-        dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-        time.sleep(1)
-        dist = dist_response.distance_cm
-        results += [(pulse, dist)]
-
-    sorted_results_after_distance = sorted(results, key=lambda x: x[1])
-    print(sorted_results_after_distance)
-    print(x_dis)
-
-    pulse, distance = sorted_results_after_distance[0] 
-    
-
-    time.sleep(1)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((6, x_dis),))
-    time.sleep(2)
-    '''
-    print("Go forward")
-
-    dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    time.sleep(1)
-    distance = dist_response.distance_cm
-
-    distance = (distance - 2)/100
-
-    target = ik.setPitchRanges((0, 0.12 + init_dist + distance, 0.16), -90, -85, -95)
+    target = ik.setPitchRanges((0, 0.12 + distance, height + 0.01), -90, -85, -95)
     if target:
         print("reachable")
+        print(target)
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 1, (
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(2)
+        print("I should be in the correct position!")
     else:
-        print(f"y: {0.12 + init_dist + distance}")
-        print("Not reachable")
+        print("not reachable!")
+        return
 
-    print("I should be in the correct position")
-
+    print("Grab the pipe!")
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 360), )) #or 400 pulse?
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 340), ))
     time.sleep(1)
 
 dist = None
@@ -155,7 +126,7 @@ def run(msg):
 
     # Do not rotate towards the object, if the robot is already aligned to the object
     if enable_rotation:
-        distance_x, distance_y, x_dis = rotate_towards_object(x, y)
+        distance_x, distance_y, x_dis, z_dis = rotate_towards_object(x, y)
 
     print(f"Distance: ({distance_x}, {distance_y})")
 
@@ -163,8 +134,7 @@ def run(msg):
 
     if (enable_rotation and abs(distance_x) <= 0.75 and abs(distance_y) < 0.05):
         enable_rotation = False
-        print("here")
-        t1 = Thread(target=test, args=(x_dis,))
+        t1 = Thread(target=grab, args=(x_dis, z_dis,))
         t1.start()
         
 

@@ -26,6 +26,7 @@ x_pid = pid.PID(P=0.08, I=0.001, D=0)  # pid initialization
 z_pid = pid.PID(P=0.00003, I=0, D=0)
 
 DISTANCE_CAMERA_ULTRASONIC = 0.07 # cm
+count_messages = 0
 
 enable_rotation = True
 
@@ -79,6 +80,7 @@ def rotate_towards_object(x, y):
 def grab(x_dis, z_dis):
     global DISTANCE_CAMERA_ULTRASONIC
 
+    time.sleep(0.5)
     call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
     print("Stop visual_processing service!")
 
@@ -111,18 +113,23 @@ def grab(x_dis, z_dis):
 
     print("Grab the pipe!")
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 340), ))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 350), ))
     time.sleep(1)
 
 dist = None
 def run(msg):
-    global enable_rotation, dist
+    global enable_rotation, dist, count_messages
 
     x = msg.center_x
     y = msg.center_y
     other_data = msg.data
     distance_x = None
     distance_y = None
+
+    count_messages = (count_messages + 1) % 10
+
+    if count_messages != 0:
+        return
 
     # Do not rotate towards the object, if the robot is already aligned to the object
     if enable_rotation:

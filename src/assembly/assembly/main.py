@@ -12,7 +12,7 @@ from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.armpi import ArmPi
 from common_executor.executor_subscriptions import MultiExecutor
 from movement.stationary.cubes.coordinates import get_coordinates
-from movement.stationary.cubes.deliver import initMove, deliver
+from movement.stationary.cubes.deliver import init_move, deliver
 
 from util.cam import Cam
 
@@ -42,7 +42,7 @@ def main():
     cam = Cam()
     cam.open()
 
-    initMove()
+    init_move()
     time.sleep(2)
 
     while (True):
@@ -63,7 +63,7 @@ def main():
             if (world_X != -1 and world_Y != -1):
                 deliver(world_X, world_Y, last_robot)
                 
-                initMove()  # back to initial position
+                init_move()  # back to initial position
                 time.sleep(1.5)
 
                 #publish message

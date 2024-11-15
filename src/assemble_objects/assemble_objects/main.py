@@ -14,7 +14,7 @@ from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
-from object_detection.stationary.object_finder import ObjectFinder
+from object_detection.stationary.detection import Detection
 from common_executor.executor_subscriptions import MultiExecutor
 from movement.stationary.pipes.grab import *
 
@@ -28,18 +28,18 @@ def read_all_arguments():
 
 def end_scenario(executor, x, y, angle, rotation_direction, object_type):
     put_down_grabbed_object(x, y, angle, rotation_direction, object_type)
-    initMove()
+    init_move()
     executor.execute_shutdown()
 
 def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor):
     global object_id
-    obj_finder = ObjectFinder()
-    obj_finder.calculate_bottom_parameters()
-    x, y = obj_finder.get_position_of_ith_object(object_id)
-    angle = obj_finder.get_angle_of_ith_object(object_id)
-    rotation_direction = obj_finder.get_rotation_direction_of_ith_object(object_id)
-    object_type = obj_finder.get_object_type_of_ith_object(object_id)
-    number_of_objects = obj_finder.get_number_of_objects()
+    obj_detection = Detection()
+    obj_detection.calculate_bottom_parameters()
+    x, y = obj_detection.get_position_of_ith_object(object_id)
+    angle = obj_detection.get_angle_of_ith_object(object_id)
+    rotation_direction = obj_detection.get_rotation_direction_of_ith_object(object_id)
+    object_type = obj_detection.get_object_type_of_ith_object(object_id)
+    number_of_objects = obj_detection.get_number_of_objects()
 
     # found no object in the field
     if (x == -1 and y == -1):
@@ -95,7 +95,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
         armpi.get_assemble_queue().reset()
         if put_down_object:
             put_down_grabbed_object(x, y, angle, rotation_direction, object_type)
-            initMove()
+            init_move()
             object_id += 1
             return
 
@@ -111,7 +111,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
             time.sleep(0.1)
 
         put_down_assembled_object(object_type)
-        initMove()
+        init_move()
 
     else:
         go_to_upper_position()
@@ -125,7 +125,7 @@ def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, ass
         # set the z value a little bit higher so there is no contact between these two objects
         z += 12
         assemble_objects(x, y, z, angle)
-        move_back(x, z, angle)
+        move_back_to_y_25(x, z, angle)
 
         # send to the next robot that it can proceed
         done_publisher.send_msg()
@@ -156,7 +156,7 @@ def main():
 
     armpi = ArmPi(ID, number_of_robots)
 
-    initMove()
+    init_move()
 
     rclpy.init()
 

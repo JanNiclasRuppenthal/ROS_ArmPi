@@ -19,7 +19,7 @@ grab_pulse_ID_1 = {
     ObjectType.LARGE : 450
 }
 
-def initMove():
+def init_move():
     Board.setBusServoPulse(1, 500 - 50, 300)
     Board.setBusServoPulse(2, 500, 500)
     result = AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
@@ -105,6 +105,11 @@ def go_to_delivery_position():
     Board.setBusServoPulse(2, 500, 500)
     time.sleep(0.8)
 
+def move_down_from_delivery_position():
+    result = AK.setPitchRangeMoving((0, 20, 20), 5, 5, 15)
+    time.sleep(result[2]/1000)
+    print(result)
+
 def go_to_assemble_position(x, y, z, angle):
     # Go into the right position
     result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0)
@@ -131,14 +136,13 @@ def assemble_objects(x, y, z, angle):
 
     open_claw()
 
-def move_back(x, z, angle):
-    # move back to y = 25
+def move_back_to_y_25(x, z, angle):
     result = AK.setPitchRangeMoving((-x, 25, z - 6), angle, angle, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
     # go to the init position again
-    initMove()
+    init_move()
 
 def put_down_grabbed_object(x, y, angle, rotation_direction, object_type):
     # Go to the position of the object with z = 7

@@ -15,7 +15,7 @@ from threading import Thread
 rclpy.init()
 
 from movement.mobile.pipes.grab import init_move, get_grabbing_node
-from movement.mobile.drive import drive_backwards, rotate_right, rotate_left
+from movement.mobile.drive import drive_backwards, rotate_90_deg_right, rotate_90_deg_left
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 
 node = rclpy.create_node('main_transport')
@@ -40,7 +40,7 @@ def process_scenario(armpi):
     print("Drive backwards and rotate!")
 
     drive_backwards(2)
-    rotate_right()
+    rotate_90_deg_right()
 
     #TODO: Drive to the next robot
 

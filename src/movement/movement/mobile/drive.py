@@ -31,7 +31,7 @@ def drive_backwards(duration_in_s):
     __stop_armpi_pro()
 
 
-def rotate_right():
+def rotate_90_deg_right():
     backwards_message = __create_set_velocity_message(0.0, 90.0, -0.45)
     set_velocity.publish(backwards_message) 
 
@@ -39,11 +39,11 @@ def rotate_right():
 
     __stop_armpi_pro()
 
-def rotate_left():
+def rotate_90_deg_left():
     backwards_message = __create_set_velocity_message(0.0, 90.0, 0.45)
     set_velocity.publish(backwards_message) 
 
-    time.sleep(TWO_SECONDS)
+    time.sleep(TWO_AND_HALF_SECONDS)
 
     __stop_armpi_pro()
 

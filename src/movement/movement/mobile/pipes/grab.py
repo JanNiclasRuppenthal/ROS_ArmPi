@@ -108,7 +108,6 @@ def grab_pipe(x_dis, z_dis, angle):
 
     target = ik.setPitchRanges((0, 0.12 + distance, height + 0.01), -90, -85, -95)
     if target:
-        print("reachable")
         print(target)
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 1, (

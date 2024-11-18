@@ -63,7 +63,6 @@ def process_scenario(armpi, holding_publisher):
         move_down_from_delivery_position()
         init_move()
 
-        #TODO: Send Notification to ArmPi Pro that it can drive away
         print("ArmPi Pro can now drive away and my Job is done!")
         holding_publisher.send_msg()
     else:

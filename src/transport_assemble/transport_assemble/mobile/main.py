@@ -14,8 +14,9 @@ from threading import Thread
 
 rclpy.init()
 
-from movement.mobile.pipes.grab import init_move, get_movement_node
-from robot.subscriber.holding_subscriber import create_pos_subscriber_node
+from movement.mobile.pipes.grab import init_move, get_grabbing_node
+from movement.mobile.drive import drive_backwards, rotate_right, rotate_left
+from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 
 node = rclpy.create_node('main_transport')
 
@@ -36,7 +37,10 @@ def process_scenario(armpi):
     armpi.reset_first_robot_hold_pipe()
 
     #TODO: Drive backwards
-    print("Drive backwards!")
+    print("Drive backwards and rotate!")
+
+    drive_backwards(2)
+    rotate_right()
 
     #TODO: Drive to the next robot
 
@@ -46,8 +50,8 @@ def spinning_executor(armpi):
     print("Spinning")
     executor = MultiThreadedExecutor()
     executor.add_node(node)
-    executor.add_node(get_movement_node())
-    executor.add_node(create_pos_subscriber_node(armpi))
+    executor.add_node(get_grabbing_node())
+    executor.add_node(create_holding_subscriber_node(armpi))
     executor.spin()
 
 def main():

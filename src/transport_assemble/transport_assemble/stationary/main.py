@@ -6,6 +6,8 @@ from rclpy.executors import MultiThreadedExecutor
 
 from robot.armpi import ArmPi
 from robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
+from robot.publisher.holding_publisher import create_holding_publisher_node
+
 from object_detection.stationary.pipe_detection import PipeDetection
 from movement.stationary.pipes.grab import *
 
@@ -16,7 +18,7 @@ def read_all_arguments():
     number_of_stationary_robots = int(sys.argv[2])
     return ID, number_of_stationary_robots
 
-def process_scenario(armpi):
+def process_scenario(armpi, holding_publisher):
     #TODO: Detect all pipes in the view
     pipe_detection = PipeDetection()
     pipe_detection.calculate_bottom_parameters()
@@ -63,6 +65,7 @@ def process_scenario(armpi):
 
         #TODO: Send Notification to ArmPi Pro that it can drive away
         print("ArmPi Pro can now drive away and my Job is done!")
+        holding_publisher.send_msg()
     else:
         pass
 
@@ -85,13 +88,15 @@ def main():
 
     rclpy.init()
 
+    #TODO: Create all the required publisher
+    holding_publisher = create_holding_publisher_node(armpi)
+
+    #TODO: start the executor with all the required subscriber
     executor_thread = Thread(target=spinning_executor, args=(armpi,))
     executor_thread.start()
 
-    #TODO: start the executor with all the required subscriber
-
     #while (True):
-    process_scenario(armpi)
+    process_scenario(armpi, holding_publisher)
 
         #TODO: Terminate the scenario if executor is shutdown
 

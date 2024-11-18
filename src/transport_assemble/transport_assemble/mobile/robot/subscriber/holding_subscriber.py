@@ -11,6 +11,6 @@ class HoldingSubscriber(RobotSubscriber):
         self.get_logger().info('I got notified!')
         self.get_armpi().set_first_robot_hold_pipe(False)
 
-def create_pos_subscriber_node(armpi):
+def create_holding_subscriber_node(armpi):
     __subscriber = HoldingSubscriber(armpi)
     return __subscriber

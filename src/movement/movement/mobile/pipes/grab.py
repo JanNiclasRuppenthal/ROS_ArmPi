@@ -31,12 +31,12 @@ enable_rotation = True
 ik = ik_transform.ArmIK()
 
 # TODO: Maybe I need to save the nodes somewhere
-node = rclpy.create_node('movement_armpi_pro')
+node = rclpy.create_node('grabbing_armpi_pro')
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
 trigger_grab_pub = node.create_publisher(IDArmPi, 'grabbed', 1)
 
 
-def get_movement_node():
+def get_grabbing_node():
     return node
 
 def init_move():
@@ -103,7 +103,7 @@ def grab_pipe(x_dis, z_dis, angle):
         time.sleep(2)
 
     dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    distance = (dist_response.distance_cm - 4) / 100
+    distance = (dist_response.distance_cm - 4.5) / 100
     print(f"Ultrasonic distance: {distance}")
 
     target = ik.setPitchRanges((0, 0.12 + distance, height + 0.01), -90, -85, -95)
@@ -121,7 +121,7 @@ def grab_pipe(x_dis, z_dis, angle):
 
     print("Grab the pipe!")
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 350), ))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 330), ))
     time.sleep(1)
 
     id_armpi_message = IDArmPi()

@@ -1,4 +1,4 @@
-from util.assemble_queue import AssembleQueue
+from assemble_queue.near_assemble.assemble_queue import AssembleQueue
 
 class ArmPi():
     def __init__(self, ID, number_of_robots):

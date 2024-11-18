@@ -49,6 +49,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
         - Implement the detection of duplicates
     '''
 
+    #TODO: Write this in an another workspace package
     while True:
         assemble_publisher.send_msg()
 
@@ -91,7 +92,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
         if put_down_object:
             put_down_grabbed_object(x, y, angle, rotation_direction, object_type)
             init_move()
-            object_id += 1
+            pipe_nr += 1
             return
     
     #TODO: The robot has the bigger pipe
@@ -118,7 +119,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
 
         pass
 
-    #TODO: I may need to reset some variable like assemble_queue and the object_id
+    #TODO: I may need to reset some variable like assemble_queue and the pipe_nr
     armpi.get_assemble_queue().reset()
     pipe_nr = 0
 

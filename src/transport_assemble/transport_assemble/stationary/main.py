@@ -40,14 +40,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
     armpi.set_object_type(object_type)
     armpi.set_number_of_objects(number_of_objects - 1 - pipe_nr) # decrement the number because we grabbed one object already
     grab_the_object(armpi.get_ID(), x, y, angle, rotation_direction, object_type)
-
-
-    '''TODO:
-        - Wait until every registerd robot grabbed an object.
-        - If one robot terminates, then put down the object.
-        - Calculate the order of the robots based on the size of the grabbed pipes.
-        - Implement the detection of duplicates
-    '''
+    go_to_waiting_position()
 
     #TODO: Write this in an another workspace package
     while True:

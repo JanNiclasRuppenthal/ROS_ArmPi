@@ -80,15 +80,19 @@ def rotate_towards_object(x, y):
         
     return dx, dy, x_dis, z_dis
 
-def grab(x_dis, z_dis):
+def __convert_angle_to_pulse(angle):
+    pulse = int(500 + angle * (1000 / 240))
+    return pulse
+
+def grab_pipe(x_dis, z_dis, angle):
     global DISTANCE_CAMERA_ULTRASONIC
 
     time.sleep(0.5)
     call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
     print("Stop visual_processing service!")
-
-    #TODO: At most 22 cm
+    
     height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
+    height = height if height <= 0.22 else 0.22
     print(f"new Height for ultrasonic sensor {height}")
     target = ik.setPitchRanges((0, 0.12, height), -90, -85, -95)
     if target:
@@ -99,7 +103,7 @@ def grab(x_dis, z_dis):
         time.sleep(2)
 
     dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    distance = (dist_response.distance_cm - 3) / 100
+    distance = (dist_response.distance_cm - 4) / 100
     print(f"Ultrasonic distance: {distance}")
 
     target = ik.setPitchRanges((0, 0.12 + distance, height + 0.01), -90, -85, -95)
@@ -108,7 +112,7 @@ def grab(x_dis, z_dis):
         print(target)
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 1, (
-            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+            (2, __convert_angle_to_pulse(angle)), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(2)
         print("I should be in the correct position!")
     else:
@@ -117,7 +121,7 @@ def grab(x_dis, z_dis):
 
     print("Grab the pipe!")
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 330), ))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 350), ))
     time.sleep(1)
 
     id_armpi_message = IDArmPi()
@@ -130,6 +134,7 @@ def track_point_at_pipe(msg):
     global enable_rotation, dist, count_messages
     x = msg.center_x
     y = msg.center_y
+    rotation_angle_of_pipe = msg.angle
     distance_x = None
     distance_y = None
 
@@ -148,7 +153,7 @@ def track_point_at_pipe(msg):
 
     if (enable_rotation and abs(distance_x) <= 1 and abs(distance_y) < 0.05):
         enable_rotation = False
-        t1 = Thread(target=grab, args=(x_dis, z_dis,))
+        t1 = Thread(target=grab_pipe, args=(x_dis, z_dis, rotation_angle_of_pipe))
         t1.start()
 
 

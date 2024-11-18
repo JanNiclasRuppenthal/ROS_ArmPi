@@ -14,7 +14,7 @@ from threading import Thread
 
 rclpy.init()
 
-from movement.mobile.pipes.movement import init_move, get_movement_node
+from movement.mobile.pipes.grab import init_move, get_movement_node
 from robot.subscriber.holding_subscriber import create_pos_subscriber_node
 
 node = rclpy.create_node('main_transport')

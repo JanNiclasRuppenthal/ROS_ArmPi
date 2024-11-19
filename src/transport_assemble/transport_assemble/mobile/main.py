@@ -14,8 +14,8 @@ from threading import Thread
 
 rclpy.init()
 
-from movement.mobile.pipes.grab import init_move, get_grabbing_node
-from movement.mobile.drive import drive_backwards, rotate_90_deg_right, rotate_90_deg_left
+from movement.mobile.pipes.grab import grab_init_move, get_grabbing_node
+from movement.mobile.drive import drive_init_move, get_driving_node, drive_backward, rotate_90_deg_right, rotate_90_deg_left
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 
 node = rclpy.create_node('main_transport')
@@ -23,11 +23,22 @@ node = rclpy.create_node('main_transport')
 def process_scenario(armpi):
     #TODO: Wait until the ArmPi Pro received the order of the stationary robots
 
-    #TODO: Drive to the first robot 
-
-    # Grabbing the pipe
+    #TODO: Drive to the first robot
+    drive_init_move()
     req = SetParam.Request()
-    req.type = 'transport_scenario'
+    req.type = 'line'
+    req.color = 'frogtape'
+    call_service(node, SetParam, '/visual_processing/set_running', req)
+
+    #TODO: Wait until ArmPi Pro reached the end of a line
+    while True:
+        time.sleep(0.5)
+
+    '''# Grabbing the pipe
+    grab_init_move()
+    
+    req = SetParam.Request()
+    req.type = 'rectangle_detection'
     call_service(node, SetParam, '/visual_processing/set_running', req)
 
     print("Waiting until I can drive away.")
@@ -39,10 +50,10 @@ def process_scenario(armpi):
     #TODO: Drive backwards
     print("Drive backwards and rotate!")
 
-    drive_backwards(2)
+    drive_backward(2)
     rotate_90_deg_right()
 
-    #TODO: Drive to the next robot
+    #TODO: Drive to the next robot'''
 
 
 
@@ -50,6 +61,7 @@ def spinning_executor(armpi):
     print("Spinning")
     executor = MultiThreadedExecutor()
     executor.add_node(node)
+    executor.add_node(get_driving_node())
     executor.add_node(get_grabbing_node())
     executor.add_node(create_holding_subscriber_node(armpi))
     executor.spin()
@@ -61,7 +73,7 @@ def main():
     executor_thread = Thread(target=spinning_executor, args=(armpi,))
     executor_thread.start()
   
-    init_move()
+    grab_init_move()
     time.sleep(4)
 
     process_scenario(armpi)

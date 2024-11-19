@@ -39,7 +39,7 @@ trigger_grab_pub = node.create_publisher(IDArmPi, 'grabbed', 1)
 def get_grabbing_node():
     return node
 
-def init_move():
+def grab_init_move():
     bus_servo_control.set_servos(joints_pub, 0.5, ((1, 50),))
     time.sleep(0.5)
 
@@ -156,4 +156,4 @@ def track_point_at_pipe(msg):
         t1.start()
 
 
-result_sub = node.create_subscription(Result, '/visual_processing/result', track_point_at_pipe, 1)
+result_sub = node.create_subscription(Result, '/visual_processing/result/rectangle_detection', track_point_at_pipe, 1)

@@ -40,7 +40,6 @@ def get_grabbing_node():
     return node
 
 def grab_init_move():
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 50),))
     time.sleep(0.5)
 
     target = ik.setPitchRanges((0, 0.12, 0.16), -90, -92, -88)
@@ -71,7 +70,7 @@ def rotate_towards_object(x, y):
     z_dis = 0.22 if z_dis > 0.22 else z_dis
     z_dis = 0.17 if z_dis < 0.17 else z_dis
 
-    target = ik.setPitchRanges((0, 0.12, round(z_dis, 4)), -90, -85, -95)
+    target = ik.setPitchRanges((0, 0.12, 0.22,'''round(z_dis, 4)'''), -90, -85, -95)
     if target:
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 0.5, (
@@ -92,7 +91,7 @@ def grab_pipe(x_dis, z_dis, angle):
     print("Stop visual_processing service!")
     
     height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
-    height = height if height <= 0.22 else 0.22
+    height = 0.21 # height if height <= 0.22 else 0.22
     print(f"new Height for ultrasonic sensor {height}")
     target = ik.setPitchRanges((0, 0.12, height), -90, -85, -95)
     if target:
@@ -103,7 +102,7 @@ def grab_pipe(x_dis, z_dis, angle):
         time.sleep(2)
 
     dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    distance = (dist_response.distance_cm - 4.5) / 100
+    distance = (dist_response.distance_cm - 3.5) / 100
     print(f"Ultrasonic distance: {distance}")
 
     target = ik.setPitchRanges((0, 0.12 + distance, height + 0.01), -90, -85, -95)
@@ -120,7 +119,7 @@ def grab_pipe(x_dis, z_dis, angle):
 
     print("Grab the pipe!")
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 330), ))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 340), ))
     time.sleep(1)
 
     id_armpi_message = IDArmPi()
@@ -150,7 +149,7 @@ def track_point_at_pipe(msg):
 
     #TODO: What if distance_x is constant? Try to modify the pulse of servo 6
 
-    if (enable_rotation and abs(distance_x) <= 1 and abs(distance_y) < 0.05):
+    if (enable_rotation and abs(distance_x) <= 0.75 and abs(distance_y) < 0.05):
         enable_rotation = False
         t1 = Thread(target=grab_pipe, args=(x_dis, z_dis, rotation_angle_of_pipe))
         t1.start()

@@ -1,10 +1,13 @@
 # TODO: Implement all the necessary methods for driving and following the lines
 import rclpy
 
-from armpi_pro import bus_servo_control, pid
+from visual_processing.srv import SetParam
 from hiwonder_servo_msgs.msg import MultiRawIdPosDur
 from chassis_control.msg import SetVelocity
 from visual_processing.msg import Result
+
+from armpi_pro import bus_servo_control, pid
+from armpi_pro_service_client.client import call_service
 
 import time
 
@@ -16,7 +19,7 @@ img_w = 640
 x_pid = pid.PID(P=0.003, I=0.0001, D=0.0001)  # pid初始化(pid initialization)
 
 TWO_AND_HALF_SECONDS = 2.5
-move = False
+move = None
 last_width  = 0
 
 def get_driving_node():
@@ -48,6 +51,16 @@ def drive_forward(duration_in_s):
     __stop_armpi_pro()
 
 
+def reached_the_next_stationary_robot():
+    global move
+    if move == False:
+        time.sleep(0.5)
+        call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
+        print("Stop the visual processing!")
+        move = None # reset the move variable
+        return True
+    return False
+
 def drive_backward(duration_in_s):
     backwards_message = __create_set_velocity_message(100, -90, 0)
     set_velocity.publish(backwards_message) 
@@ -55,6 +68,7 @@ def drive_backward(duration_in_s):
     time.sleep(duration_in_s)
 
     __stop_armpi_pro()
+    
 
 
 def rotate_90_deg_right():
@@ -80,17 +94,18 @@ def follow_lines(msg):
     center_x = msg.center_x
     width = msg.data
 
-    edge = False
+    #detected_edge = False
         
     print(f"width: {width}")
     print(f"last_width: {last_width}")
 
-    if last_width != 0 and width > 3 * last_width:
+    if last_width != 0 and width > 60:
         drive_forward(2.75)
         rotate_90_deg_right()
-        edge = True
+        return
+        #detected_edge = True
 
-    if width > 0 and not edge:
+    if width > 0: # and not detected_edge:
         # PID算法巡线(line following with PID algorithm)
         if abs(center_x - img_w/2) < 20: # 目标横坐标与画面中心坐标的差值小于20像素点，机器人不做处理(If the difference between the target placement coordinate and the center coordinate of the image is less than 20 pixels, the robot will not take any action.)
             center_x = img_w/2

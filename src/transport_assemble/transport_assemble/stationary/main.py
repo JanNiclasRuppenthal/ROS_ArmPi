@@ -102,6 +102,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
         armpi.set_letting_go_pipe(False)
 
         open_claw()
+        move_back_from_delivery_position()
         move_down_from_delivery_position()
         init_move()
 

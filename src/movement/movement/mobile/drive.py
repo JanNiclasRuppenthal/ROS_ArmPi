@@ -25,10 +25,12 @@ last_width  = 0
 def get_driving_node():
     return node
 
+
 def drive_init_move():
     time.sleep(0.5)
     bus_servo_control.set_servos(joints_pub, 1.5, ((2, 500), (3, 250), (4, 825), (5, 500),(6, 500)))
     time.sleep(2)
+
 
 def __create_set_velocity_message(velocity, direction, angular):
     set_velocity_message = SetVelocity()
@@ -37,10 +39,12 @@ def __create_set_velocity_message(velocity, direction, angular):
     set_velocity_message.angular =  float(angular)
     return set_velocity_message
 
+
 def __stop_armpi_pro():
     stop_message = __create_set_velocity_message(0, 90, 0)
     set_velocity.publish(stop_message)
     time.sleep(0.5)
+
 
 def drive_forward(duration_in_s):
     backwards_message = __create_set_velocity_message(100, 90, 0)
@@ -61,6 +65,7 @@ def reached_the_next_stationary_robot():
         return True
     return False
 
+
 def drive_backward(duration_in_s):
     backwards_message = __create_set_velocity_message(100, -90, 0)
     set_velocity.publish(backwards_message) 
@@ -69,7 +74,6 @@ def drive_backward(duration_in_s):
 
     __stop_armpi_pro()
     
-
 
 def rotate_90_deg_right():
     backwards_message = __create_set_velocity_message(0, 90, -0.45)
@@ -93,17 +97,14 @@ def follow_lines(msg):
     
     center_x = msg.center_x
     width = msg.data
-
-    #detected_edge = False
         
-    print(f"width: {width}")
-    print(f"last_width: {last_width}")
+    #print(f"width: {width}")
+    #print(f"last_width: {last_width}")
 
     if last_width != 0 and width > 60:
         drive_forward(2.75)
         rotate_90_deg_right()
         return
-        #detected_edge = True
 
     if width > 0: # and not detected_edge:
         # PID算法巡线(line following with PID algorithm)

@@ -15,6 +15,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/AssembleQueue.msg"
   "msg/IDArmPi.msg"
+  "msg/Position2D.msg"
   "msg/PositionWithAngle.msg"
 )
 

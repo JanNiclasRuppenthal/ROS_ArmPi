@@ -7,10 +7,12 @@ from rclpy.executors import MultiThreadedExecutor
 from robot.armpi import ArmPi
 from robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
+from robot.subscriber.ready_for_assembly_subscriber	 import create_ready_assembly_subscriber_node
 from robot.publisher.holding_publisher import create_holding_publisher_node
 from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
 
 from object_detection.stationary.pipe_detection import PipeDetection
+from object_detection.stationary.yellow_grabber_detection import GrabberDetection
 from movement.stationary.pipes.grab import *
 
 from threading import Thread
@@ -89,7 +91,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
             return
     
     #TODO: The robot has the bigger pipe
-    if armpi.get_ID() == armpi.get_assemble_queue().first():
+    if False: #armpi.get_ID() == armpi.get_assemble_queue().first():
         #TODO: Send the assemble Queue to the ArmPi Pro!
         go_to_delivery_position()
 
@@ -110,8 +112,18 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
         holding_publisher.send_msg()
     else:
         #TODO: Implement the assembly for the other robots
+        rotate_away_from_camera()
 
-        pass
+        # wait until armpi pro reached camera
+
+        print("now wait")
+        while not armpi.get_permission_to_determine_position_of_claw():
+            time.sleep(0.5)
+
+        armpi.set_permission_to_determine_position_of_claw(False)
+
+        grabber_detection = GrabberDetection()
+        x, y = grabber_detection.calculate_middle_between_grabber()
 
     #TODO: I may need to reset some variable like assemble_queue and the pipe_nr
     armpi.get_assemble_queue().reset()
@@ -123,6 +135,7 @@ def spinning_executor(armpi):
     executor = MultiThreadedExecutor()
     executor.add_node(create_grabbed_subscriber_node(armpi))
     executor.add_node(create_assemble_queue_subscriber_node(armpi))
+    executor.add_node(create_assembly_position_subscriber_node(armpi))
     executor.spin()
 
 

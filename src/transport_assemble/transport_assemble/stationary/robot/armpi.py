@@ -13,6 +13,8 @@ class ArmPi():
         self.__number_of_objects_next_robot = -1
         self.__assemble_queue = AssembleQueue()
 
+        self.__permission_to_determine_position_of_claw = False
+
     def get_ID(self):
         return self.__ID
     
@@ -63,3 +65,9 @@ class ArmPi():
 
     def get_assemble_queue(self):
         return self.__assemble_queue
+    
+    def get_permission_to_determine_position_of_claw(self):
+        return self.__permission_to_determine_position_of_claw
+    
+    def set_permission_to_determine_position_of_claw(self, value):
+        self.__permission_to_determine_position_of_claw = value

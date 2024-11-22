@@ -98,8 +98,7 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
             pipe_nr += 1
             return
     
-    #TODO: The robot has the bigger pipe
-    if False: #armpi.get_ID() == armpi.get_assemble_queue().first():
+    if armpi.get_ID() == armpi.get_assemble_queue().first():
         #TODO: Send the assemble Queue to the ArmPi Pro!
         go_to_delivery_position()
 
@@ -119,7 +118,6 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
         print("ArmPi Pro can now drive away and my Job is done!")
         holding_publisher.send_msg()
     else:
-        #TODO: Implement the assembly for the other robots
         rotate_away_from_camera()
 
         # wait until armpi pro reached camera

@@ -9,6 +9,9 @@ from visual_processing.msg import Result
 from armpi_pro import bus_servo_control, pid
 from armpi_pro_service_client.client import call_service
 
+
+from std_srvs.srv import Trigger
+
 import time
 
 node = rclpy.create_node('driving_node')
@@ -22,9 +25,28 @@ TWO_AND_HALF_SECONDS = 2.5
 move = None
 last_width  = 0
 
+master_node = None 
+count = 0
+
+
+def set_master_node_driving(n):
+    global master_node 
+    master_node = n
+
 def get_driving_node():
     return node
+    
 
+def start_to_drive():
+    global master_node
+
+    req = SetParam.Request()
+    req.type = 'line'
+    req.color = 'frogtape'
+    time.sleep(0.5)
+    call_service(master_node, SetParam, '/visual_processing/set_running', req)
+    print("Call the visual processing")
+    time.sleep(0.5)
 
 def drive_init_move():
     time.sleep(0.5)
@@ -57,10 +79,11 @@ def drive_forward(duration_in_s):
 
 
 def reached_the_next_stationary_robot():
+    global master_node
     global move
     if move == False:
         time.sleep(0.5)
-        call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
+        call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
         print("Stop the visual processing!")
         move = None # reset the move variable
         return True
@@ -94,7 +117,7 @@ def rotate_90_deg_left():
 
 
 def follow_lines(msg):
-    global move, last_width
+    global move, last_width, count
     
     center_x = msg.center_x
     width = msg.data
@@ -104,7 +127,11 @@ def follow_lines(msg):
 
     if last_width != 0 and width > 60:
         drive_forward(2.75)
-        rotate_90_deg_right()
+        if count == 0:
+            rotate_90_deg_right()
+        else:
+            count = 0
+            rotate_90_deg_left()
         return
 
     if width > 0: # and not detected_edge:

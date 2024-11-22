@@ -35,6 +35,8 @@ node = rclpy.create_node('grabbing_armpi_pro')
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
 trigger_grab_pub = node.create_publisher(IDArmPi, 'grabbed', 1)
 
+master_node = None
+
 
 def get_grabbing_node():
     return node
@@ -47,6 +49,22 @@ def grab_init_move():
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 2, ((1, 50), (2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
         time.sleep(2)
+
+def set_master_node_grabbing(n):
+    global master_node 
+    master_node = n
+
+def detect_pipe():
+    global master_node
+    req = SetParam.Request()
+    req.type = 'rectangle_detection'
+    call_service(master_node, SetParam, '/visual_processing/set_running', req)
+
+def stop_detecting():
+    global master_node
+    time.sleep(0.5)
+    call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
+    print("Stop visual_processing service!")
 
 
 def rotate_towards_object(x, y):
@@ -86,9 +104,7 @@ def __convert_angle_to_pulse(angle):
 def grab_pipe(x_dis, z_dis, angle):
     global DISTANCE_CAMERA_ULTRASONIC
 
-    time.sleep(0.5)
-    call_service(node, SetParam, '/visual_processing/set_running', SetParam.Request())
-    print("Stop visual_processing service!")
+    stop_detecting()
     
     height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
     height = 0.22 # height if height <= 0.22 else 0.22

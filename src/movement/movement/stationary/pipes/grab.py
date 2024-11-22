@@ -7,6 +7,8 @@ import math
 
 AK = ArmIK()
 
+#TODO: Differentiate between grabbing and assembling
+
 grab_pulse_ID_0 = {
     ObjectType.SMALL : 600,
     ObjectType.MEDIUM : 500,
@@ -105,10 +107,19 @@ def go_to_delivery_position():
     Board.setBusServoPulse(2, 500, 500)
     time.sleep(0.8)
 
-def move_down_from_delivery_position():
-    result = AK.setPitchRangeMoving((0, 20, 20), 5, 5, 15)
+def move_back_from_delivery_position():
+    result = AK.setPitchRangeMoving((0, 18, 20), 5, 5, 15)
     time.sleep(result[2]/1000)
     print(result)
+
+def move_down_from_delivery_position():
+    result = AK.setPitchRangeMoving((0, 18, 20), 5, 5, 15)
+    time.sleep(result[2]/1000)
+    print(result)
+
+def rotate_away_from_camera():
+    Board.setBusServoPulse(6, 875, 800)
+    time.sleep(0.8)
 
 def go_to_assemble_position(x, y, z, angle):
     # Go into the right position
@@ -143,6 +154,11 @@ def move_back_to_y_25(x, z, angle):
 
     # go to the init position again
     init_move()
+
+def move_to_origin(height):
+    result = AK.setPitchRangeMoving((-0.75, 20, height), 10, 10, 20)
+    time.sleep(result[2]/1000) 
+    print(result)
 
 def put_down_grabbed_object(x, y, angle, rotation_direction, object_type):
     # Go to the position of the object with z = 7

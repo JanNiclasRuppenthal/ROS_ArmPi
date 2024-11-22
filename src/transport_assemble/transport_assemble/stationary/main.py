@@ -7,9 +7,11 @@ from rclpy.executors import MultiThreadedExecutor
 from robot.armpi import ArmPi
 from robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
-from robot.subscriber.ready_for_assembly_subscriber	 import create_ready_assembly_subscriber_node
+from robot.subscriber.assembly_step_subscriber	 import create_assembly_step_subscriber_node
+from robot.publisher.assembly_position_publisher import create_assembly_position_publisher_node
 from robot.publisher.holding_publisher import create_holding_publisher_node
 from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
+from robot.publisher.assembly_step_publisher import create_assembly_step_publisher_node
 
 from object_detection.stationary.pipe_detection import PipeDetection
 from object_detection.stationary.yellow_grabber_detection import GrabberDetection
@@ -24,7 +26,13 @@ def read_all_arguments():
     number_of_stationary_robots = int(sys.argv[2])
     return ID, number_of_stationary_robots
 
-def process_scenario(armpi, assemble_publisher, holding_publisher):
+def determine_differece_for_movement(x, y):
+    return 0 - x, 20 - y
+
+def convert_coordinates_from_cm_to_m(x, y):
+    return x / 100, y / 100
+
+def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher):
     global pipe_nr
 
     pipe_detection = PipeDetection()
@@ -46,7 +54,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
 
     #TODO: Write this in an another workspace package
     while True:
-        assemble_publisher.send_msg()
+        assembly_queue_publisher.send_msg()
 
         while armpi.get_assemble_queue().count() != armpi.get_number_of_stationary_robots():
 
@@ -57,7 +65,7 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
             '''
 
 
-            assemble_publisher.send_msg()
+            assembly_queue_publisher.send_msg()
             time.sleep(1)
 
         armpi.get_assemble_queue().calculate_assemble_queue()
@@ -117,13 +125,41 @@ def process_scenario(armpi, assemble_publisher, holding_publisher):
         # wait until armpi pro reached camera
 
         print("now wait")
-        while not armpi.get_permission_to_determine_position_of_claw():
+        while not armpi.get_permission_to_do_next_assembly_step():
             time.sleep(0.5)
 
-        armpi.set_permission_to_determine_position_of_claw(False)
+        armpi.set_permission_to_do_next_assembly_step(False)
 
         grabber_detection = GrabberDetection()
         x, y = grabber_detection.calculate_middle_between_grabber()
+
+        x, y = determine_differece_for_movement(x, y)
+        x, y = convert_coordinates_from_cm_to_m(x, y)
+        assembly_position_publisher.send_msg(x, y)
+
+        print("Wait until ArmPi Pro moved its arm")
+        # wait until ArmPi Pro moved its grabber away
+        while not armpi.get_permission_to_do_next_assembly_step():
+            time.sleep(0.5)
+
+        armpi.set_permission_to_do_next_assembly_step(False)
+    
+        # go to assembly position (0, 20)
+        move_to_origin(19)
+
+        # notify ArmPi Pro
+        assembly_step_publisher.send_msg()
+
+        # wait until ArmPi Pro opened its claw and drove away
+        while not armpi.get_permission_to_do_next_assembly_step():
+            time.sleep(0.5)
+
+        armpi.set_permission_to_do_next_assembly_step(False)
+
+        # put the assembled object down
+        put_down_assembled_object(object_type)
+
+        init_move()
 
     #TODO: I may need to reset some variable like assemble_queue and the pipe_nr
     armpi.get_assemble_queue().reset()
@@ -135,7 +171,7 @@ def spinning_executor(armpi):
     executor = MultiThreadedExecutor()
     executor.add_node(create_grabbed_subscriber_node(armpi))
     executor.add_node(create_assemble_queue_subscriber_node(armpi))
-    executor.add_node(create_assembly_position_subscriber_node(armpi))
+    executor.add_node(create_assembly_step_subscriber_node(armpi))
     executor.spin()
 
 
@@ -149,15 +185,17 @@ def main():
     rclpy.init()
 
     #TODO: Create all the required publisher
-    assemble_publisher = create_assemble_queue_publisher_node(armpi)
+    assembly_queue_publisher = create_assemble_queue_publisher_node(armpi)
     holding_publisher = create_holding_publisher_node(armpi)
+    assembly_position_publisher = create_assembly_position_publisher_node(armpi)
+    assembly_step_publisher = create_assembly_step_publisher_node(armpi)
 
     #TODO: start the executor with all the required subscriber
     executor_thread = Thread(target=spinning_executor, args=(armpi,))
     executor_thread.start()
 
     #while (True):
-    process_scenario(armpi, assemble_publisher, holding_publisher)
+    process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher)
 
         #TODO: Terminate the scenario if executor is shutdown
 

@@ -19,7 +19,7 @@ ik = ik_transform.ArmIK()
 # TODO: Maybe I need to save the nodes somewhere
 node = rclpy.create_node('assembly_armpi_pro')
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
-ready_for_assembly_sub = node.create_publisher(IDArmPi, 'ready_for_assembly', 1)
+next_assembly_step_publisher = node.create_publisher(IDArmPi, 'assembly_step/stationary', 1)
 
 position = None
 
@@ -36,10 +36,10 @@ def assembly_init_move():
         bus_servo_control.set_servos(joints_pub, 1.5, ((2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
         time.sleep(2)
 
-def notify_next_stationary_robot(ID):
+def notify_stationary_robot_for_the_next_assembly_step(ID):
     id_armpi_message = IDArmPi()
     id_armpi_message.id = ID 
-    ready_for_assembly_sub.publish(id_armpi_message)
+    next_assembly_step_publisher.publish(id_armpi_message)
     node.get_logger().info(f"Send IDArmPi Message to {id_armpi_message.id}")
 
 def got_position():
@@ -49,6 +49,37 @@ def save_position(position2D_message):
     global position
     position = position2D_message.x, position2D_message.y
 
+def move_arm_up():
+    global position
+
+    time.sleep(0.5)
+    target = ik.setPitchRanges((0 - position[0], 0.23, 0.24), -90, -92, -88) 
+    if target:
+        print(target)
+        servo_data = target[1]
+        bus_servo_control.set_servos(joints_pub, 1.5, ((2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
+        time.sleep(2)
+    else:
+        print("could not move arm up")
+
+def move_arm_down():
+    global position
+
+    time.sleep(0.5)
+    target = ik.setPitchRanges((0 - position[0], 0.23, 0.16), -90, -92, -88)
+    if target:
+        print(target)
+        servo_data = target[1]
+        bus_servo_control.set_servos(joints_pub, 1.5, ((2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
+        time.sleep(2)
+    else:
+        print("could not move arm down")
 
 
-determined_position_sub = node.create_subscription(Position2D, 'determined_position', save_position, 1)
+def open_claw():
+    time.sleep(0.5)
+    bus_servo_control.set_servos(joints_pub, 1.5, ((1, 50),))
+    time.sleep(1.5)
+
+
+determined_position_sub = node.create_subscription(Position2D, 'assembly_position_publisher', save_position, 1)

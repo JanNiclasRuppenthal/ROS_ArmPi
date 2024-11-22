@@ -29,6 +29,7 @@ def get_driving_node():
 def drive_init_move():
     time.sleep(0.5)
     bus_servo_control.set_servos(joints_pub, 1.5, ((2, 500), (3, 250), (4, 825), (5, 500),(6, 500)))
+    #bus_servo_control.set_servos(joints_pub, 1.5, ((2, 750), (3, 250), (4, 900), (5, 500),(6, 500)))
     time.sleep(2)
 
 
@@ -98,8 +99,8 @@ def follow_lines(msg):
     center_x = msg.center_x
     width = msg.data
         
-    #print(f"width: {width}")
-    #print(f"last_width: {last_width}")
+    print(f"width: {width}")
+    print(f"last_width: {last_width}")
 
     if last_width != 0 and width > 60:
         drive_forward(2.75)

@@ -8,8 +8,8 @@ class HoldingSubscriber(RobotSubscriber):
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):
-        self.get_logger().info('I got notified!')
         self.get_armpi().set_first_robot_hold_pipe(False)
+        self.get_logger().info('I got notified!')
 
 def create_holding_subscriber_node(armpi):
     __subscriber = HoldingSubscriber(armpi)

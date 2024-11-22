@@ -15,9 +15,10 @@ from threading import Thread
 rclpy.init()
 
 from movement.mobile.pipes.grab import grab_init_move, get_grabbing_node
-from movement.mobile.pipes.assembly import assembly_init_move, get_assembly_node, notify_next_stationary_robot, got_position
+from movement.mobile.pipes.assembly import *
 from movement.mobile.drive import drive_init_move, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
+from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
 
 node = rclpy.create_node('main_transport')
 
@@ -37,9 +38,9 @@ def process_scenario(armpi):
 
     # Grabbing the pipe
     grab_init_move()
-    drive_forward(1)'''
+    drive_forward(1)
     
-    '''req = SetParam.Request()
+    req = SetParam.Request()
     req.type = 'rectangle_detection'
     call_service(node, SetParam, '/visual_processing/set_running', req)
 
@@ -57,6 +58,7 @@ def process_scenario(armpi):
 
     #TODO: Drive to the next robot
     drive_init_move()
+    time.sleep(2)
     req = SetParam.Request()
     req.type = 'line'
     req.color = 'frogtape'
@@ -70,7 +72,7 @@ def process_scenario(armpi):
 
     #send message to stationary robot
     print("send message!")
-    notify_next_stationary_robot(0) #TODO: The ID should not be static!
+    notify_stationary_robot_for_the_next_assembly_step(0) #TODO: The ID should not be static!
 
     #wait for position
     while not got_position():
@@ -78,17 +80,35 @@ def process_scenario(armpi):
 
     print("Got position!")
 
-    # go from desired position
+    print("move arm up")
+    # go from desired position up
+    move_arm_up()
 
+    notify_stationary_robot_for_the_next_assembly_step(0)
+
+    print("now wait until stationary robot moved")
     # wait until robot reached (0, 20)
 
-    # arm goes down
+    while not armpi.get_permission_to_do_next_assembly_step():
+        time.sleep(0.5)
 
+    armpi.set_permission_to_do_next_assembly_step(False)
+
+    print("move arm down")
+    # arm goes down
+    move_arm_down()
+
+    print("open claw")
     # open claw
+    open_claw()
+
+    grab_init_move()
 
     # drive away
     drive_backward(3)
     rotate_90_deg_left()
+
+    notify_stationary_robot_for_the_next_assembly_step(0)
 
 
 
@@ -100,6 +120,7 @@ def spinning_executor(armpi):
     executor.add_node(get_grabbing_node())
     executor.add_node(get_assembly_node())
     executor.add_node(create_holding_subscriber_node(armpi))
+    executor.add_node(create_assembly_step_subscriber_node(armpi))
     executor.spin()
 
 def main():
@@ -108,7 +129,7 @@ def main():
     executor_thread = Thread(target=spinning_executor, args=(armpi,))
     executor_thread.start()
   
-    grab_init_move()
+    #grab_init_move()
     call_service(node, Trigger, '/visual_processing/enter', Trigger.Request())
 
     process_scenario(armpi)

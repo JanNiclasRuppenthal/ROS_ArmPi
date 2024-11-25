@@ -101,16 +101,12 @@ class ADetection():
         mean_x = sum([x for (x, y) in points]) / len(points)
         mean_y = sum([y for (x, y) in points]) / len(points)
 
-        print(f"Point to grab: (x = %0.2f, y = %0.2f)" % (mean_x, mean_y))
-
         return mean_x, mean_y
     
     def get_angle_of_ith_object(self, i):
         angles = [(data[2]) for data in self.__object_to_parameter[i]]
 
         mean_angle = sum(angles) / len(angles)
-
-        print(f"Angle to grab: alpha = %0.2f" % mean_angle)
 
         return mean_angle
     
@@ -120,9 +116,6 @@ class ADetection():
         # So we can just use the first value in the list
 
         rotation_direction = self.__object_to_parameter[i][0][3]
-
-        print(f"Rotation direction: %d" % rotation_direction)
-
         return rotation_direction
     
     def get_object_type_of_ith_object(self, i):
@@ -131,15 +124,11 @@ class ADetection():
         mean_length = sum(lengths) / len(lengths)
         object_type = calculate_object_type(mean_length)
 
-        print(f"Type of object: alpha = %s" % object_type)
-
         return object_type
     
     def get_number_of_objects(self):
         # Decrement the length because we have always one default entry [(-1, -1, -1, -1, -1)] 
 
         number_of_objects = len(self.__object_to_parameter) - 1
-
-        print(f"Number of objects c = %d" % number_of_objects)
         
         return number_of_objects

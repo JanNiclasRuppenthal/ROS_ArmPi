@@ -31,7 +31,6 @@ def process_scenario(armpi):
 
     print("Driving")
 
-    #TODO: Wait until ArmPi Pro reached the end of a line
     while not reached_the_next_stationary_robot():
         time.sleep(0.5)
     
@@ -50,10 +49,9 @@ def process_scenario(armpi):
 
     print("Drive backwards and rotate!")
 
-    drive_backward(3)
+    drive_backward(4)
     rotate_90_deg_right()
 
-    #TODO: Drive to the following robot
     drive_init_move()
     start_to_drive()
 
@@ -100,7 +98,7 @@ def process_scenario(armpi):
     grab_init_move()
 
     # drive away
-    drive_backward(3)
+    drive_backward(4)
     rotate_90_deg_left()
 
     notify_stationary_robot_for_the_next_assembly_step(1)

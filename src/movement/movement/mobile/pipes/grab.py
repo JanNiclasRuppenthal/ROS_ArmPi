@@ -105,6 +105,8 @@ def grab_pipe(x_dis, z_dis, angle):
     global DISTANCE_CAMERA_ULTRASONIC
 
     stop_detecting()
+
+    x_dis += 5
     
     height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
     height = 0.22 # height if height <= 0.22 else 0.22
@@ -135,7 +137,7 @@ def grab_pipe(x_dis, z_dis, angle):
 
     print("Grab the pipe!")
     time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 340), ))
+    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 350), ))
     time.sleep(1)
 
     id_armpi_message = IDArmPi()
@@ -165,7 +167,7 @@ def track_point_at_pipe(msg):
 
     #TODO: What if distance_x is constant? Try to modify the pulse of servo 6
 
-    if (enable_rotation and abs(distance_x) <= 0.75 and abs(distance_y) < 0.05):
+    if (enable_rotation and abs(distance_x) <= 0.9 and abs(distance_y) < 0.05):
         enable_rotation = False
         t1 = Thread(target=grab_pipe, args=(x_dis, z_dis, rotation_angle_of_pipe))
         t1.start()

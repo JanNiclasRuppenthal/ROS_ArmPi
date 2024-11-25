@@ -90,7 +90,7 @@ def reached_the_next_stationary_robot():
 
 
 def drive_backward(duration_in_s):
-    backwards_message = __create_set_velocity_message(100, -90, 0)
+    backwards_message = __create_set_velocity_message(75, -90, 0)
     set_velocity.publish(backwards_message) 
 
     time.sleep(duration_in_s)

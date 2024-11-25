@@ -8,14 +8,19 @@ from robot.armpi import ArmPi
 from robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
 from robot.subscriber.assembly_step_subscriber	 import create_assembly_step_subscriber_node
+from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.publisher.assembly_position_publisher import create_assembly_position_publisher_node
 from robot.publisher.holding_publisher import create_holding_publisher_node
 from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
 from robot.publisher.assembly_step_publisher import create_assembly_step_publisher_node
+from robot.publisher.finish_publisher import create_finish_publisher_node
 
 from object_detection.stationary.pipe_detection import PipeDetection
 from object_detection.stationary.yellow_grabber_detection import GrabberDetection
 from movement.stationary.pipes.grab import *
+
+from common_executor.executor_subscriptions import MultiExecutor
+
 
 from threading import Thread
 
@@ -32,7 +37,13 @@ def determine_differece_for_movement(x, y):
 def convert_coordinates_from_cm_to_m(x, y):
     return x / 100, y / 100
 
-def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher):
+def end_scenario(executor, x, y, angle, rotation_direction, object_type):
+    put_down_grabbed_object(x, y, angle, rotation_direction, object_type)
+    init_move()
+    executor.execute_shutdown()
+
+
+def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher, finish_publisher, executor):
     global pipe_nr
 
     pipe_detection = PipeDetection()
@@ -43,9 +54,14 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
     object_type = pipe_detection.get_object_type_of_ith_object(pipe_nr)
     number_of_objects = pipe_detection.get_number_of_objects()
 
-    #TODO: Terminate scenario if there are no objects in the field
+    if x == -1 and y == -1:
+        finish_publisher.send_msg()
+        executor.execute_shutdown()
+        return
     
-    #TODO: Test if one robot has already terminate the scenario
+    if armpi.get_finish_flag():
+        executor.execute_shutdown()
+        return
     
     armpi.set_object_type(object_type)
     armpi.set_number_of_objects(number_of_objects - 1 - pipe_nr) # decrement the number because we grabbed one object already
@@ -58,12 +74,9 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
 
         while armpi.get_assemble_queue().count() != armpi.get_number_of_stationary_robots():
 
-            '''TODO: End scenario here!
             if armpi.get_finish_flag():
                 end_scenario(executor, x, y, angle, rotation_direction, object_type)
-                return
-            '''
-
+                return          
 
             assembly_queue_publisher.send_msg()
             time.sleep(1)
@@ -164,15 +177,6 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
     pipe_nr = 0
 
 
-#TODO: Use the package for the executor!
-def spinning_executor(armpi):
-    executor = MultiThreadedExecutor()
-    executor.add_node(create_grabbed_subscriber_node(armpi))
-    executor.add_node(create_assemble_queue_subscriber_node(armpi))
-    executor.add_node(create_assembly_step_subscriber_node(armpi))
-    executor.spin()
-
-
 def main():
     ID, number_of_stationary_robots = read_all_arguments()
 
@@ -183,19 +187,46 @@ def main():
     rclpy.init()
 
     #TODO: Create all the required publisher
-    assembly_queue_publisher = create_assemble_queue_publisher_node(armpi)
-    holding_publisher = create_holding_publisher_node(armpi)
-    assembly_position_publisher = create_assembly_position_publisher_node(armpi)
-    assembly_step_publisher = create_assembly_step_publisher_node(armpi)
 
-    #TODO: start the executor with all the required subscriber
-    executor_thread = Thread(target=spinning_executor, args=(armpi,))
-    executor_thread.start()
+    list_publisher_nodes = [
+        create_assemble_queue_publisher_node(armpi),
+        create_holding_publisher_node(armpi),
+        create_assembly_position_publisher_node(armpi),
+        create_assembly_step_publisher_node(armpi),
+        create_finish_publisher_node(armpi)
+    ]
 
-    #while (True):
-    process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher)
+    assembly_queue_publisher = list_publisher_nodes[0]
+    holding_publisher = list_publisher_nodes[1]
+    assembly_position_publisher = list_publisher_nodes[2]
+    assembly_step_publisher = list_publisher_nodes[3]
+    finish_publisher = list_publisher_nodes[4]
 
-        #TODO: Terminate the scenario if executor is shutdown
+    list_subscriber_nodes = [
+        create_grabbed_subscriber_node(armpi),
+        create_assemble_queue_subscriber_node(armpi),
+        create_assembly_step_subscriber_node(armpi),
+        create_finish_subscriber_node(armpi)
+    ]
+
+    list_all_nodes = list_publisher_nodes + list_subscriber_nodes
+
+    # start the executor in a thread for spinning all subscriber nodes
+    executor = MultiExecutor(list_subscriber_nodes)
+
+    thread = Thread(target=executor.start_spinning, args=())
+    thread.start()
+
+
+    while (True):
+        process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher, finish_publisher, executor)
+
+        if executor.get_shutdown_status():
+            for node in list_all_nodes:
+                node.destroy_node()
+
+            thread.join()
+            break
 
 
 if __name__ == '__main__':

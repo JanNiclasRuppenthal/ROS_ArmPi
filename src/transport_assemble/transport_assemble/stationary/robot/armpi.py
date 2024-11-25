@@ -14,6 +14,7 @@ class ArmPi():
         self.__assemble_queue = AssembleQueue()
 
         self.__permission_to_do_next_step_for_assembly = False
+        self.__finish_flag = False
 
     def get_ID(self):
         return self.__ID
@@ -71,3 +72,9 @@ class ArmPi():
     
     def set_permission_to_do_next_assembly_step(self, value):
         self.__permission_to_do_next_step_for_assembly = value
+
+    def get_finish_flag(self):
+        return self.__finish_flag
+    
+    def set_finish_flag(self, value):
+        self.__finish_flag = value

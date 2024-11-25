@@ -1,4 +1,3 @@
-# TODO: Implement all the necessary methods for driving and following the lines
 import rclpy
 
 from visual_processing.srv import SetParam
@@ -128,6 +127,7 @@ def follow_lines(msg):
     if last_width != 0 and width > 60:
         drive_forward(2.75)
         if count == 0:
+            count += 1
             rotate_90_deg_right()
         else:
             count = 0

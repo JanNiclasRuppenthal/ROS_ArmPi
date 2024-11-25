@@ -11,19 +11,32 @@ from armpi_pro_service_client.client import call_service
 from robot.armpi import ArmPi
 
 import time
+import sys
 from threading import Thread
 
 rclpy.init()
 
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe
 from movement.mobile.pipes.assembly import *
-from movement.mobile.drive import follow_lines, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left
+from movement.mobile.drive import follow_lines, set_allow_buzzer, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
+from robot.subscriber.finish_subscriber import create_finish_subscriber_node
+
+from common_executor.executor_subscriptions import MultiExecutor
 
 node = rclpy.create_node('main_transport')
 
-def process_scenario(armpi):
+def read_argument():
+    beep = bool(int(sys.argv[1]))
+    return beep
+
+def process_scenario(armpi, executor):
+
+    if armpi.get_finish_flag():
+        executor.execute_shutdown()
+        return
+
     #TODO: Wait until the ArmPi Pro received the order of the stationary robots
 
     drive_init_move()
@@ -49,7 +62,7 @@ def process_scenario(armpi):
 
     print("Drive backwards and rotate!")
 
-    drive_backward(4)
+    drive_backward(3.5)
     rotate_90_deg_right()
 
     drive_init_move()
@@ -97,30 +110,36 @@ def process_scenario(armpi):
 
     grab_init_move()
 
-    # drive away
-    drive_backward(4)
-    rotate_90_deg_left()
-
     notify_stationary_robot_for_the_next_assembly_step(1)
 
-
-
-def spinning_executor(armpi):
-    print("Spinning")
-    executor = MultiThreadedExecutor()
-    executor.add_node(node)
-    executor.add_node(get_driving_node())
-    executor.add_node(get_grabbing_node())
-    executor.add_node(get_assembly_node())
-    executor.add_node(create_holding_subscriber_node(armpi))
-    executor.add_node(create_assembly_step_subscriber_node(armpi))
-    executor.spin()
+    # drive away
+    drive_backward(3.5)
+    rotate_90_deg_left()
 
 def main():
+    global node
     armpi = ArmPi(0)
 
-    executor_thread = Thread(target=spinning_executor, args=(armpi,))
-    executor_thread.start()
+    beep = False
+
+    if len(sys.argv) == 2:
+        beep = read_argument()
+
+    set_allow_buzzer(beep)
+
+    list_subscriber_nodes = [
+        get_driving_node(),
+        get_grabbing_node(),
+        get_assembly_node(),
+        create_holding_subscriber_node(armpi),
+        create_assembly_step_subscriber_node(armpi),
+        create_finish_subscriber_node(armpi)
+    ]
+
+    executor = MultiExecutor(list_subscriber_nodes)
+
+    thread = Thread(target=executor.start_spinning, args=())
+    thread.start()
   
     grab_init_move()
     
@@ -129,8 +148,15 @@ def main():
 
     call_service(node, Trigger, '/visual_processing/enter', Trigger.Request())
 
-    process_scenario(armpi)
+    while True:
+        process_scenario(armpi, executor)
 
+        if executor.get_shutdown_status():
+            for node in list_subscriber_nodes:
+                node.destroy_node()
+
+            thread.join()
+            break
 
 
 if __name__ == '__main__':

@@ -8,17 +8,17 @@ from visual_processing.msg import Result
 from armpi_pro import bus_servo_control, pid
 from armpi_pro_service_client.client import call_service
 
-
-from std_srvs.srv import Trigger
+from ros_robot_controller.msg import BuzzerState
 
 import time
 
 node = rclpy.create_node('driving_node')
 set_velocity = node.create_publisher(SetVelocity, '/chassis_control/set_velocity', 1)
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
+buzzer_publisher = node.create_publisher(BuzzerState, '/ros_robot_controller/set_buzzer', 1)
 
 img_w = 640
-x_pid = pid.PID(P=0.003, I=0.0001, D=0.0001)  # pid初始化(pid initialization)
+x_pid = pid.PID(P=0.003, I=0.0001, D=0.0001)
 
 TWO_AND_HALF_SECONDS = 2.5
 move = None
@@ -26,11 +26,16 @@ last_width  = 0
 
 master_node = None 
 count = 0
+allow_buzzer = False
 
 
 def set_master_node_driving(n):
     global master_node 
     master_node = n
+
+def set_allow_buzzer(value):
+    global allow_buzzer
+    allow_buzzer = value
 
 def get_driving_node():
     return node
@@ -62,6 +67,16 @@ def __create_set_velocity_message(velocity, direction, angular):
     return set_velocity_message
 
 
+def __create_buzzer_state_message(freq, on_time, off_time, repeat):
+    set_buzzer_state_message = BuzzerState()
+    set_buzzer_state_message.freq = int(freq)
+    set_buzzer_state_message.on_time = float(on_time)
+    set_buzzer_state_message.off_time = float(off_time)
+    set_buzzer_state_message.repeat = int(repeat)
+
+    return set_buzzer_state_message
+
+
 def __stop_armpi_pro():
     stop_message = __create_set_velocity_message(0, 90, 0)
     set_velocity.publish(stop_message)
@@ -70,7 +85,7 @@ def __stop_armpi_pro():
 
 def drive_forward(duration_in_s):
     backwards_message = __create_set_velocity_message(100, 90, 0)
-    set_velocity.publish(backwards_message) 
+    set_velocity.publish(backwards_message)
 
     time.sleep(duration_in_s)
 
@@ -90,12 +105,22 @@ def reached_the_next_stationary_robot():
 
 
 def drive_backward(duration_in_s):
+    global allow_buzzer
+
     backwards_message = __create_set_velocity_message(75, -90, 0)
     set_velocity.publish(backwards_message) 
+
+    if allow_buzzer:
+        start_buzzer_message = __create_buzzer_state_message(1200, 0.5, 0.5, 10)
+        buzzer_publisher.publish(start_buzzer_message)
 
     time.sleep(duration_in_s)
 
     __stop_armpi_pro()
+
+    if allow_buzzer:
+        stop_buzzer_message = __create_buzzer_state_message(1200, 0.0, 0.0, 1)
+        buzzer_publisher.publish(stop_buzzer_message)
     
 
 def rotate_90_deg_right():
@@ -120,9 +145,6 @@ def follow_lines(msg):
     
     center_x = msg.center_x
     width = msg.data
-        
-    print(f"width: {width}")
-    print(f"last_width: {last_width}")
 
     if last_width != 0 and width > 60:
         drive_forward(2.75)
@@ -135,12 +157,11 @@ def follow_lines(msg):
         return
 
     if width > 0: # and not detected_edge:
-        # PID算法巡线(line following with PID algorithm)
-        if abs(center_x - img_w/2) < 20: # 目标横坐标与画面中心坐标的差值小于20像素点，机器人不做处理(If the difference between the target placement coordinate and the center coordinate of the image is less than 20 pixels, the robot will not take any action.)
+        if abs(center_x - img_w/2) < 20: 
             center_x = img_w/2
-        x_pid.SetPoint = img_w/2      # 设定(set)
-        x_pid.update(center_x)        # 当前(current)
-        dx = round(x_pid.output, 2)   # 输出(output)
+        x_pid.SetPoint = img_w/2
+        x_pid.update(center_x)
+        dx = round(x_pid.output, 2)
         dx = 0.8 if dx > 0.8 else dx
         dx = -0.8 if dx < -0.8 else dx
         set_velocity.publish(__create_set_velocity_message(100, 90, dx))
@@ -150,7 +171,7 @@ def follow_lines(msg):
             last_width = width
             
     else:
-        if move: # 判断之前是否有移动，避免重复发送停止指令(check if there was any movement before to avoid sending the stop command repeatedly)
+        if move:
             move = False
             __stop_armpi_pro()
 

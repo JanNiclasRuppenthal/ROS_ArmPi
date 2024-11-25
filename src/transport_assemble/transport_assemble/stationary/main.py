@@ -46,6 +46,10 @@ def end_scenario(executor, x, y, angle, rotation_direction, object_type):
 def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher, finish_publisher, executor):
     global pipe_nr
 
+    if armpi.get_finish_flag():
+        executor.execute_shutdown()
+        return
+
     pipe_detection = PipeDetection()
     pipe_detection.calculate_bottom_parameters()
     x, y = pipe_detection.get_position_of_ith_object(pipe_nr)

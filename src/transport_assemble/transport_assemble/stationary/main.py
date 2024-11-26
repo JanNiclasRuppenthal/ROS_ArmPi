@@ -128,12 +128,14 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
         armpi.set_letting_go_pipe(False)
 
         open_claw()
+
+        print("ArmPi Pro can now drive away and my Job is done!")
+        holding_publisher.send_msg()
+
         move_back_from_delivery_position()
         move_down_from_delivery_position()
         init_move()
 
-        print("ArmPi Pro can now drive away and my Job is done!")
-        holding_publisher.send_msg()
     else:
         rotate_away_from_camera()
 

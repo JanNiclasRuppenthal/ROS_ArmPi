@@ -74,7 +74,7 @@ def process_scenario(armpi, executor):
     print("reached the next robot")
 
     assembly_init_move()
-    drive_forward(1)
+    drive_forward(1.25)
 
     #send message to stationary robot
     print("send message!")

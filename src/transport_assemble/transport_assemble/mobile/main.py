@@ -37,7 +37,10 @@ def process_scenario(armpi, executor):
         executor.execute_shutdown()
         return
 
-    #TODO: Wait until the ArmPi Pro received the order of the stationary robots
+    while armpi.is_empty_IDList():
+        time.sleep(0.5)
+
+    print("I got an list!")
 
     drive_init_move()
     start_to_drive()

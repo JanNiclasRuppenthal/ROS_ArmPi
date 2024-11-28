@@ -4,6 +4,7 @@ class ArmPi():
         self.__first_robot_hold_pipe = True
         self.__permission_to_do_next_step_for_assembly = False
         self.__finish_flag = False
+        self.__IDList = []
 
     def get_ID(self):
         return self.__ID
@@ -28,3 +29,15 @@ class ArmPi():
     
     def set_finish_flag(self, value):
         self.__finish_flag = value
+
+    def set_IDList(self, list):
+        self.__IDList = list
+
+    def is_empty_IDList(self):
+        return len(self.__IDList) == 0
+    
+    def pop_IDList(self):
+        if (self.is_empty_IDList()):
+            return -1
+        
+        return self.__IDList.pop(0)

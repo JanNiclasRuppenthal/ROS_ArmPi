@@ -12,6 +12,7 @@ from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.publisher.assembly_position_publisher import create_assembly_position_publisher_node
 from robot.publisher.holding_publisher import create_holding_publisher_node
 from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
+from robot.publisher.assembly_order_publisher import create_assembly_order_publisher_node
 from robot.publisher.assembly_step_publisher import create_assembly_step_publisher_node
 from robot.publisher.finish_publisher import create_finish_publisher_node
 
@@ -43,7 +44,7 @@ def end_scenario(executor, x, y, angle, rotation_direction, object_type):
     executor.execute_shutdown()
 
 
-def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher, finish_publisher, executor):
+def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_order_publisher, assembly_step_publisher, finish_publisher, executor):
     global pipe_nr
 
     if armpi.get_finish_flag():
@@ -116,7 +117,8 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
             return
     
     if armpi.get_ID() == armpi.get_assemble_queue().first():
-        #TODO: Send the assemble Queue to the ArmPi Pro!
+        assembly_order_publisher.send_msg(armpi.get_assemble_queue().get_queue())
+
         go_to_delivery_position()
 
         print("Wait until I can let go the pipe")
@@ -198,6 +200,7 @@ def main():
         create_assemble_queue_publisher_node(armpi),
         create_holding_publisher_node(armpi),
         create_assembly_position_publisher_node(armpi),
+        create_assembly_order_publisher_node(armpi),
         create_assembly_step_publisher_node(armpi),
         create_finish_publisher_node(armpi)
     ]
@@ -205,8 +208,9 @@ def main():
     assembly_queue_publisher = list_publisher_nodes[0]
     holding_publisher = list_publisher_nodes[1]
     assembly_position_publisher = list_publisher_nodes[2]
-    assembly_step_publisher = list_publisher_nodes[3]
-    finish_publisher = list_publisher_nodes[4]
+    assembly_order_publisher = list_publisher_nodes[3]
+    assembly_step_publisher = list_publisher_nodes[4]
+    finish_publisher = list_publisher_nodes[5]
 
     list_subscriber_nodes = [
         create_grabbed_subscriber_node(armpi),
@@ -225,7 +229,7 @@ def main():
 
 
     while (True):
-        process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_step_publisher, finish_publisher, executor)
+        process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembly_position_publisher, assembly_order_publisher, assembly_step_publisher, finish_publisher, executor)
 
         if executor.get_shutdown_status():
             for node in list_all_nodes:

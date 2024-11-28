@@ -8,8 +8,8 @@ class AssemblyOrderSubscriber(RobotSubscriber):
         self.__subscription
 
     def callback(self, msg):
-        self.get_armpi().set_IDList(msg.ids)
-        self.get_logger().info(f"I got the following list: {msg.ids}!")
+        self.get_armpi().set_IDList(list(msg.ids))
+        self.get_logger().info(f"I got the following list: {list(msg.ids)}!")
 
 
 def create_assembly_order_subscriber_node(armpi):

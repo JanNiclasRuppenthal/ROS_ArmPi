@@ -1,6 +1,7 @@
 class ArmPi():
-    def __init__(self, id):
+    def __init__(self, id, number):
         self.__ID = id
+        self.__number_of_stationary_robots = number
         self.__first_robot_hold_pipe = True
         self.__permission_to_do_next_step_for_assembly = False
         self.__finish_flag = False
@@ -32,6 +33,15 @@ class ArmPi():
 
     def set_IDList(self, list):
         self.__IDList = list
+
+    def get_first_ID_IDList(self):
+        if (self.is_empty_IDList()):
+            return -1
+        
+        return self.__IDList[0]
+
+    def is_full_IDList(self):
+        return len(self.__IDList) == self.__number_of_stationary_robots
 
     def is_empty_IDList(self):
         return len(self.__IDList) == 0

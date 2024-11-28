@@ -118,6 +118,7 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
     
     if armpi.get_ID() == armpi.get_assemble_queue().first():
         assembly_order_publisher.send_msg(armpi.get_assemble_queue().get_queue())
+        #TODO: Wait until ArmPi Pro recieved the massage
 
         go_to_delivery_position()
 

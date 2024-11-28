@@ -18,8 +18,9 @@ rclpy.init()
 
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe
 from movement.mobile.pipes.assembly import *
-from movement.mobile.drive import follow_lines, set_allow_buzzer, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left
+from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
+from robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
 from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 
@@ -28,8 +29,9 @@ from common_executor.executor_subscriptions import MultiExecutor
 node = rclpy.create_node('main_transport')
 
 def read_argument():
-    beep = bool(int(sys.argv[1]))
-    return beep
+    number_of_stationary_robots = int(sys.argv[1])
+    beep = bool(int(sys.argv[2]))
+    return number_of_stationary_robots, beep
 
 def process_scenario(armpi, executor):
 
@@ -119,22 +121,25 @@ def process_scenario(armpi, executor):
     drive_backward(3.5)
     rotate_90_deg_left()
 
+    drive_init_move()
+    start_to_drive()
+
 def main():
     global node
-    armpi = ArmPi(0)
+    number_of_stationary_robots, beep = read_argument()
+    armpi = ArmPi(0, number_of_stationary_robots)
 
     beep = False
 
-    if len(sys.argv) == 2:
-        beep = read_argument()
-
     set_allow_buzzer(beep)
+    set_armpi(armpi)
 
     list_subscriber_nodes = [
         get_driving_node(),
         get_grabbing_node(),
         get_assembly_node(),
         create_holding_subscriber_node(armpi),
+        create_assembly_order_subscriber_node(armpi),
         create_assembly_step_subscriber_node(armpi),
         create_finish_subscriber_node(armpi)
     ]

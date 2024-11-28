@@ -11,6 +11,7 @@ from armpi_pro_service_client.client import call_service
 from ros_robot_controller.msg import BuzzerState
 
 import time
+from enum import Enum
 
 node = rclpy.create_node('driving_node')
 set_velocity = node.create_publisher(SetVelocity, '/chassis_control/set_velocity', 1)
@@ -28,6 +29,17 @@ master_node = None
 count = 0
 allow_buzzer = False
 
+armpi = None
+
+class DrivingState(Enum):
+    PARK = 0
+    WAIT = 1
+    ASSEMBLY_STEP = 2
+    DRIVE_BACK = 3
+
+driving_state = DrivingState.WAIT
+next_id = -1
+
 
 def set_master_node_driving(n):
     global master_node 
@@ -36,6 +48,10 @@ def set_master_node_driving(n):
 def set_allow_buzzer(value):
     global allow_buzzer
     allow_buzzer = value
+
+def set_armpi(a):
+    global armpi
+    armpi = a
 
 def get_driving_node():
     return node
@@ -141,20 +157,57 @@ def rotate_90_deg_left():
 
 
 def follow_lines(msg):
-    global move, last_width, count
+    global move, last_width, count, driving_state, armpi, next_id
     
     center_x = msg.center_x
     width = msg.data
 
     if last_width != 0 and width > 60:
-        drive_forward(2.75)
+
+        #TODO: Implement the states and the actions!
+
+        if driving_state == DrivingState.WAIT:
+            drive_forward(2.25)
+
+            if armpi.is_full_IDList():
+                next_id = armpi.get_first_ID_IDList()
+
+                if next_id == 0:
+                    rotate_90_deg_right()
+                else:
+                    rotate_90_deg_left()
+            driving_state = DrivingState.ASSEMBLY_STEP
+
+        elif driving_state == DrivingState.ASSEMBLY_STEP:
+            next_id = armpi.pop_IDList()
+            drive_forward(2.75)
+
+            if next_id == 0:
+                rotate_90_deg_right()
+            else:
+                rotate_90_deg_left()
+            driving_state = DrivingState.WAIT
+            return
+        
+        '''elif driving_state == DrivingState.DRIVE_BACK:
+            drive_forward(3.5)
+
+            if next_id == 0:
+                rotate_90_deg_right()
+            else:
+                rotate_90_deg_left()
+            driving_state = DrivingState.DRIVE_BACK
+            return'''
+        
+
+        '''drive_forward(2.75)
         if count == 0:
             count += 1
             rotate_90_deg_right()
         else:
             count = 0
             rotate_90_deg_left()
-        return
+        return'''
 
     if width > 0: # and not detected_edge:
         if abs(center_x - img_w/2) < 20: 

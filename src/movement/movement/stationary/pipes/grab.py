@@ -108,7 +108,7 @@ def go_to_delivery_position():
     time.sleep(0.8)
 
 def move_back_from_delivery_position():
-    result = AK.setPitchRangeMoving((0, 16, 18), 5, 5, 15)
+    result = AK.setPitchRangeMoving((0, 20, 28), 5, 5, 15)
     time.sleep(result[2]/1000)
     print(result)
 

@@ -39,6 +39,9 @@ class DrivingState(Enum):
 
 driving_state = DrivingState.WAIT
 next_id = -1
+last_id = -1
+parked = False
+start = False
 
 
 def set_master_node_driving(n):
@@ -55,10 +58,16 @@ def set_armpi(a):
 
 def get_driving_node():
     return node
+
+def get_parked_status():
+    global parked
+    return parked
     
 
 def start_to_drive():
-    global master_node
+    global master_node, start
+    
+    start = True
 
     req = SetParam.Request()
     req.type = 'line'
@@ -100,12 +109,18 @@ def __stop_armpi_pro():
 
 
 def drive_forward(duration_in_s):
-    backwards_message = __create_set_velocity_message(100, 90, 0)
-    set_velocity.publish(backwards_message)
+    forward_message = __create_set_velocity_message(100, 90, 0)
+    set_velocity.publish(forward_message)
 
     time.sleep(duration_in_s)
 
     __stop_armpi_pro()
+
+def __drive_forward_without_stopping(duration_in_s):
+    forward_message = __create_set_velocity_message(100, 90, 0)
+    set_velocity.publish(forward_message)
+
+    time.sleep(duration_in_s)
 
 
 def reached_the_next_stationary_robot():
@@ -155,61 +170,79 @@ def rotate_90_deg_left():
 
     __stop_armpi_pro()
 
+def __rotate_180_deg():
+    backwards_message = __create_set_velocity_message(0, 90, 0.45)
+    set_velocity.publish(backwards_message) 
+
+    time.sleep(5)
+
+    __stop_armpi_pro()
+
+def park():
+    global last_id
+
+    if last_id == 0:
+        rotate_90_deg_right()
+    elif last_id == 1:
+        rotate_90_deg_left()
+    
+    drive_backward(7.5)
+
 
 def follow_lines(msg):
-    global move, last_width, count, driving_state, armpi, next_id
+    global move, last_width, count, driving_state, armpi, next_id, last_id, parked, start
     
     center_x = msg.center_x
     width = msg.data
 
-    if last_width != 0 and width > 60:
+    if last_width != 0 and width > 120:
 
         #TODO: Implement the states and the actions!
 
         if driving_state == DrivingState.WAIT:
-            drive_forward(2.25)
+            __drive_forward_without_stopping(2.25)
+            print("drive forward without stopping")
 
-            if armpi.is_full_IDList():
-                next_id = armpi.get_first_ID_IDList()
+            if armpi.is_empty_IDList():
+                print("stop visual processing because list is empty")
+                call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
+                move = False
+                start = False
+                __stop_armpi_pro()
+                #return
 
-                if next_id == 0:
+            elif last_id == -1 and armpi.is_full_IDList():
+                __stop_armpi_pro()
+                print("Stop driving")
+                temp_id = armpi.get_first_ID_IDList()
+
+                if temp_id == 0:
                     rotate_90_deg_right()
                 else:
                     rotate_90_deg_left()
+                print("rotate")
+            
+            elif last_id != -1 and armpi.is_full_IDList():
+                print("rotate 180")
+
             driving_state = DrivingState.ASSEMBLY_STEP
 
         elif driving_state == DrivingState.ASSEMBLY_STEP:
             next_id = armpi.pop_IDList()
+            print(f"Got the following ID from the queue: {next_id}")
             drive_forward(2.75)
 
             if next_id == 0:
                 rotate_90_deg_right()
             else:
                 rotate_90_deg_left()
+            print("Rotate in assembly step")
             driving_state = DrivingState.WAIT
+            last_id = next_id
             return
         
-        '''elif driving_state == DrivingState.DRIVE_BACK:
-            drive_forward(3.5)
 
-            if next_id == 0:
-                rotate_90_deg_right()
-            else:
-                rotate_90_deg_left()
-            driving_state = DrivingState.DRIVE_BACK
-            return'''
-        
-
-        '''drive_forward(2.75)
-        if count == 0:
-            count += 1
-            rotate_90_deg_right()
-        else:
-            count = 0
-            rotate_90_deg_left()
-        return'''
-
-    if width > 0: # and not detected_edge:
+    if start and width > 0: # and not detected_edge:
         if abs(center_x - img_w/2) < 20: 
             center_x = img_w/2
         x_pid.SetPoint = img_w/2
@@ -219,6 +252,8 @@ def follow_lines(msg):
         dx = -0.8 if dx < -0.8 else dx
         set_velocity.publish(__create_set_velocity_message(100, 90, dx))
         move = True
+
+        print(f"Width: {width}")
 
         if 20 <= width:
             last_width = width

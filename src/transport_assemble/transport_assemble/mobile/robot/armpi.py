@@ -6,6 +6,7 @@ class ArmPi():
         self.__permission_to_do_next_step_for_assembly = False
         self.__finish_flag = False
         self.__IDList = []
+        self.__assembly_order_status = False
 
     def get_ID(self):
         return self.__ID
@@ -51,3 +52,9 @@ class ArmPi():
             return -1
         
         return self.__IDList.pop(0)
+    
+    def get_assembly_order_status(self):
+        return self.__assembly_order_status
+    
+    def set_assembly_order_status(self, value):
+        self.__assembly_order_status = value

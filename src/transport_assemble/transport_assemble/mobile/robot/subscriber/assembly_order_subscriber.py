@@ -9,6 +9,7 @@ class AssemblyOrderSubscriber(RobotSubscriber):
 
     def callback(self, msg):
         self.get_armpi().set_IDList(list(msg.ids))
+        self.get_armpi().set_assembly_order_status(True)
         self.get_logger().info(f"I got the following list: {list(msg.ids)}!")
 
 

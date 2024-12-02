@@ -18,7 +18,7 @@ rclpy.init()
 
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe
 from movement.mobile.pipes.assembly import *
-from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left
+from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 from robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
 from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
@@ -35,14 +35,24 @@ def read_argument():
 
 def process_scenario(armpi, executor):
 
-    if armpi.get_finish_flag():
-        executor.execute_shutdown()
-        return
+    while not armpi.get_assembly_order_status():
 
-    while armpi.is_empty_IDList():
+        print("Waiting")
+
+        if armpi.get_finish_flag():
+            print("Exit the visual_processing")
+            call_service(node, Trigger, '/visual_processing/exit', Trigger.Request())
+            print("I can park now")
+            grab_init_move()
+            park()
+            executor.execute_shutdown()
+            return
+        
         time.sleep(0.5)
 
-    print("I got an list!")
+    armpi.set_assembly_order_status(False)
+
+    print("I got a list!")
 
     drive_init_move()
     start_to_drive()
@@ -124,12 +134,14 @@ def process_scenario(armpi, executor):
     drive_init_move()
     start_to_drive()
 
+    while not reached_the_next_stationary_robot():
+        time.sleep(0.5)
+        print("waiting for reaching kreuz")
+
 def main():
     global node
     number_of_stationary_robots, beep = read_argument()
     armpi = ArmPi(0, number_of_stationary_robots)
-
-    beep = False
 
     set_allow_buzzer(beep)
     set_armpi(armpi)

@@ -52,7 +52,7 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
         return
 
     pipe_detection = PipeDetection()
-    pipe_detection.calculate_bottom_parameters()
+    pipe_detection.calculate_middle_parameters()
     x, y = pipe_detection.get_position_of_ith_object(pipe_nr)
     angle = pipe_detection.get_angle_of_ith_object(pipe_nr)
     rotation_direction = pipe_detection.get_rotation_direction_of_ith_object(pipe_nr)

@@ -1,4 +1,6 @@
 from object_detection.Adetection import ADetection
+from object_detection.stationary.grab_type import GrabType
+
 from LABConfig import *
 import Camera
 import cv2
@@ -21,7 +23,7 @@ class Detection(ADetection):
         y_world_coord = 12 + ((y-480) * (16 / -480))
         return x_world_coord, y_world_coord
 
-    def _calculate_object_parameters(self, upper, color):
+    def _calculate_object_parameters(self, grab_type, color):
         self.__my_camera.camera_open()
 
         number_of_data_points = 0
@@ -76,9 +78,11 @@ class Detection(ADetection):
                     center_x = x + w // 2
                     center_y = y + h // 2
 
-                    if (upper):
+                    if (grab_type == GrabType.UPPER):
                         x, y = self.calculate_upper_points(frame_out, box, center_x, center_y)
-                    else:
+                    elif (grab_type == GrabType.MIDDLE):
+                        x, y = center_x, center_y
+                    elif (grab_type == GrabType.BOTTOM):
                         x, y = self.calculate_bottom_points(frame_out, box, center_x, center_y)
 
                     angle = rect[2]

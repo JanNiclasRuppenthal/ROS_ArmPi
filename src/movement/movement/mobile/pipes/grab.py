@@ -36,6 +36,7 @@ joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id
 trigger_grab_pub = node.create_publisher(IDArmPi, 'grabbed', 1)
 
 master_node = None
+grab_robot_id = -1
 
 
 def get_grabbing_node():
@@ -54,8 +55,14 @@ def set_master_node_grabbing(n):
     global master_node 
     master_node = n
 
+def set_grab_robot_id(id):
+    global grab_robot_id
+
+    grab_robot_id = id
+
 def detect_pipe():
     global master_node
+
     req = SetParam.Request()
     req.type = 'rectangle_detection'
     call_service(master_node, SetParam, '/visual_processing/set_running', req)
@@ -141,7 +148,7 @@ def grab_pipe(x_dis, z_dis, angle):
     time.sleep(1)
 
     id_armpi_message = IDArmPi()
-    id_armpi_message.id = 0 #TODO: The ID should not be static!
+    id_armpi_message.id = grab_robot_id #TODO: The ID should not be static!
     trigger_grab_pub.publish(id_armpi_message)
     node.get_logger().info(f"Send IDArmPi Message to {id_armpi_message.id}")
 

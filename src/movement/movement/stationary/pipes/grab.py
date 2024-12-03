@@ -156,7 +156,7 @@ def move_back_to_y_25(x, z, angle):
     init_move()
 
 def move_to_origin(height):
-    result = AK.setPitchRangeMoving((0, 21, height), 10, 10, 20)
+    result = AK.setPitchRangeMoving((0, 20, height), 10, 10, 20)
     time.sleep(result[2]/1000) 
     print(result)
 

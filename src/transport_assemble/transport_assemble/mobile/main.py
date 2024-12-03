@@ -13,12 +13,13 @@ from robot.armpi import ArmPi
 import time
 import sys
 from threading import Thread
+import copy
 
 rclpy.init()
 
-from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe
+from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe, set_grab_robot_id
 from movement.mobile.pipes.assembly import *
-from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park
+from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 from robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
 from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
@@ -52,6 +53,8 @@ def process_scenario(armpi, executor):
 
     armpi.set_assembly_order_status(False)
 
+    set_id_list_for_driving(copy.deepcopy(armpi.get_IDList()))
+
     print("I got a list!")
 
     drive_init_move()
@@ -62,6 +65,8 @@ def process_scenario(armpi, executor):
     while not reached_the_next_stationary_robot():
         time.sleep(0.5)
     
+    next_id = armpi.pop_IDList()
+    set_grab_robot_id(next_id)
 
     # Grabbing the pipe
     grab_init_move()
@@ -77,59 +82,65 @@ def process_scenario(armpi, executor):
 
     print("Drive backwards and rotate!")
 
-    drive_backward(3.5)
-    rotate_90_deg_right()
+    #drive_backward(3.5)
+    #rotate_90_deg_right()
+    drive_away_from_robot(next_id)
 
-    drive_init_move()
-    start_to_drive()
+    while not armpi.is_empty_IDList():
 
-    while not reached_the_next_stationary_robot():
-        time.sleep(0.5)
+        drive_init_move()
+        start_to_drive()
 
-    print("reached the next robot")
+        next_id = armpi.pop_IDList()
 
-    assembly_init_move()
-    drive_forward(1.25)
+        while not reached_the_next_stationary_robot():
+            time.sleep(0.5)
 
-    #send message to stationary robot
-    print("send message!")
-    notify_stationary_robot_for_the_next_assembly_step(1) #TODO: The ID should not be static!
+        print("reached the next robot")
 
-    #wait for position
-    while not got_position():
-        time.sleep(0.5)
+        assembly_init_move()
+        drive_forward(1.2)
 
-    print("Got position!")
+        #send message to stationary robot
+        print("send message!")
+        notify_stationary_robot_for_the_next_assembly_step(next_id)
 
-    print("move arm up")
-    # go from desired position up
-    move_arm_up()
+        #wait for position
+        while not got_position():
+            time.sleep(0.5)
 
-    notify_stationary_robot_for_the_next_assembly_step(1)
+        print("Got position!")
 
-    print("now wait until stationary robot moved")
-    # wait until robot reached (0, 20)
+        print("move arm up")
+        # go from desired position up
+        move_arm_up()
 
-    while not armpi.get_permission_to_do_next_assembly_step():
-        time.sleep(0.5)
+        notify_stationary_robot_for_the_next_assembly_step(1)
 
-    armpi.set_permission_to_do_next_assembly_step(False)
+        print("now wait until stationary robot moved")
+        # wait until robot reached (0, 20)
 
-    print("move arm down")
-    # arm goes down
-    move_arm_down()
+        while not armpi.get_permission_to_do_next_assembly_step():
+            time.sleep(0.5)
 
-    print("open claw")
-    # open claw
-    open_claw()
+        armpi.set_permission_to_do_next_assembly_step(False)
 
-    grab_init_move()
+        print("move arm down")
+        # arm goes down
+        move_arm_down()
 
-    notify_stationary_robot_for_the_next_assembly_step(1)
+        print("open claw")
+        # open claw
+        open_claw()
 
-    # drive away
-    drive_backward(3.5)
-    rotate_90_deg_left()
+        grab_init_move()
+
+        notify_stationary_robot_for_the_next_assembly_step(next_id)
+
+        # drive away
+        #drive_backward(3.5)
+        #rotate_90_deg_left()
+        drive_away_from_robot(next_id)
 
     drive_init_move()
     start_to_drive()

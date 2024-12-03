@@ -58,9 +58,9 @@ def move_arm_up():
         x_pos = 0 - position[0] if 0 - position[0] <= 0.06 else 0.06
 
     if position[1] < 0:
-        y_pos = 0.24 - position[1] if 0.24 - position[1] >= 0.10 else 0.10
+        y_pos = 0.24 - position[1] if 0.22 - position[1] >= 0.20 else 0.20
     else:
-        y_pos = 0.24 - position[1] if 0.24 - position[1]<= 0.24 else 0.24
+        y_pos = 0.22 - position[1] if 0.22 - position[1] <= 0.24 else 0.24
 
     print(f"Positions: ({x_pos}, {y_pos})")
 
@@ -84,9 +84,9 @@ def move_arm_down():
         x_pos = 0 - position[0] if 0 - position[0] <= 0.06 else 0.06
 
     if position[1] < 0:
-        y_pos = 0.24 - position[1] if 0.24 - position[1] >= 0.10 else 0.10
+        y_pos = 0.22 - position[1] if 0.22 - position[1] >= 0.20 else 0.20
     else:
-        y_pos = 0.24 - position[1] if 0.24 - position[1] <= 0.24 else 0.24
+        y_pos = 0.22 - position[1] if 0.22 - position[1] <= 0.24 else 0.24
 
     print(f"Positions: ({x_pos}, {y_pos})")
 

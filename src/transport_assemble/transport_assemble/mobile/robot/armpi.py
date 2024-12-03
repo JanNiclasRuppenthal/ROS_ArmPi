@@ -32,6 +32,9 @@ class ArmPi():
     def set_finish_flag(self, value):
         self.__finish_flag = value
 
+    def get_IDList(self):
+        return self.__IDList
+
     def set_IDList(self, list):
         self.__IDList = list
 

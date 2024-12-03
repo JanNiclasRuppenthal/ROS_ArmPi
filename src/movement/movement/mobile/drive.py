@@ -12,6 +12,7 @@ from ros_robot_controller.msg import BuzzerState
 
 import time
 from enum import Enum
+import copy
 
 node = rclpy.create_node('driving_node')
 set_velocity = node.create_publisher(SetVelocity, '/chassis_control/set_velocity', 1)
@@ -42,6 +43,7 @@ next_id = -1
 last_id = -1
 parked = False
 start = False
+id_list = []
 
 
 def set_master_node_driving(n):
@@ -62,6 +64,11 @@ def get_driving_node():
 def get_parked_status():
     global parked
     return parked
+
+
+def set_id_list_for_driving(idList):
+    global id_list
+    id_list = idList
     
 
 def start_to_drive():
@@ -158,7 +165,7 @@ def rotate_90_deg_right():
     backwards_message = __create_set_velocity_message(0, 90, -0.45)
     set_velocity.publish(backwards_message) 
 
-    time.sleep(TWO_AND_HALF_SECONDS)
+    time.sleep(2.5)
 
     __stop_armpi_pro()
 
@@ -166,9 +173,17 @@ def rotate_90_deg_left():
     backwards_message = __create_set_velocity_message(0, 90, 0.45)
     set_velocity.publish(backwards_message) 
 
-    time.sleep(TWO_AND_HALF_SECONDS)
+    time.sleep(2.5)
 
     __stop_armpi_pro()
+
+def drive_away_from_robot(id):
+    if id == 0:
+        drive_backward(3.5)
+        rotate_90_deg_right()
+    elif id == 1:
+        drive_backward(3.5)
+        rotate_90_deg_left()
 
 def __rotate_180_deg():
     backwards_message = __create_set_velocity_message(0, 90, 0.45)
@@ -190,7 +205,7 @@ def park():
 
 
 def follow_lines(msg):
-    global move, last_width, count, driving_state, armpi, next_id, last_id, parked, start
+    global move, last_width, count, driving_state, armpi, next_id, last_id, parked, start, id_list
     
     center_x = msg.center_x
     width = msg.data
@@ -203,7 +218,7 @@ def follow_lines(msg):
             __drive_forward_without_stopping(2.25)
             print("drive forward without stopping")
 
-            if armpi.is_empty_IDList():
+            if len(id_list) == 0:
                 print("stop visual processing because list is empty")
                 call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
                 move = False
@@ -211,10 +226,10 @@ def follow_lines(msg):
                 __stop_armpi_pro()
                 #return
 
-            elif last_id == -1 and armpi.is_full_IDList():
+            elif last_id == -1 and len(id_list) == 2:
                 __stop_armpi_pro()
                 print("Stop driving")
-                temp_id = armpi.get_first_ID_IDList()
+                temp_id = id_list[0] #armpi.get_first_ID_IDList()
 
                 if temp_id == 0:
                     rotate_90_deg_right()
@@ -222,13 +237,16 @@ def follow_lines(msg):
                     rotate_90_deg_left()
                 print("rotate")
             
-            elif last_id != -1 and armpi.is_full_IDList():
+            elif last_id != -1 and len(id_list) == 2:
+                temp_id = id_list[0] #armpi.get_first_ID_IDList()
+                if temp_id == last_id:
+                    __rotate_180_deg()
                 print("rotate 180")
 
             driving_state = DrivingState.ASSEMBLY_STEP
 
         elif driving_state == DrivingState.ASSEMBLY_STEP:
-            next_id = armpi.pop_IDList()
+            next_id = id_list.pop(0) #armpi.pop_IDList()
             print(f"Got the following ID from the queue: {next_id}")
             drive_forward(2.75)
 
@@ -248,8 +266,11 @@ def follow_lines(msg):
         x_pid.SetPoint = img_w/2
         x_pid.update(center_x)
         dx = round(x_pid.output, 2)
-        dx = 0.8 if dx > 0.8 else dx
-        dx = -0.8 if dx < -0.8 else dx
+        dx = 0.1 if dx > 0.1 else dx
+        dx = -0.1 if dx < -0.1 else dx
+
+        print(f"Lenkung dx: {dx}")
+
         set_velocity.publish(__create_set_velocity_message(100, 90, dx))
         move = True
 

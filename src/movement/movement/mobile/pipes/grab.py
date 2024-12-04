@@ -95,7 +95,7 @@ def rotate_towards_object(x, y):
     z_dis = 0.22 if z_dis > 0.22 else z_dis
     z_dis = 0.17 if z_dis < 0.17 else z_dis
 
-    target = ik.setPitchRanges((0, 0.12, 0.22,'''round(z_dis, 4)'''), -90, -85, -95)
+    target = ik.setPitchRanges((0, 0.12, 0.20,'''round(z_dis, 4)'''), -90, -85, -95)
     if target:
         servo_data = target[1]
         bus_servo_control.set_servos(joints_pub, 0.5, (
@@ -116,7 +116,7 @@ def grab_pipe(x_dis, z_dis, angle):
     x_dis += 5
     
     height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
-    height = 0.22 # height if height <= 0.22 else 0.22
+    height = 0.20 # height if height <= 0.22 else 0.22
     print(f"new Height for ultrasonic sensor {height}")
     target = ik.setPitchRanges((0, 0.12, height), -90, -85, -95)
     if target:
@@ -148,7 +148,7 @@ def grab_pipe(x_dis, z_dis, angle):
     time.sleep(1)
 
     id_armpi_message = IDArmPi()
-    id_armpi_message.id = grab_robot_id #TODO: The ID should not be static!
+    id_armpi_message.id = grab_robot_id
     trigger_grab_pub.publish(id_armpi_message)
     node.get_logger().info(f"Send IDArmPi Message to {id_armpi_message.id}")
 

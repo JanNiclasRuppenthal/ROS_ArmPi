@@ -15,6 +15,7 @@ class ArmPi():
 
         self.__permission_to_do_next_step_for_assembly = False
         self.__finish_flag = False
+        self.__transporter_received_list = False
 
     def get_ID(self):
         return self.__ID
@@ -78,3 +79,10 @@ class ArmPi():
     
     def set_finish_flag(self, value):
         self.__finish_flag = value
+
+
+    def did_transporter_received_list(self):
+        return self.__transporter_received_list
+    
+    def set_transporter_received_list(self, value):
+        self.__transporter_received_list = value

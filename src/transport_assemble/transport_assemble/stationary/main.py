@@ -9,6 +9,7 @@ from robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
 from robot.subscriber.assembly_step_subscriber	 import create_assembly_step_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
+from robot.subscriber.assembly_queue_notify_subscriber import create_notify_subscriber_node
 from robot.publisher.assembly_position_publisher import create_assembly_position_publisher_node
 from robot.publisher.holding_publisher import create_holding_publisher_node
 from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
@@ -117,8 +118,14 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
             return
     
     if armpi.get_ID() == armpi.get_assemble_queue().first():
-        assembly_order_publisher.send_msg(armpi.get_assemble_queue().get_queue())
-        #TODO: Wait until ArmPi Pro recieved the massage
+    
+        order_queue = armpi.get_assemble_queue().get_queue()
+
+        while not armpi.did_transporter_received_list():
+            assembly_order_publisher.send_msg(order_queue)
+            time.sleep(0.5)
+    
+        armpi.set_transporter_received_list(False)
 
         go_to_delivery_position()
 
@@ -195,8 +202,6 @@ def main():
 
     rclpy.init()
 
-    #TODO: Create all the required publisher
-
     list_publisher_nodes = [
         create_assemble_queue_publisher_node(armpi),
         create_holding_publisher_node(armpi),
@@ -215,6 +220,7 @@ def main():
 
     list_subscriber_nodes = [
         create_grabbed_subscriber_node(armpi),
+        create_notify_subscriber_node(armpi),
         create_assemble_queue_subscriber_node(armpi),
         create_assembly_step_subscriber_node(armpi),
         create_finish_subscriber_node(armpi)

@@ -1,9 +1,10 @@
 from object_detection.stationary.detection import Detection
+from object_detection.stationary.grab_type import GrabType
 
 class GrabberDetection(Detection):
 
     def calculate_middle_between_grabber(self):
-       self._calculate_object_parameters(upper=False, color='yellow')
+       self._calculate_object_parameters(GrabType.MIDDLE, color='yellow')
        x_left, y_left = self.get_position_of_ith_object(0)
        x_right, y_right = self.get_position_of_ith_object(1)
        

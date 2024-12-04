@@ -24,6 +24,7 @@ from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 from robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
 from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
+from robot.publisher.assembly_queue_notify_publisher import create_notify_publisher_node
 
 from common_executor.executor_subscriptions import MultiExecutor
 
@@ -34,7 +35,7 @@ def read_argument():
     beep = bool(int(sys.argv[2]))
     return number_of_stationary_robots, beep
 
-def process_scenario(armpi, executor):
+def process_scenario(armpi, executor, notify_publisher):
 
     while not armpi.get_assembly_order_status():
 
@@ -51,11 +52,13 @@ def process_scenario(armpi, executor):
         
         time.sleep(0.5)
 
-    armpi.set_assembly_order_status(False)
+    print("I got a list!")
 
+    armpi.set_assembly_order_status(False)
     set_id_list_for_driving(copy.deepcopy(armpi.get_IDList()))
 
-    print("I got a list!")
+    next_id = armpi.pop_IDList()
+    notify_publisher.send_msg(next_id)
 
     drive_init_move()
     start_to_drive()
@@ -65,7 +68,6 @@ def process_scenario(armpi, executor):
     while not reached_the_next_stationary_robot():
         time.sleep(0.5)
     
-    next_id = armpi.pop_IDList()
     set_grab_robot_id(next_id)
 
     # Grabbing the pipe
@@ -167,6 +169,12 @@ def main():
         create_finish_subscriber_node(armpi)
     ]
 
+    notify_publisher = create_notify_publisher_node(armpi)
+
+    list_publisher_nodes = [
+        notify_publisher
+    ]
+
     executor = MultiExecutor(list_subscriber_nodes)
 
     thread = Thread(target=executor.start_spinning, args=())
@@ -180,10 +188,10 @@ def main():
     call_service(node, Trigger, '/visual_processing/enter', Trigger.Request())
 
     while True:
-        process_scenario(armpi, executor)
+        process_scenario(armpi, executor, notify_publisher)
 
         if executor.get_shutdown_status():
-            for node in list_subscriber_nodes:
+            for node in list_subscriber_nodes + list_publisher_nodes:
                 node.destroy_node()
 
             thread.join()

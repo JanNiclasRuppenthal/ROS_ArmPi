@@ -39,7 +39,7 @@ def process_scenario(armpi, executor, notify_publisher):
 
     while not armpi.get_assembly_order_status():
 
-        print("Waiting")
+        #print("Waiting")
 
         if armpi.get_finish_flag():
             print("Exit the visual_processing")
@@ -58,7 +58,7 @@ def process_scenario(armpi, executor, notify_publisher):
     set_id_list_for_driving(copy.deepcopy(armpi.get_IDList()))
 
     next_id = armpi.pop_IDList()
-    notify_publisher.send_msg(next_id)
+    notify_publisher.send_msg()
 
     drive_init_move()
     start_to_drive()
@@ -101,7 +101,7 @@ def process_scenario(armpi, executor, notify_publisher):
         print("reached the next robot")
 
         assembly_init_move()
-        drive_forward(1.2)
+        drive_forward(1.3)
 
         #send message to stationary robot
         print("send message!")
@@ -117,7 +117,7 @@ def process_scenario(armpi, executor, notify_publisher):
         # go from desired position up
         move_arm_up()
 
-        notify_stationary_robot_for_the_next_assembly_step(1)
+        notify_stationary_robot_for_the_next_assembly_step(next_id)
 
         print("now wait until stationary robot moved")
         # wait until robot reached (0, 20)
@@ -149,7 +149,7 @@ def process_scenario(armpi, executor, notify_publisher):
 
     while not reached_the_next_stationary_robot():
         time.sleep(0.5)
-        print("waiting for reaching kreuz")
+        #print("waiting for reaching kreuz")
 
 def main():
     global node

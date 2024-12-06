@@ -52,20 +52,20 @@ def save_position(position2D_message):
 def move_arm_up():
     global position
 
-    if position[0] < 0:
-        x_pos = 0 - position[0] if 0 - position[0] >= -0.06 else -0.06
+    if position[0] > 0:
+        x_pos = 0 + position[0] if 0 + position[0] <= 0.03 else 0.03
     else:
-        x_pos = 0 - position[0] if 0 - position[0] <= 0.06 else 0.06
+        x_pos = 0 + position[0] if 0 + position[0] >= -0.03 else -0.03
 
-    if position[1] < 0:
-        y_pos = 0.24 - position[1] if 0.22 - position[1] >= 0.20 else 0.20
+    if position[1] > 0:
+        y_pos = 0.22 + position[1] if 0.22 + position[1] <= 0.24 else 0.24
     else:
-        y_pos = 0.22 - position[1] if 0.22 - position[1] <= 0.24 else 0.24
+        y_pos = 0.22 + position[1] if 0.22 + position[1] >= 0.20 else 0.20
 
     print(f"Positions: ({x_pos}, {y_pos})")
 
     time.sleep(0.5)
-    target = ik.setPitchRanges((x_pos, y_pos, 0.24), -90, -92, -88) 
+    target = ik.setPitchRanges((x_pos, y_pos, 0.24), -90, -92, -88) # or you can use the position (0, 0.22)
     if target:
         print(target)
         servo_data = target[1]
@@ -78,20 +78,20 @@ def move_arm_up():
 def move_arm_down():
     global position
 
-    if position[0] < 0:
-        x_pos = 0 - position[0] if 0 - position[0] >= -0.06 else -0.06
+    if position[0] > 0:
+        x_pos = 0 + position[0] if 0 + position[0] <= 0.03 else 0.03
     else:
-        x_pos = 0 - position[0] if 0 - position[0] <= 0.06 else 0.06
+        x_pos = 0 + position[0] if 0 + position[0] >= -0.03 else -0.03
 
-    if position[1] < 0:
-        y_pos = 0.22 - position[1] if 0.22 - position[1] >= 0.20 else 0.20
+    if position[1] > 0:
+        y_pos = 0.22 + position[1] if 0.22 + position[1] <= 0.24 else 0.24
     else:
-        y_pos = 0.22 - position[1] if 0.22 - position[1] <= 0.24 else 0.24
+        y_pos = 0.22 + position[1] if 0.22 + position[1] >= 0.20 else 0.20
 
     print(f"Positions: ({x_pos}, {y_pos})")
 
     time.sleep(0.5)
-    target = ik.setPitchRanges((x_pos, y_pos, 0.18), -90, -92, -88)
+    target = ik.setPitchRanges((x_pos, y_pos, 0.18), -90, -92, -88) # or you can use the position (0, 0.22)
     if target:
         print(target)
         servo_data = target[1]

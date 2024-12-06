@@ -34,7 +34,7 @@ def read_all_arguments():
     return ID, number_of_stationary_robots
 
 def determine_differece_for_movement(x, y):
-    return 0 - x, 20 - y
+    return x, y - 20
 
 def convert_coordinates_from_cm_to_m(x, y):
     return x / 100, y / 100
@@ -147,6 +147,12 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
         init_move()
 
     else:
+
+        while not armpi.did_transporter_received_list():
+            time.sleep(0.5)
+    
+        armpi.set_transporter_received_list(False)
+
         rotate_away_from_camera()
 
         # wait until armpi pro reached camera

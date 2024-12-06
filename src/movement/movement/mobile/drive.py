@@ -215,7 +215,7 @@ def follow_lines(msg):
         #TODO: Implement the states and the actions!
 
         if driving_state == DrivingState.WAIT:
-            __drive_forward_without_stopping(2.25)
+            __drive_forward_without_stopping(2.4)
             print("drive forward without stopping")
 
             if len(id_list) == 0:
@@ -269,12 +269,12 @@ def follow_lines(msg):
         dx = 0.1 if dx > 0.1 else dx
         dx = -0.1 if dx < -0.1 else dx
 
-        print(f"Lenkung dx: {dx}")
+        #print(f"Lenkung dx: {dx}")
 
         set_velocity.publish(__create_set_velocity_message(100, 90, dx))
         move = True
 
-        print(f"Width: {width}")
+        #print(f"Width: {width}")
 
         if 20 <= width:
             last_width = width

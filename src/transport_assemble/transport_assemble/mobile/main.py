@@ -19,7 +19,7 @@ rclpy.init()
 
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe, set_grab_robot_id
 from movement.mobile.pipes.assembly import *
-from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot
+from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot, rotate_180_deg
 from robot.subscriber.holding_subscriber import create_holding_subscriber_node
 from robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
 from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
@@ -29,6 +29,7 @@ from robot.publisher.assembly_queue_notify_publisher import create_notify_publis
 from common_executor.executor_subscriptions import MultiExecutor
 
 node = rclpy.create_node('main_transport')
+last_id = -1
 
 def read_argument():
     number_of_stationary_robots = int(sys.argv[1])
@@ -36,17 +37,19 @@ def read_argument():
     return number_of_stationary_robots, beep
 
 def process_scenario(armpi, executor, notify_publisher):
+    global last_id
 
     while not armpi.get_assembly_order_status():
-
-        #print("Waiting")
 
         if armpi.get_finish_flag():
             print("Exit the visual_processing")
             call_service(node, Trigger, '/visual_processing/exit', Trigger.Request())
             print("I can park now")
-            grab_init_move()
-            park()
+
+            if last_id != -1:
+                grab_init_move()
+                park()
+            
             executor.execute_shutdown()
             return
         
@@ -60,7 +63,13 @@ def process_scenario(armpi, executor, notify_publisher):
     next_id = armpi.pop_IDList()
     notify_publisher.send_msg()
 
-    drive_init_move()
+    if next_id == last_id:
+        print("Rotate 180 degrees!")
+        rotate_180_deg()
+
+    if (last_id == -1):
+        drive_init_move()
+    
     start_to_drive()
 
     print("Driving")
@@ -70,7 +79,6 @@ def process_scenario(armpi, executor, notify_publisher):
     
     set_grab_robot_id(next_id)
 
-    # Grabbing the pipe
     grab_init_move()
     drive_forward(1)
     
@@ -84,8 +92,6 @@ def process_scenario(armpi, executor, notify_publisher):
 
     print("Drive backwards and rotate!")
 
-    #drive_backward(3.5)
-    #rotate_90_deg_right()
     drive_away_from_robot(next_id)
 
     while not armpi.is_empty_IDList():
@@ -103,7 +109,6 @@ def process_scenario(armpi, executor, notify_publisher):
         assembly_init_move()
         drive_forward(1.3)
 
-        #send message to stationary robot
         print("send message!")
         notify_stationary_robot_for_the_next_assembly_step(next_id)
 
@@ -114,35 +119,30 @@ def process_scenario(armpi, executor, notify_publisher):
         print("Got position!")
 
         print("move arm up")
-        # go from desired position up
         move_arm_up()
 
         notify_stationary_robot_for_the_next_assembly_step(next_id)
 
         print("now wait until stationary robot moved")
         # wait until robot reached (0, 20)
-
         while not armpi.get_permission_to_do_next_assembly_step():
             time.sleep(0.5)
 
         armpi.set_permission_to_do_next_assembly_step(False)
 
         print("move arm down")
-        # arm goes down
         move_arm_down()
 
         print("open claw")
-        # open claw
         open_claw()
 
         grab_init_move()
 
         notify_stationary_robot_for_the_next_assembly_step(next_id)
 
-        # drive away
-        #drive_backward(3.5)
-        #rotate_90_deg_left()
         drive_away_from_robot(next_id)
+
+        last_id = next_id
 
     drive_init_move()
     start_to_drive()

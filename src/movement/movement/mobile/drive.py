@@ -69,7 +69,33 @@ def get_parked_status():
 def set_id_list_for_driving(idList):
     global id_list
     id_list = idList
+
+
+def is_id_list_full():
+    global armpi, id_list
+    return len(id_list) == armpi.get_number_of_stationary_robots()
+
+
+def is_id_list_empty():
+    global id_list
+    return len(id_list) == 0
+
+
+def pop_first_element_of_id_list():
+    global id_list 
+    if is_id_list_empty():
+        return -1
     
+    return id_list.pop(0)
+
+def get_first_element_of_id_list():
+    global id_list 
+
+    if is_id_list_empty():
+        return -1
+    
+    return id_list[0]
+
 
 def start_to_drive():
     global master_node, start
@@ -87,7 +113,6 @@ def start_to_drive():
 def drive_init_move():
     time.sleep(0.5)
     bus_servo_control.set_servos(joints_pub, 1.5, ((2, 500), (3, 250), (4, 825), (5, 500),(6, 500)))
-    #bus_servo_control.set_servos(joints_pub, 1.5, ((2, 750), (3, 250), (4, 900), (5, 500),(6, 500)))
     time.sleep(2)
 
 
@@ -162,16 +187,16 @@ def drive_backward(duration_in_s):
     
 
 def rotate_90_deg_right():
-    backwards_message = __create_set_velocity_message(0, 90, -0.45)
-    set_velocity.publish(backwards_message) 
+    rotation_message = __create_set_velocity_message(0, 90, -0.45)
+    set_velocity.publish(rotation_message) 
 
     time.sleep(2.5)
 
     __stop_armpi_pro()
 
 def rotate_90_deg_left():
-    backwards_message = __create_set_velocity_message(0, 90, 0.45)
-    set_velocity.publish(backwards_message) 
+    rotation_message = __create_set_velocity_message(0, 90, 0.45)
+    set_velocity.publish(rotation_message) 
 
     time.sleep(2.5)
 
@@ -185,9 +210,9 @@ def drive_away_from_robot(id):
         drive_backward(3.5)
         rotate_90_deg_left()
 
-def __rotate_180_deg():
-    backwards_message = __create_set_velocity_message(0, 90, 0.45)
-    set_velocity.publish(backwards_message) 
+def rotate_180_deg():
+    rotation_message = __create_set_velocity_message(0, 90, 0.45)
+    set_velocity.publish(rotation_message) 
 
     time.sleep(5)
 
@@ -212,13 +237,11 @@ def follow_lines(msg):
 
     if last_width != 0 and width > 120:
 
-        #TODO: Implement the states and the actions!
-
         if driving_state == DrivingState.WAIT:
             __drive_forward_without_stopping(2.4)
             print("drive forward without stopping")
 
-            if len(id_list) == 0:
+            if is_id_list_empty():
                 print("stop visual processing because list is empty")
                 call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
                 move = False
@@ -226,10 +249,10 @@ def follow_lines(msg):
                 __stop_armpi_pro()
                 #return
 
-            elif last_id == -1 and len(id_list) == 2:
+            elif last_id == -1 and is_id_list_full():
                 __stop_armpi_pro()
                 print("Stop driving")
-                temp_id = id_list[0] #armpi.get_first_ID_IDList()
+                temp_id = get_first_element_of_id_list()
 
                 if temp_id == 0:
                     rotate_90_deg_right()
@@ -237,24 +260,28 @@ def follow_lines(msg):
                     rotate_90_deg_left()
                 print("rotate")
             
-            elif last_id != -1 and len(id_list) == 2:
-                temp_id = id_list[0] #armpi.get_first_ID_IDList()
+            '''elif last_id != -1 and is_id_list_full():
+                __stop_armpi_pro()
+                temp_id = get_first_element_of_id_list()
                 if temp_id == last_id:
-                    __rotate_180_deg()
-                print("rotate 180")
+                    rotate_180_deg()
+                print("rotate 180")'''
 
             driving_state = DrivingState.ASSEMBLY_STEP
 
         elif driving_state == DrivingState.ASSEMBLY_STEP:
-            next_id = id_list.pop(0) #armpi.pop_IDList()
+            next_id = pop_first_element_of_id_list()
             print(f"Got the following ID from the queue: {next_id}")
-            drive_forward(2.75)
+            time_to_drive = 2.5
+            if is_id_list_empty():
+                time_to_drive = 2.75
+            
+            drive_forward(time_to_drive)
 
             if next_id == 0:
                 rotate_90_deg_right()
             else:
                 rotate_90_deg_left()
-            print("Rotate in assembly step")
             driving_state = DrivingState.WAIT
             last_id = next_id
             return
@@ -269,12 +296,8 @@ def follow_lines(msg):
         dx = 0.1 if dx > 0.1 else dx
         dx = -0.1 if dx < -0.1 else dx
 
-        #print(f"Lenkung dx: {dx}")
-
         set_velocity.publish(__create_set_velocity_message(100, 90, dx))
         move = True
-
-        #print(f"Width: {width}")
 
         if 20 <= width:
             last_width = width

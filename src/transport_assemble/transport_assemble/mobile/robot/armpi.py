@@ -11,6 +11,9 @@ class ArmPi():
     def get_ID(self):
         return self.__ID
     
+    def get_number_of_stationary_robots(self):
+        return self.__number_of_stationary_robots
+    
     def get_first_robot_hold_pipe(self):
         return self.__first_robot_hold_pipe
     

@@ -6,6 +6,10 @@ class GrabberDetection(Detection):
     def calculate_middle_between_grabber(self):
        self._calculate_object_parameters(GrabType.MIDDLE, color='yellow')
        x_left, y_left = self.get_position_of_ith_object(0)
+
+       if x_left == -1 and y_left == -1:
+           return 0, 20
+
        x_right, y_right = self.get_position_of_ith_object(1)
        
        print(f"Left world coordinates: ({x_left}, {y_left})")

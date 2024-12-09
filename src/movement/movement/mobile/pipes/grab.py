@@ -32,6 +32,7 @@ ik = ik_transform.ArmIK()
 
 # TODO: Maybe I need to save the nodes somewhere
 node = rclpy.create_node('grabbing_armpi_pro')
+temp_grab_node = rclpy.create_node('temp_grab_node')
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
 trigger_grab_pub = node.create_publisher(IDArmPi, 'grabbed', 1)
 
@@ -61,11 +62,13 @@ def set_grab_robot_id(id):
     grab_robot_id = id
 
 def detect_pipe():
-    global master_node
+    global master_node, enable_rotation
 
     req = SetParam.Request()
     req.type = 'rectangle_detection'
+    time.sleep(0.5)
     call_service(master_node, SetParam, '/visual_processing/set_running', req)
+    enable_rotation = True
 
 def stop_detecting():
     global master_node
@@ -126,7 +129,7 @@ def grab_pipe(x_dis, z_dis, angle):
             (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
         time.sleep(2)
 
-    dist_response = call_service(node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
+    dist_response = call_service(temp_grab_node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
     distance = (dist_response.distance_cm - 3.5) / 100
     print(f"Ultrasonic distance: {distance}")
 
@@ -172,9 +175,7 @@ def track_point_at_pipe(msg):
 
     print(f"Distance: ({distance_x}, {distance_y})")
 
-    #TODO: What if distance_x is constant? Try to modify the pulse of servo 6
-
-    if (enable_rotation and abs(distance_x) <= 0.9 and abs(distance_y) < 0.05):
+    if (enable_rotation and abs(distance_x) <= 1.0 and abs(distance_y) < 0.05):
         enable_rotation = False
         t1 = Thread(target=grab_pipe, args=(x_dis, z_dis, rotation_angle_of_pipe))
         t1.start()

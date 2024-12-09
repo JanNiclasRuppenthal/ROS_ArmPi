@@ -98,8 +98,14 @@ def go_to_waiting_position():
     Board.setBusServoPulse(2, 500, 500)
     time.sleep(0.8)
 
-def go_to_delivery_position():
-    result = AK.setPitchRangeMoving((0, 20, 28), 5, 5, 15)
+def go_to_delivery_position(id):
+    height = 0
+    if id == 0:
+        height = 28
+    elif id == 1:
+        height = 27
+    print(f"To height: {height}")
+    result = AK.setPitchRangeMoving((0, 20, height), 5, 5, 15)
     time.sleep(result[2]/1000)
     print(result)
 
@@ -107,8 +113,14 @@ def go_to_delivery_position():
     Board.setBusServoPulse(2, 500, 500)
     time.sleep(0.8)
 
-def move_back_from_delivery_position():
-    result = AK.setPitchRangeMoving((0, 18, 28), 5, 5, 15)
+def move_back_from_delivery_position(id):
+    height = 0
+    if id == 0:
+        height = 28
+    elif id == 1:
+        height = 27
+    print(f"From height: {height}")
+    result = AK.setPitchRangeMoving((0, 18, height), 5, 5, 15)
     time.sleep(result[2]/1000)
     print(result)
 

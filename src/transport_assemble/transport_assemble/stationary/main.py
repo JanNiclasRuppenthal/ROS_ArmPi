@@ -127,7 +127,7 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
     
         armpi.set_transporter_received_list(False)
 
-        go_to_delivery_position()
+        go_to_delivery_position(armpi.get_ID())
 
         print("Wait until I can let go the pipe")
         while not armpi.need_to_let_go_pipe():
@@ -142,7 +142,7 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
         print("ArmPi Pro can now drive away and my Job is done!")
         holding_publisher.send_msg()
 
-        move_back_from_delivery_position()
+        move_back_from_delivery_position(armpi.get_ID())
         move_down_from_delivery_position()
         init_move()
 

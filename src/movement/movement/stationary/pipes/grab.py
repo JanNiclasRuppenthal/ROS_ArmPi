@@ -103,7 +103,7 @@ def go_to_delivery_position(id):
     if id == 0:
         height = 28
     elif id == 1:
-        height = 27
+        height = 26.5
     print(f"To height: {height}")
     result = AK.setPitchRangeMoving((0, 20, height), 5, 5, 15)
     time.sleep(result[2]/1000)
@@ -118,7 +118,7 @@ def move_back_from_delivery_position(id):
     if id == 0:
         height = 28
     elif id == 1:
-        height = 27
+        height = 26.5
     print(f"From height: {height}")
     result = AK.setPitchRangeMoving((0, 18, height), 5, 5, 15)
     time.sleep(result[2]/1000)

@@ -42,6 +42,7 @@ def process_scenario(armpi, executor, notify_publisher):
     while not armpi.get_assembly_order_status():
 
         if armpi.get_finish_flag():
+            notify_publisher.send_msg()
             print("Exit the visual_processing")
             call_service(node, Trigger, '/visual_processing/exit', Trigger.Request())
             print("I can park now")

@@ -62,6 +62,11 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
 
     if x == -1 and y == -1:
         finish_publisher.send_msg()
+
+        while not armpi.did_transporter_received_list():
+            finish_publisher.send_msg()
+            time.sleep(0.5)
+
         executor.execute_shutdown()
         return
     

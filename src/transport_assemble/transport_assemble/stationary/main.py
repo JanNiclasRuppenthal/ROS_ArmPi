@@ -2,20 +2,19 @@ import sys
 import time
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
 
-from robot.armpi import ArmPi
-from robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
-from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
-from robot.subscriber.assembly_step_subscriber	 import create_assembly_step_subscriber_node
-from robot.subscriber.finish_subscriber import create_finish_subscriber_node
-from robot.subscriber.assembly_queue_notify_subscriber import create_notify_subscriber_node
-from robot.publisher.assembly_position_publisher import create_assembly_position_publisher_node
-from robot.publisher.holding_publisher import create_holding_publisher_node
-from robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
-from robot.publisher.assembly_order_publisher import create_assembly_order_publisher_node
-from robot.publisher.assembly_step_publisher import create_assembly_step_publisher_node
-from robot.publisher.finish_publisher import create_finish_publisher_node
+from .robot.armpi import ArmPi
+from .robot.subscriber.grabbed_subscriber import create_grabbed_subscriber_node
+from .robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
+from .robot.subscriber.assembly_step_subscriber	 import create_assembly_step_subscriber_node
+from .robot.subscriber.finish_subscriber import create_finish_subscriber_node
+from .robot.subscriber.assembly_queue_notify_subscriber import create_notify_subscriber_node
+from .robot.publisher.assembly_position_publisher import create_assembly_position_publisher_node
+from .robot.publisher.holding_publisher import create_holding_publisher_node
+from .robot.publisher.assemble_queue_publisher import create_assemble_queue_publisher_node
+from .robot.publisher.assembly_order_publisher import create_assembly_order_publisher_node
+from .robot.publisher.assembly_step_publisher import create_assembly_step_publisher_node
+from .robot.publisher.finish_publisher import create_finish_publisher_node
 
 from object_detection.stationary.pipe_detection import PipeDetection
 from object_detection.stationary.yellow_grabber_detection import GrabberDetection

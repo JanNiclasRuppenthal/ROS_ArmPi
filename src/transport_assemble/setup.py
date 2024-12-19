@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'mobile = transport_assemble.mobile.main:main',
+            'stationary = transport_assemble.stationary.main:main'
         ],
     },
 )

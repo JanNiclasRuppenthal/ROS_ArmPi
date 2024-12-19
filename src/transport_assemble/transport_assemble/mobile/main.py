@@ -1,14 +1,11 @@
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
 
 
 from std_srvs.srv import Trigger
 
-from visual_processing.srv import SetParam
-from visual_processing.msg import Result
 from armpi_pro_service_client.client import call_service
 
-from robot.armpi import ArmPi
+from .robot.armpi import ArmPi
 
 import time
 import sys
@@ -20,11 +17,11 @@ rclpy.init()
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe, set_grab_robot_id
 from movement.mobile.pipes.assembly import *
 from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot, rotate_180_deg
-from robot.subscriber.holding_subscriber import create_holding_subscriber_node
-from robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
-from robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
-from robot.subscriber.finish_subscriber import create_finish_subscriber_node
-from robot.publisher.assembly_queue_notify_publisher import create_notify_publisher_node
+from .robot.subscriber.holding_subscriber import create_holding_subscriber_node
+from .robot.subscriber.assembly_order_subscriber import create_assembly_order_subscriber_node
+from .robot.subscriber.assembly_step_subscriber import create_assembly_step_subscriber_node
+from .robot.subscriber.finish_subscriber import create_finish_subscriber_node
+from .robot.publisher.assembly_queue_notify_publisher import create_notify_publisher_node
 
 from common_executor.executor_subscriptions import MultiExecutor
 
@@ -150,7 +147,6 @@ def process_scenario(armpi, executor, notify_publisher):
 
     while not reached_the_next_stationary_robot():
         time.sleep(0.5)
-        #print("waiting for reaching kreuz")
 
 def main():
     global node

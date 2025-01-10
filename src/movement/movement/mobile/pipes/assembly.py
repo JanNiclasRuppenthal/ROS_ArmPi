@@ -65,7 +65,7 @@ def move_arm_up():
     print(f"Positions: ({x_pos}, {y_pos})")
 
     time.sleep(0.5)
-    target = ik.setPitchRanges((x_pos, y_pos, 0.24), -90, -92, -88) # or you can use the position (0, 0.22)
+    target = ik.setPitchRanges((x_pos, y_pos-0.01, 0.24), -90, -92, -88) # or you can use the position (0, 0.22)
     if target:
         print(target)
         servo_data = target[1]
@@ -91,7 +91,7 @@ def move_arm_down():
     print(f"Positions: ({x_pos}, {y_pos})")
 
     time.sleep(0.5)
-    target = ik.setPitchRanges((x_pos, y_pos, 0.18), -90, -92, -88) # or you can use the position (0, 0.22)
+    target = ik.setPitchRanges((x_pos, y_pos-0.01, 0.18), -90, -92, -88) # or you can use the position (0, 0.22)
     if target:
         print(target)
         servo_data = target[1]

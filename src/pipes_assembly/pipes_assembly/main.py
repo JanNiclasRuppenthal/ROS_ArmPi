@@ -9,11 +9,11 @@ from robot.armpi import ArmPi
 from robot.publisher.done_publisher import create_done_publisher_node
 from robot.publisher.finish_publisher import create_finish_publisher_node
 from robot.publisher.position_publisher import create_pos_publisher_node
-from robot.publisher.assembly_queue_publisher import create_assembly_queue_publisher_node
+from assembly_queue.nodes.assembly_queue_publisher import create_assembly_queue_publisher_node
 from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
-from robot.subscriber.assembly_queue_subscriber import create_assembly_queue_subscriber_node
+from assembly_queue.nodes.assembly_queue_subscriber import create_assembly_queue_subscriber_node
 from object_detection.stationary.detection import Detection
 from common.executor.executor_subscriptions import MultiExecutor
 from movement.stationary.pipes.grab import *

@@ -1,5 +1,5 @@
 from common_abstract_nodes.publisher.Apublisher import RobotPublisher
-from armpi_interfaces.msg import Position2D
+from position_interface.msg import Position2D
 
 class AssemblyPositionPublisher(RobotPublisher):
     def __init__(self, armpi):

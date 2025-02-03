@@ -1,5 +1,5 @@
 from common_abstract_nodes.publisher.Apublisher import RobotPublisher
-from armpi_interfaces.msg import PositionWithAngle
+from position_interface.msg import PositionWithAngle
 
 class PositionPublisher(RobotPublisher):
     def __init__(self, armpi):

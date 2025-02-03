@@ -1,5 +1,5 @@
 from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
-from armpi_interfaces.msg import IDList
+from id_interface.msg import IDList
 
 class AssemblyOrderSubscriber(RobotSubscriber):
     def __init__(self, armpi):

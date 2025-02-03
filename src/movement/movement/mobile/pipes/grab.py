@@ -8,7 +8,7 @@ from armpi_pro import bus_servo_control, pid
 from armpi_pro_service_client.client import call_service
 from distance_ultrasonic.srv import Distance
 
-from armpi_interfaces.msg import IDArmPi
+from id_interface.msg import IDArmPi
 
 import time
 from threading import Thread

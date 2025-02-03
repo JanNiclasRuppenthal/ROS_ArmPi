@@ -1,13 +1,13 @@
 from common_abstract_nodes.publisher.Apublisher import RobotPublisher
-from armpi_interfaces.msg import AssembleQueue
+from assembly_queue_interface.msg import AssemblyQueue
 
 class AssembleQueuePublisher(RobotPublisher):
     def __init__(self, armpi):
         super().__init__('assemble_queue_publisher', armpi)
-        self.__publisher = self.create_publisher(AssembleQueue, 'assemble_queue', 10)
+        self.__publisher = self.create_publisher(AssemblyQueue, 'assemble_queue', 10)
 
     def create_msg(self):
-        msg = AssembleQueue()
+        msg = AssemblyQueue()
         msg.id = self.get_ID()
         msg.type = self.get_armpi().get_object_type().value
         msg.number_objects = self.get_armpi().get_number_of_objects()

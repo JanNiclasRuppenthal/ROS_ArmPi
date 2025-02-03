@@ -5,8 +5,8 @@ from armpi_pro_kinematics import ik_transform
 from armpi_pro import bus_servo_control
 from armpi_pro_service_client.client import call_service
 
-from armpi_interfaces.msg import IDArmPi
-from armpi_interfaces.msg import Position2D
+from id_interface.msg import IDArmPi
+from position_interface.msg import Position2D
 
 import time
 from threading import Thread

@@ -1,6 +1,5 @@
 from common_abstract_nodes.publisher.Apublisher import RobotPublisher
-
-from armpi_interfaces.msg import IDArmPi
+from id_interface.msg import IDArmPi
 
 class FinishPublisher(RobotPublisher):
 

@@ -1,10 +1,10 @@
 from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
-from armpi_interfaces.msg import AssembleQueue
+from assembly_queue_interface.msg import AssemblyQueue
 
 class AssembleQueueSubscriber(RobotSubscriber):
     def __init__(self, armpi):
         super().__init__('assemble_queue_subscriber', armpi)
-        self.__subscription = self.create_subscription(AssembleQueue, 'assemble_queue', self.callback,10)
+        self.__subscription = self.create_subscription(AssemblyQueue, 'assemble_queue', self.callback,10)
         self.__subscription  # prevent unused variable warning
 
     def callback(self, msg):

@@ -1,5 +1,5 @@
 from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
-from armpi_interfaces.msg import PositionWithAngle
+from position_interface.msg import PositionWithAngle
 
 class PositionSubscriber(RobotSubscriber):
     def __init__(self, armpi):

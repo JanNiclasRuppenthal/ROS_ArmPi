@@ -1,5 +1,5 @@
 from common_abstract_nodes.publisher.Apublisher import RobotPublisher
-from armpi_interfaces.msg import IDList
+from id_interface.msg import IDList
 
 class AssemblyOrderPublisher(RobotPublisher):
     def __init__(self, armpi):

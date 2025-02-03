@@ -9,12 +9,13 @@ from robot.armpi import ArmPi
 from robot.publisher.done_publisher import create_done_publisher_node
 from robot.publisher.finish_publisher import create_finish_publisher_node
 from robot.publisher.position_publisher import create_pos_publisher_node
-from assembly_queue.nodes.assembly_queue_publisher import create_assembly_queue_publisher_node
 from robot.subscriber.done_subscriber import create_done_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
+
+from assembly_queue.nodes.assembly_queue_publisher import create_assembly_queue_publisher_node
 from assembly_queue.nodes.assembly_queue_subscriber import create_assembly_queue_subscriber_node
-from object_detection.stationary.detection import Detection
+from object_detection.stationary.pipe_detection import PipeDetection
 from common.executor.executor_subscriptions import MultiExecutor
 from movement.stationary.pipes.grab import *
 
@@ -33,7 +34,7 @@ def end_scenario(executor, x, y, angle, rotation_direction, object_type):
 
 def process_scenario(armpi, done_publisher, finish_publisher, pos_publisher, assemble_publisher, executor):
     global object_id
-    obj_detection = Detection()
+    obj_detection = PipeDetection()
     obj_detection.calculate_bottom_parameters()
     x, y = obj_detection.get_position_of_ith_object(object_id)
     angle = obj_detection.get_angle_of_ith_object(object_id)

@@ -1,5 +1,5 @@
 from common.abstract_nodes.subscriber.Asubscriber import RobotSubscriber
-from id_interface import IDArmPi
+from id_interface.msg import IDArmPi
 
 
 class FinishSubscriber(RobotSubscriber):

@@ -1,5 +1,5 @@
 from common.abstract_nodes.subscriber.Asubscriber import RobotSubscriber
-from assembly_queue_interface import AssemblyQueue
+from assembly_queue_interface.msg import AssemblyQueue
 
 class AssemblyQueueSubscriber(RobotSubscriber):
     def __init__(self, armpi):

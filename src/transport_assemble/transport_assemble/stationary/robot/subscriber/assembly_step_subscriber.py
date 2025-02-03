@@ -1,4 +1,4 @@
-from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
+from common.abstract_nodes.subscriber.Asubscriber import RobotSubscriber
 from id_interface.msg import IDArmPi
 
 class AssemblyStepSubscriber(RobotSubscriber):

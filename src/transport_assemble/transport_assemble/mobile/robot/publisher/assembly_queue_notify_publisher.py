@@ -1,4 +1,4 @@
-from common_abstract_nodes.publisher.Apublisher import RobotPublisher
+from common.abstract_nodes.publisher.Apublisher import RobotPublisher
 from std_msgs.msg import Empty
 
 class NotifyPublisher(RobotPublisher):

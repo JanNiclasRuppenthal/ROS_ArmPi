@@ -1,4 +1,4 @@
-from common_abstract_nodes.publisher.Apublisher import RobotPublisher
+from common.abstract_nodes.publisher.Apublisher import RobotPublisher
 from id_interface.msg import IDArmPi
 
 class FinishPublisher(RobotPublisher):

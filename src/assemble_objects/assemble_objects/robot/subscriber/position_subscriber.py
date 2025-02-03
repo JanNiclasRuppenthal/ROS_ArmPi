@@ -1,4 +1,4 @@
-from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
+from common.abstract_nodes.subscriber.Asubscriber import RobotSubscriber
 from position_interface.msg import PositionWithAngle
 
 class PositionSubscriber(RobotSubscriber):

@@ -1,4 +1,4 @@
-from common_abstract_nodes.subscriber.Asubscriber import RobotSubscriber
+from common.abstract_nodes.subscriber.Asubscriber import RobotSubscriber
 from assembly_queue_interface.msg import AssemblyQueue
 
 class AssembleQueueSubscriber(RobotSubscriber):

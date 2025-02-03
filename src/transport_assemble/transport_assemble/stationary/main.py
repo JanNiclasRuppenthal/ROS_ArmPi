@@ -20,7 +20,7 @@ from object_detection.stationary.pipe_detection import PipeDetection
 from object_detection.stationary.yellow_grabber_detection import GrabberDetection
 from movement.stationary.pipes.grab import *
 
-from common_executor.executor_subscriptions import MultiExecutor
+from common.executor.executor_subscriptions import MultiExecutor
 
 
 from threading import Thread

@@ -15,7 +15,7 @@ from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.subscriber.position_subscriber import create_pos_subscriber_node
 from robot.subscriber.assemble_queue_subscriber import create_assemble_queue_subscriber_node
 from object_detection.stationary.detection import Detection
-from common_executor.executor_subscriptions import MultiExecutor
+from common.executor.executor_subscriptions import MultiExecutor
 from movement.stationary.pipes.grab import *
 
 

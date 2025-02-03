@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'common_abstract_nodes'
+package_name = 'common'
 
 setup(
     name=package_name,

@@ -10,7 +10,7 @@ from robot.publisher.finish_publisher import create_finish_publisher_node
 from robot.subscriber.delivery_subscriber import create_delivery_subscriber_node
 from robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from robot.armpi import ArmPi
-from common_executor.executor_subscriptions import MultiExecutor
+from common.executor.executor_subscriptions import MultiExecutor
 from movement.stationary.cubes.coordinates import get_coordinates
 from movement.stationary.cubes.deliver import init_move, deliver
 

@@ -1,4 +1,4 @@
-from common_abstract_nodes.publisher.Apublisher import RobotPublisher
+from common.abstract_nodes.publisher.Apublisher import RobotPublisher
 from position_interface.msg import Position2D
 
 class AssemblyPositionPublisher(RobotPublisher):

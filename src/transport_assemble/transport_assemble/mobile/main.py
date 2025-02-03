@@ -23,7 +23,7 @@ from .robot.subscriber.assembly_step_subscriber import create_assembly_step_subs
 from .robot.subscriber.finish_subscriber import create_finish_subscriber_node
 from .robot.publisher.assembly_queue_notify_publisher import create_notify_publisher_node
 
-from common_executor.executor_subscriptions import MultiExecutor
+from common.executor.executor_subscriptions import MultiExecutor
 
 node = rclpy.create_node('main_transport')
 last_id = -1

@@ -1,4 +1,4 @@
-from common_abstract_nodes.publisher.Apublisher import RobotPublisher
+from common.abstract_nodes.publisher.Apublisher import RobotPublisher
 from assembly_queue_interface.msg import AssemblyQueue
 
 class AssembleQueuePublisher(RobotPublisher):

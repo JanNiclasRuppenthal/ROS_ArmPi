@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'pipe_assembly'
+package_name = 'pipes_assembly'
 
 setup(
     name=package_name,

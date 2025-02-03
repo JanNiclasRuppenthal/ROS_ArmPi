@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'assembly'
+package_name = 'transfer_cubes'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'main = assembly.main:main'
+            'main = transfer_cubes.main:main'
         ],
     },
 )

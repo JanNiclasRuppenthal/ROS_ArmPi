@@ -5,14 +5,12 @@ import math
 
 from rclpy.node import Node
 
-from movement.stationary.cubes.coordinates import CoordinatesCaluclation
-
 
 class Deliver(Node):
-    def __init__(self):
+    def __init__(self, coordinate_calc):
         super().__init__("stationary_deliver_node")
         self.__AK = ArmIK()
-        self.__coordinate_calculation = CoordinatesCaluclation()
+        self.__coordinate_calculation = coordinate_calc
 
         self.__coordinates_last = {
             'red':   (-15 + 0.5, 12 - 0.5, 1.5),
@@ -82,7 +80,7 @@ class Deliver(Node):
 
         # Remove to target position, high is 6 cm, through return result to judge whether it can reach the specified location
         # if the running time is not given，it is automatically calculated and returned by the result
-        result = self.AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
+        result = self.__AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
         if result:
             time.sleep(result[2]/1000) # if it can reach to specified location, then get running time
 

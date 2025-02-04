@@ -22,7 +22,7 @@ class TransferCubes:
         self.__first_start = ID == 0
         self.__cam = Cam()
         self.__coordinates_calculation = CoordinatesCaluclation()
-        self.__deliver = Deliver()
+        self.__deliver = Deliver(self.__coordinates_calculation)
 
         # create all necessary nodes
         self.__delivery_publisher = DeliveryPublisher(self.__armpi)

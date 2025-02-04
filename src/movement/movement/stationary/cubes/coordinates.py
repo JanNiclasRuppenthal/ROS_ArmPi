@@ -95,7 +95,7 @@ class CoordinatesCaluclation(Node):
             # Test if the camera could catch a colored cube
             # Sometimes it can detect a black box of a shadow
             if color_area_max not in ['red', 'green', 'blue']:
-                print("Color does not match RGB!")
+                self.get_logger().warn("Color does not match RGB!")
             else:
                 self.detected_color = color_area_max
 

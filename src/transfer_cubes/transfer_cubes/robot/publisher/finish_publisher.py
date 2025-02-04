@@ -19,8 +19,3 @@ class FinishPublisher(RobotPublisher):
         if not self.__last_robot:
             self.publisher.publish(message_next_ID)
             self.get_logger().info('Notifying from: "%d" to "%d"' % (self.get_ID(), message_next_ID.id))
-
-
-def create_finish_publisher_node(armpi):
-    __publisher = FinishPublisher(armpi)
-    return __publisher

@@ -26,8 +26,3 @@ class DeliveryPublisher(RobotPublisher):
         if not self.__last_robot:
             self.publisher.publish(message_next_ID)
             self.get_logger().info('Notifying from: "%d" to "%d"' % (self.get_ID(), message_next_ID.id))
-
-
-def create_delivery_publisher_node(armpi):
-    __publisher = DeliveryPublisher(armpi)
-    return __publisher

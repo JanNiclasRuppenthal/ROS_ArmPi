@@ -1,7 +1,7 @@
 import rclpy
 import rclpy.executors
 
-class MultiExecutor():
+class MultiExecutor:
     def __init__(self, subscriber_nodes):
         self.__executor = rclpy.executors.MultiThreadedExecutor()
         self.__subscriber_nodes = subscriber_nodes

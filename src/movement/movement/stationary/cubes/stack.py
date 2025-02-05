@@ -24,7 +24,7 @@ class StackCube(Node, Movement):
 
 
 
-    def move_cube(self, x, y, rotation_angle, detected_color, last_robot):
+    def move_cube(self, x, y, rotation_angle, detected_color):
         grabbed_cube = self.__grab_cube.grab_cube(x, y, rotation_angle)
         if grabbed_cube:
             self._move_arm_up(x, y, 1)

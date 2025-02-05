@@ -7,10 +7,9 @@ from rclpy.node import Node
 
 
 class Deliver(Node):
-    def __init__(self, coordinate_calc):
+    def __init__(self):
         super().__init__("stationary_deliver_node")
         self.__AK = ArmIK()
-        self.__coordinate_calculation = coordinate_calc
 
         self.__coordinates_last = {
             'red':   (-15 + 0.5, 12 - 0.5, 1.5),
@@ -66,10 +65,8 @@ class Deliver(Node):
             rotation_direction = -1
         return rotation_angle, rotation_direction
 
-    def deliver_cube(self, x, y, last_robot):
-        detected_color = self.__coordinate_calculation.get_detected_color()
-
-        # placement coordinate
+    def deliver_cube(self, x, y, rotation_angle, detected_color, last_robot):
+        # placement coordinates
         '''
         placement coordinate:
         normal: (-15 + 0.5, y, 1.5)
@@ -86,20 +83,18 @@ class Deliver(Node):
 
             self.__open_claw()
 
-            self.__move_to_cube(x, y)
+            self.__move_to_cube(x, y, rotation_angle)
 
             self.__close_claw()
 
             Board.setBusServoPulse(2, 500, 500)
-            self.__AK.setPitchRangeMoving((x, y, 12), -90, -90, 0, 1000)  # ArmPi Robot arm up
-            time.sleep(1)
+            self.__move_arm_up(x, y, 1)
 
             self.__move_to_goal_coordinate(goal_coord_x, goal_coord_y, goal_coord_z)
 
             self.__open_claw()
 
-            self.__AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, 12), -90, -90, 0, 800) # ArmPi Robot arm up
-            time.sleep(0.8)
+            self.__move_arm_up(goal_coord_x, goal_coord_y, 0.8)
 
             self.__count_placed_colored_cubes[detected_color] += 1
         else:
@@ -133,8 +128,8 @@ class Deliver(Node):
         return goal_coord_x, goal_coord_y, goal_coord_z
 
 
-    def __move_to_cube(self, x, y):
-        servo2_pulse = self.__convert_angle_to_pulse(x, y, self.__coordinate_calculation.get_rotation_angle())
+    def __move_to_cube(self, x, y, rotation_angle):
+        servo2_pulse = self.__convert_angle_to_pulse(x, y, rotation_angle)
         Board.setBusServoPulse(2, servo2_pulse, 500)  # rotate the second servo
         time.sleep(0.5)
 
@@ -158,3 +153,8 @@ class Deliver(Node):
         # ArmPi is at the next coordinates
         self.__AK.setPitchRangeMoving((goal_coord_x, goal_coord_y, goal_coord_z), -90, -90, 0, 1000)
         time.sleep(0.8)
+
+    def __move_arm_up(self, x, y, time_in_s):
+        time_in_ms = int(time_in_s * 1000)
+        self.__AK.setPitchRangeMoving((x, y, 12), -90, -90, 0, time_in_ms) # ArmPi Robot arm up
+        time.sleep(time_in_s)

@@ -22,7 +22,7 @@ class TransferCubes:
         self.__first_start = ID == 0
         self.__cam = Cam()
         self.__coordinates_calculation = CoordinatesCaluclation()
-        self.__deliver = Deliver(self.__coordinates_calculation)
+        self.__deliver = Deliver()
 
         # create all necessary nodes
         self.__delivery_publisher = DeliveryPublisher(self.__armpi)
@@ -58,7 +58,9 @@ class TransferCubes:
                 world_X, world_Y = self.__coordinates_calculation.get_coordinates(self.__cam)
 
                 if self.__deliver.are_coordinates_valid(world_X, world_Y):
-                    self.__deliver.deliver_cube(world_X, world_Y, self.__armpi.get_last_robot_flag())
+                    rotation_angle = self.__coordinates_calculation.get_rotation_angle()
+                    detected_color = self.__coordinates_calculation.get_detected_color()
+                    self.__deliver.deliver_cube(world_X, world_Y, rotation_angle, detected_color, self.__armpi.get_last_robot_flag())
 
                     # move back to the initial position
                     self.__deliver.init_move()

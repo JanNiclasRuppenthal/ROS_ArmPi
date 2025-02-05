@@ -17,7 +17,3 @@ class AssemblyQueuePublisher(RobotPublisher):
         message = self.create_msg()
         self.__publisher.publish(message)
         self.get_logger().info('Send assembly message with the following type: %d and number: %d' % (message.type, message.number_objects))
-
-def create_assembly_queue_publisher_node(armpi):
-    __publisher = AssemblyQueuePublisher(armpi)
-    return __publisher

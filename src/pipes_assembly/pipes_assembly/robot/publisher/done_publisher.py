@@ -15,9 +15,4 @@ class DonePublisher(RobotPublisher):
         message = self.create_msg()
         self.__publisher.publish(message)
         self.get_armpi().get_assembly_queue().pop()
-        self.get_logger().info('Send done message from ID %d' % (message.id))
-
-
-def create_done_publisher_node(armpi):
-    __publisher = DonePublisher(armpi)
-    return __publisher
+        self.get_logger().info('Send done message from ID %d' % message.id)

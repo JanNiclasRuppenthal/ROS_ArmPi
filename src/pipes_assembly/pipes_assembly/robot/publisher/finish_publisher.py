@@ -14,9 +14,4 @@ class FinishPublisher(RobotPublisher):
     def send_msg(self):
         message = self.create_msg()
         self.__publisher.publish(message)
-        self.get_logger().info('Send end message from ID %d' % (message.id))
-
-
-def create_finish_publisher_node(armpi):
-    __publisher = FinishPublisher(armpi)
-    return __publisher
+        self.get_logger().info('Send end message from ID %d' % message.id)

@@ -11,3 +11,6 @@ class RobotSubscriber(Node):
     
     def get_armpi(self):
         return self.__armpi
+
+    def _received_same_id(self, message_id):
+        return self.__ID == message_id

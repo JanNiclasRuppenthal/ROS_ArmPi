@@ -13,8 +13,3 @@ class AssemblyQueueSubscriber(RobotSubscriber):
 
         self.get_armpi().set_object_type_value_next_robot(msg.type)
         self.get_armpi().get_assembly_queue().add_assemble_request(msg.id, msg.type, msg.number_objects)
-
-
-def create_assembly_queue_subscriber_node(armpi):
-    __subscriber = AssemblyQueueSubscriber(armpi)
-    return __subscriber

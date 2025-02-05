@@ -8,6 +8,6 @@ class DeliverySubscriber(RobotSubscriber):
         self.subscription = self.create_subscription(IDArmPi,'delivery',self.callback,10)
 
     def callback(self, msg):
-        if msg.id == self.get_ID():
+        if not self._received_same_id(msg.id):
             self.get_logger().info('I can deliver a cube!')
             self.get_armpi().set_delivery_flag(True)

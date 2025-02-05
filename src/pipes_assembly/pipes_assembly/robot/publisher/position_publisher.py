@@ -21,9 +21,3 @@ class PositionPublisher(RobotPublisher):
         message = self.create_msg(x, y, z, angle)
         self.__publisher.publish(message)
         self.get_logger().info('Send following position and angle: (%f, %f, %f, %d)' % (message.x, message.y, message.z, message.angle))
-
-
-
-def create_pos_publisher_node(armpi):
-    __publisher = PositionPublisher(armpi)
-    return __publisher

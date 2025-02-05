@@ -1,6 +1,9 @@
 import time
 from threading import Thread
 
+from ArmIK.ArmMoveIK import *
+
+from movement.stationary.cubes.stack import StackCube
 from robot.armpi import ArmPi
 
 from robot.publisher.delivery_publisher import DeliveryPublisher
@@ -10,7 +13,7 @@ from robot.subscriber.finish_subscriber import FinishSubscriber
 
 from common.executor.executor_subscriptions import MultiExecutor
 from movement.stationary.cubes.coordinates import CoordinatesCaluclation
-from movement.stationary.cubes.deliver import  Deliver
+from movement.stationary.cubes.deliver import DeliverCube
 
 from util.cam import Cam
 
@@ -18,11 +21,15 @@ from util.cam import Cam
 
 class TransferCubes:
     def __init__(self, ID, last_robot):
+        AK = ArmIK()
         self.__armpi = ArmPi(ID, last_robot)
         self.__first_start = ID == 0
         self.__cam = Cam()
         self.__coordinates_calculation = CoordinatesCaluclation()
-        self.__deliver = Deliver()
+        if last_robot:
+            self.__movement = StackCube(AK)
+        else:
+            self.__movement = DeliverCube(AK)
 
         # create all necessary nodes
         self.__delivery_publisher = DeliveryPublisher(self.__armpi)
@@ -42,7 +49,7 @@ class TransferCubes:
     def start_scenario(self):
         self.__cam.open()
 
-        self.__deliver.init_move()
+        self.__movement.init_move()
         time.sleep(2)
 
         while True:
@@ -57,14 +64,10 @@ class TransferCubes:
 
                 world_X, world_Y = self.__coordinates_calculation.get_coordinates(self.__cam)
 
-                if self.__deliver.are_coordinates_valid(world_X, world_Y):
+                if self.__movement.are_coordinates_valid(world_X, world_Y):
                     rotation_angle = self.__coordinates_calculation.get_rotation_angle()
                     detected_color = self.__coordinates_calculation.get_detected_color()
-                    self.__deliver.deliver_cube(world_X, world_Y, rotation_angle, detected_color, self.__armpi.get_last_robot_flag())
-
-                    # move back to the initial position
-                    self.__deliver.init_move()
-                    time.sleep(1.5)
+                    self.__movement.move_cube(world_X, world_Y, rotation_angle, detected_color)
 
                     #publish message
                     self.notify_robots()

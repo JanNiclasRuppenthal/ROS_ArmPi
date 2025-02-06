@@ -39,8 +39,8 @@ class ObjectFinder(ADetection):
             box = np.int0(box)
 
             cv2.drawContours(img, [box], 0, (0, 255, 0), 2)
-            length01 = self.calculate_distance(box[0], box[1])
-            length02 = self.calculate_distance(box[1], box[2])
+            length01 = self._calculate_distance(box[0], box[1])
+            length02 = self._calculate_distance(box[1], box[2])
             min_length = length01
             rotation_direction = -1
             if (min_length > length02):
@@ -52,10 +52,10 @@ class ObjectFinder(ADetection):
             center_x = x + w // 2
             center_y = y + h // 2
 
-            if (upper):
-                x, y = self.calculate_upper_points(img, box, center_x, center_y)
+            if upper:
+                x, y = self._calculate_upper_points(img, box, center_x, center_y)
             else:
-                x, y = self.calculate_bottom_points(img, box, center_x, center_y)
+                x, y = self._calculate_bottom_points(img, box, center_x, center_y)
 
             angle = rect[2]
 
@@ -81,7 +81,7 @@ class ObjectFinder(ADetection):
 
         # Sort the data after their x coordinates
         self.sorted_data = sorted(data_list, key=lambda d: d[0])
-        self.collect_data_to_dictionary()
+        self._collect_data_to_dictionary()
 
         return img  
 

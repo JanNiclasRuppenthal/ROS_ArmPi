@@ -1,6 +1,6 @@
-from assembly_queue.transport_assembly.assembly_queue import AssemblyQueue
+from assembly_queue.queue import AssemblyQueue
 
-class ArmPi():
+class ArmPi:
     def __init__(self, ID, number_of_stationary_robots):
         self.__ID = ID
         self.__number_of_stationary_robots = number_of_stationary_robots
@@ -79,7 +79,6 @@ class ArmPi():
     
     def set_finish_flag(self, value):
         self.__finish_flag = value
-
 
     def did_transporter_received_list(self):
         return self.__transporter_received_list

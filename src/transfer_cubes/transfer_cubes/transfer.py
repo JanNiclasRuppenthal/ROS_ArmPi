@@ -1,6 +1,8 @@
 import time
 from threading import Thread
 
+from rclpy.node import Node
+
 from ArmIK.ArmMoveIK import *
 
 from movement.stationary.cubes.stack import StackCube
@@ -19,41 +21,49 @@ from util.cam import Cam
 
 
 
-class TransferCubes:
+class TransferCubes(Node):
     def __init__(self, ID, last_robot):
+        super().__init__("transfer_cubes_node")
         AK = ArmIK()
         self.__armpi = ArmPi(ID, last_robot)
         self.__first_start = ID == 0
         self.__cam = Cam()
         self.__coordinates_calculation = CoordinatesCaluclation()
+
         if last_robot:
             self.__movement = StackCube(AK)
         else:
             self.__movement = DeliverCube(AK)
 
-        # create all necessary nodes
+        self.create_nodes()
+
+        # start executor for all subscribers
+        self.start_executor()
+
+    def create_nodes(self):
         self.__delivery_publisher = DeliveryPublisher(self.__armpi)
         self.__finish_publisher = FinishPublisher(self.__armpi)
         self.__delivery_subscriber = DeliverySubscriber(self.__armpi)
         self.__finish_subscriber = FinishSubscriber(self.__armpi)
 
-        # create executor for all subscriber
+    def start_executor(self):
         subscriber_nodes = [self.__delivery_subscriber, self.__finish_subscriber]
         self.__executor = MultiExecutor(subscriber_nodes)
-        self.start_executor()
-
-    def start_executor(self):
         thread = Thread(target=self.__executor.start_spinning)
         thread.start()
+        self.get_logger().info("Started the executor for all subscriber nodes in a thread!")
 
     def start_scenario(self):
         self.__cam.open()
+        self.get_logger().info("Opened the camera!")
 
         self.__movement.init_move()
+        self.get_logger().info("Move to my initial position!")
         time.sleep(2)
 
         while True:
             if self.did_previous_robot_finished() and self.found_no_cubes():
+                self.get_logger().info("Previous robot finished and I found no cubes!")
                 self.end_scenario()
                 break
 
@@ -78,14 +88,15 @@ class TransferCubes:
     def found_no_cubes(self):
         return (-1, -1) == self.__coordinates_calculation.get_coordinates(self.__cam)
 
+    def end_scenario(self):
+        self.__finish_publisher.send_msgs()
+        self.__executor.execute_shutdown()
+        self.__cam.shutdown()
+        self.get_logger().info("Ended the scenario!")
+
     def did_previous_robot_finished(self):
         return self.__armpi.get_finish_flag() or self.__armpi.get_ID() == 0
 
     def notify_robots(self):
         self.__delivery_publisher.send_msgs()
         self.__armpi.set_delivery_flag(False)
-
-    def end_scenario(self):
-        self.__finish_publisher.send_msgs()
-        self.__executor.execute_shutdown()
-        self.__cam.shutdown()

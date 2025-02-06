@@ -1,18 +1,20 @@
+from rclpy.node import Node
+
 import cv2
 import math
 import numpy as np
 
-
 from object_detection.object_type import calculate_object_type
 
-class ADetection():
+class ADetection(Node):
 
     def __init__(self):
+        super().__init__("detection_node")
         self.sorted_data = []
         self.__object_to_parameter = {}
 
     # euclidean distance
-    def calculate_distance(self, point_a, point_b):
+    def _calculate_distance(self, point_a, point_b):
         x_pow = math.pow(point_b[0] - point_a[0], 2)
         y_pow = math.pow(point_b[1] - point_a[1], 2)
         return math.sqrt(x_pow + y_pow)
@@ -39,60 +41,47 @@ class ADetection():
         # Setup one default tuple
         self.__object_to_parameter[count] = [(-1, -1, -1, -1, -1)]
 
-    def calculate_upper_points(self, frame_out, box, center_x, center_y):
+    def _calculate_upper_points(self, frame_out, box, center_x, center_y):
         # sort the points of the box with their y coordinate
         box = sorted(box, key=lambda p: p[1])
 
         # the first two points have the lowest y coordinate
         upper_points = box[0:2]
-
-        # calculate the middle point between these two bottom points
-        mid_upper_x = (upper_points[0][0] + upper_points[1][0]) // 2
-        mid_upper_y = (upper_points[0][1] + upper_points[1][1]) // 2
-
-        # mark the position with a rectangle (yellow)
-        cv2.rectangle(frame_out, (mid_upper_x, mid_upper_y), (mid_upper_x + 10, mid_upper_y + 10), (0, 255, 255), 2)
-
-        # mark the center with a rectangle (red)
-        cv2.rectangle(frame_out, (center_x, center_y), (center_x + 10, center_y + 10), (0, 0, 255), 2)
-
-        # calucalate the position between the center and bottom points
-        upper_x = center_x + (mid_upper_x - center_x) // 2
-        upper_y = center_y + (mid_upper_y - center_y) // 2
-
-        # mark the middle point between the center and bottom point with an rectangle (blue)
-        upper_x, upper_y = np.int0([upper_x, upper_y])
-        cv2.rectangle(frame_out, (upper_x, upper_y), (upper_x + 10, upper_y + 10), (255, 0, 0), 2)
+        upper_x, upper_y = self.__calculate_points(center_x, center_y, frame_out, upper_points)
 
         return upper_x, upper_y
-    
 
-    def calculate_bottom_points(self, frame_out, box, center_x, center_y):
+    def _calculate_bottom_points(self, frame_out, box, center_x, center_y):
         # sort the points of the box with their y coordinate
         box = sorted(box, key=lambda p: p[1])
 
         # the last two points have the highest y coordinate
-        bottom_points = box[2:] 
+        bottom_points = box[2:]
+        bottom_x, bottom_y = self.__calculate_points(center_x, center_y, frame_out, bottom_points)
 
+        return bottom_x, bottom_y
+
+
+    def __calculate_points(self, center_x, center_y, frame_out, upper_points):
         # calculate the middle point between these two bottom points
-        mid_bottom_x = (bottom_points[0][0] + bottom_points[1][0]) // 2
-        mid_bottom_y = (bottom_points[0][1] + bottom_points[1][1]) // 2
+        mid_x = (upper_points[0][0] + upper_points[1][0]) // 2
+        mid_y = (upper_points[0][1] + upper_points[1][1]) // 2
 
         # mark the position with a rectangle (yellow)
-        cv2.rectangle(frame_out, (mid_bottom_x, mid_bottom_y), (mid_bottom_x + 10, mid_bottom_y + 10), (0, 255, 255), 2)
+        cv2.rectangle(frame_out, (mid_x, mid_y), (mid_x + 10, mid_y + 10), (0, 255, 255), 2)
 
         # mark the center with a rectangle (red)
         cv2.rectangle(frame_out, (center_x, center_y), (center_x + 10, center_y + 10), (0, 0, 255), 2)
 
         # calucalate the position between the center and bottom points
-        bottom_x = center_x + (mid_bottom_x - center_x) // 2
-        bottom_y = center_y + (mid_bottom_y - center_y) // 2
+        _x = center_x + (mid_x - center_x) // 2
+        _y = center_y + (mid_y - center_y) // 2
 
-        # mark the middle point between the center and bottom point with an rectangle (blue)
-        bottom_x, bottom_y = np.int0([bottom_x, bottom_y])
-        cv2.rectangle(frame_out, (bottom_x, bottom_y), (bottom_x + 10, bottom_y + 10), (255, 0, 0), 2)
+        # mark the middle point between the center and bottom point with a rectangle (blue)
+        x, y = np.int0([_x, _y])
+        cv2.rectangle(frame_out, (x, y), (x + 10, y + 10), (255, 0, 0), 2)
 
-        return bottom_x, bottom_y
+        return x, y
 
 
     def get_position_of_ith_object(self, i):
@@ -112,7 +101,7 @@ class ADetection():
     
     def get_rotation_direction_of_ith_object(self, i):
         # The value should be for one object consistent.
-        # Therefore we do not need to calculate the mean of the roation direction
+        # Therefore, we do not need to calculate the mean of the rotation direction
         # So we can just use the first value in the list
 
         rotation_direction = self.__object_to_parameter[i][0][3]

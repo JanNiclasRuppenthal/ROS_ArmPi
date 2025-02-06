@@ -2,6 +2,8 @@ import time
 
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
+
+from object_detection.detected_object import DetectedObject
 from object_detection.object_type import ObjectType
 import math
 
@@ -51,7 +53,7 @@ def __determine_pulse(ID, object_type):
     return result
 
 def __convert_angle_to_pulse(x, y, angle, rotation_direction):
-    # We need to declare that the y-Axis has a degree of zero degreees and not 90 degrees
+    # We need to declare that the y-Axis has a degree of zero degrees and not 90 degrees
     # Because of that we need to subtract 90 to the result of atan2
     angle_from_origin_to_object = 90 - round(math.degrees(math.atan2(y, abs(x))), 1)
 
@@ -64,25 +66,27 @@ def __convert_angle_to_pulse(x, y, angle, rotation_direction):
     pulse = int(500 + calculated_angle * (1000 / 240))
     return pulse
 
-def grab_the_object(ID, x, y, angle, rotation_direction, object_type):
+def grab_the_object(ID, detected_object : DetectedObject):
     # Go to the position of the object with z = 7
-    result = AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
+    result = AK.setPitchRangeMoving((detected_object.get_x(), detected_object.get_y(), 7), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
     open_claw()
 
-    Board.setBusServoPulse(2, __convert_angle_to_pulse(x, y, angle, rotation_direction), 500)
+    pulse_value = __convert_angle_to_pulse(detected_object.get_x(), detected_object.get_y(),
+                                           detected_object.get_angle(), detected_object.get_rotation_direction())
+    Board.setBusServoPulse(2, pulse_value, 500)
     time.sleep(0.8)
 
     # Go to the position of the object
-    z = __get_z_coordinate(object_type)
+    z = __get_z_coordinate(detected_object.get_object_type())
     
-    result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
+    result = AK.setPitchRangeMoving((detected_object.get_x(), detected_object.get_y(), z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 
-    grab_pulse = __determine_pulse(ID, object_type)
+    grab_pulse = __determine_pulse(ID, detected_object.get_object_type())
 
     #close the claw
     Board.setBusServoPulse(1, grab_pulse, 500)
@@ -172,19 +176,21 @@ def move_to_origin(height):
     time.sleep(result[2]/1000) 
     print(result)
 
-def put_down_grabbed_object(x, y, angle, rotation_direction, object_type):
+def put_down_grabbed_object(detected_object : DetectedObject):
     # Go to the position of the object with z = 7
-    result = AK.setPitchRangeMoving((x, y, 7), -90, -90, 0)
+    result = AK.setPitchRangeMoving((detected_object.get_x(), detected_object.get_y(), 7), -90, -90, 0)
     time.sleep(result[2]/1000) 
     print(result)
 
-    Board.setBusServoPulse(2, __convert_angle_to_pulse(x, y, angle, rotation_direction), 500)
+    pulse_value = __convert_angle_to_pulse(detected_object.get_x(), detected_object.get_y(),
+                                           detected_object.get_angle(), detected_object.get_rotation_direction())
+    Board.setBusServoPulse(2, pulse_value, 500)
     time.sleep(0.8)
 
     # Go to the position of the object
-    z = __get_z_coordinate(object_type)
+    z = __get_z_coordinate(detected_object.get_object_type())
 
-    result = AK.setPitchRangeMoving((x, y, z), -90, -90, 0, 600)
+    result = AK.setPitchRangeMoving((detected_object.get_x(), detected_object.get_y(), z), -90, -90, 0, 600)
     time.sleep(result[2]/1000) 
     print(result)
 

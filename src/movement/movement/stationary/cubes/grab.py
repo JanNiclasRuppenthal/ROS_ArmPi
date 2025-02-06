@@ -48,11 +48,12 @@ class GrabCube(Node):
         Board.setBusServoPulse(2, servo2_pulse, 500)  # rotate the second servo
         time.sleep(0.5)
 
+        self.get_logger().info(f"Moving to cube at ({x}, {y}, 1.5)")
         self.__AK.setPitchRangeMoving((x, y, 1.5), -90, -90, 0, 1000)  # ArmPi goes to the position of the detected cube
         time.sleep(1.5)
 
     def __convert_angle_to_pulse(self, x, y, angle):
-        # We need to declare that the y-Axis has a degree of zero degreees and not 90 degrees
+        # We need to declare that the y-Axis has a degree of zero degrees and not 90 degrees
         # Because of that we need to subtract 90 to the result of atan2
         angle_from_origin_to_object = 90 - round(math.degrees(math.atan2(y, abs(x))), 1)
 
@@ -77,4 +78,8 @@ class GrabCube(Node):
         else:
             rotation_angle = abs(angle_left)
             rotation_direction = -1
+
+        self.get_logger().info(f"I calculated the angle = {rotation_angle}")
+        self.get_logger().info(f"I calculated the directio of the rotation: {rotation_direction}")
+
         return rotation_angle, rotation_direction

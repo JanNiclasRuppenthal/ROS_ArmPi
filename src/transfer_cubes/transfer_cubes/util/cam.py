@@ -1,7 +1,7 @@
 import Camera
 import cv2
 
-class Cam():
+class Cam:
     def __init__(self):
         self.__camera = Camera.Camera()
 

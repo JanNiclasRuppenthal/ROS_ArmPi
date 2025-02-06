@@ -1,8 +1,3 @@
-import time
-from ArmIK.ArmMoveIK import *
-import HiwonderSDK.Board as Board
-import math
-
 from rclpy.node import Node
 
 from movement.stationary.cubes.grab import GrabCube
@@ -28,8 +23,8 @@ class DeliverCube(Node, Movement):
             self._move_arm_up(x, y, 1)
 
             goal_coord_x, goal_coord_y, goal_coord_z = self.__calculate_goal_coordinates(detected_color)
-
             self._move_to_goal_coordinate(goal_coord_x, goal_coord_y, goal_coord_z)
+            self.get_logger().info(f"I moved the cube to ({goal_coord_x}, {goal_coord_y}, {goal_coord_z})")
 
             self.__grab_cube.open_claw()
 

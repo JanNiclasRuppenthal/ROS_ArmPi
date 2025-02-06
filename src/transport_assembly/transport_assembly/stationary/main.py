@@ -91,7 +91,7 @@ def process_scenario(armpi, assembly_queue_publisher, holding_publisher, assembl
             assembly_queue_publisher.send_msg()
             time.sleep(1)
 
-        armpi.get_assembly_queue().calculate_assembly_queue()
+        armpi.get_assembly_queue().calculate_assembly_queue(True)
         if not armpi.get_assembly_queue().test_duplicates_in_queue():
             break
 

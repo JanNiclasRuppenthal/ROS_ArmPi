@@ -1,6 +1,6 @@
 from object_detection.object_type import ObjectType
 
-class AQueue():
+class AssemblyQueue:
     def __init__(self):
         self._queue = []
         self._assemble_dict = {}
@@ -10,6 +10,27 @@ class AQueue():
         self._queue = []
         self._assemble_dict = {}
         self._set_obj_type = set()
+
+
+    def calculate_assembly_queue(self, descending_order):
+        entries = []
+        self._set_obj_type = set()
+        for id in self._assemble_dict:
+            entry = self._assemble_dict[id]
+            entries.append((id, entry[0]))
+            self._set_obj_type.add(entry[0])
+
+
+        '''
+        Sort after the value of the object type
+        
+        If the descending_order is False, then we sort the pipes from small to big.
+        Otherwise, we sort the pipes from big to small.
+        '''
+        entries = sorted(entries, key=lambda e: e[1], reverse=descending_order)
+
+        # Fill the queue with the IDs
+        self._queue = [entry[0] for entry in entries]
 
     def add_assemble_request(self, id, object_type_value, number_objects):
         self._assemble_dict[id] = (object_type_value, number_objects)
@@ -32,6 +53,7 @@ class AQueue():
             temp_dict[obj_type.value] = sorted(temp_dict[obj_type.value], key=lambda e: (e[1], e[0]))
 
         return temp_dict
+
     
     def get_queue(self):
         return self._queue

@@ -25,6 +25,7 @@ class Detection(ADetection):
 
     def _calculate_object_parameters(self, grab_type, color):
         self.__my_camera.camera_open()
+        self.get_logger().info("Opened the stationary camera!")
 
         number_of_data_points = 0
         max_number_of_data_points = 33
@@ -65,38 +66,17 @@ class Detection(ADetection):
                     box = np.int0(box)
 
                     cv2.drawContours(frame_out, [box], 0, (0, 255, 0), 2)
-                    length01 = self.calculate_distance(box[0], box[1])
-                    length02 = self.calculate_distance(box[1], box[2])
-                    min_length = length01
-                    rotation_direction = -1
-                    if (min_length > length02):
-                        min_length = length02
-                        rotation_direction = 1
-                    
-                   
+                    min_length, rotation_direction = self.__determine_rotation_direction(box)
+
                     # calculate the center of the rectangle
                     center_x = x + w // 2
                     center_y = y + h // 2
 
-                    if (grab_type == GrabType.UPPER):
-                        x, y = self.calculate_upper_points(frame_out, box, center_x, center_y)
-                    elif (grab_type == GrabType.MIDDLE):
-                        x, y = center_x, center_y
-                    elif (grab_type == GrabType.BOTTOM):
-                        x, y = self.calculate_bottom_points(frame_out, box, center_x, center_y)
+                    x, y = self.__calculate_x_y_coordinates(box, center_x, center_y, frame_out, grab_type, x, y)
 
                     angle = rect[2]
 
-                    # calculate the angle based on the rotation direction of the object
-                    if rotation_direction == 1:
-                        # If the object is right-rotated, then we need to subtract 90 from the angle
-                        # because the angle from cv2.minAreaRect is between the contour and the y-axis
-                        angle = angle
-                    else:
-                        # If the object is left-rotated, then we need to subtract 90 from the angle
-                        # because the angle from cv2.minAreaRect is between the contour and the x-axis
-                        angle = 90 - angle
-
+                    angle = self.__calculate_angle_based_on_rotation_direction(angle, rotation_direction)
 
                     # Calculate position in real-world coordinates (linear interpolation)
                     pos_x, pos_y = self._calculate_real_world_coordinates(x, y)
@@ -117,14 +97,49 @@ class Detection(ADetection):
 
             # only wait for 5 seconds
             if time.time() - start_time >= 5:
+                self.get_logger().warn("After 5 seconds, I abort the detection of the pipes!")
                 self.__close_camera_and_window()
                 break
-            
 
+
+        self.get_logger().info("Collected all necessary parameters of all pipes!")
 
         # Sort the data after their x coordinates
         self.sorted_data = sorted(data_list, key=lambda d: d[0])
-        self.collect_data_to_dictionary()
+        self._collect_data_to_dictionary()
+
+        self.get_logger().info("Sorted and collected all data!")
 
         # Release the camera and close all OpenCV windows
         self.__close_camera_and_window()
+        self.get_logger().info("Closed the stationary camera!")
+
+    def __determine_rotation_direction(self, box):
+        length01 = self._calculate_distance(box[0], box[1])
+        length02 = self._calculate_distance(box[1], box[2])
+        min_length = length01
+        rotation_direction = -1
+        if min_length > length02:
+            min_length = length02
+            rotation_direction = 1
+        return min_length, rotation_direction
+
+    def __calculate_x_y_coordinates(self, box, center_x, center_y, frame_out, grab_type, x, y):
+        if grab_type == GrabType.UPPER:
+            x, y = self._calculate_upper_points(frame_out, box, center_x, center_y)
+        elif grab_type == GrabType.MIDDLE:
+            x, y = center_x, center_y
+        elif grab_type == GrabType.BOTTOM:
+            x, y = self._calculate_bottom_points(frame_out, box, center_x, center_y)
+        return x, y
+
+    def __calculate_angle_based_on_rotation_direction(self, angle, rotation_direction):
+        if rotation_direction == 1:
+            # If the object is right-rotated, then we need to subtract 90 from the angle
+            # because the angle from cv2.minAreaRect is between the contour and the y-axis
+            angle = angle
+        else:
+            # If the object is left-rotated, then we need to subtract 90 from the angle
+            # because the angle from cv2.minAreaRect is between the contour and the x-axis
+            angle = 90 - angle
+        return angle

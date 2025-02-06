@@ -2,13 +2,13 @@ import rclpy
 import rclpy.executors
 
 class MultiExecutor:
-    def __init__(self, subscriber_nodes):
+    def __init__(self, subscriber_nodes_list):
         self.__executor = rclpy.executors.MultiThreadedExecutor()
-        self.__subscriber_nodes = subscriber_nodes
+        self.__subscriber_nodes_list = subscriber_nodes_list
         self.__shutdown_status = False
 
     def start_spinning(self):
-        for subscriber in self.__subscriber_nodes:
+        for subscriber in self.__subscriber_nodes_list:
             self.__executor.add_node(subscriber)
 
         self.__executor.spin()

@@ -38,7 +38,6 @@ class CoordinatesCaluclation(Node):
         return self.detected_color
 
     def get_rotation_angle(self):
-        self.get_logger().info("Calculated rotation angle: %s" % self.rotation_angle)
         return self.rotation_angle
 
 

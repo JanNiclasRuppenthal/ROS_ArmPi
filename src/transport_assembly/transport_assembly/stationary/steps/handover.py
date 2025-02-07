@@ -10,7 +10,7 @@ from transport_assembly.stationary.robot.publisher.holding_publisher import Hold
 class Handover(Node):
     def __init__(self, armpi : ArmPi, AK):
         super().__init__('process_handover_node')
-        self.__handover_movement = HandoverMovement(self.__AK)
+        self.__handover_movement = HandoverMovement(AK)
         self.__armpi = armpi
         self.__holding_publisher = HoldingPublisher(self.__armpi)
 
@@ -25,7 +25,7 @@ class Handover(Node):
 
         self.__let_the_pipe_go()
 
-        self.__get_logger().info("ArmPi Pro can now drive away and my Job is done!")
+        self.get_logger().info("ArmPi Pro can now drive away and my Job is done!")
         self.__holding_publisher.send_msg()
         self.__move_back()
 

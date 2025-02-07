@@ -7,7 +7,6 @@ from ArmIK.ArmMoveIK import *
 
 from assembly_queue.duplication.duplication_recognition import DuplicationRecognition
 from assembly_queue.duplication.recognition_state import RecognitionState
-from assembly_queue.nodes.assembly_queue_publisher import AssemblyQueuePublisher
 from assembly_queue.nodes.assembly_queue_subscriber import AssemblyQueueSubscriber
 from common.executor.executor_subscriptions import MultiExecutor
 from movement.stationary.pipes.grab import GrabMovement
@@ -19,7 +18,6 @@ from .steps.handover import Handover
 from .robot.armpi import ArmPi
 from .robot.publisher.finish_publisher import FinishPublisher
 from .robot.publisher.assembly_order_publisher import AssemblyOrderPublisher
-from .robot.publisher.assembly_step_publisher import AssemblyStepPublisher
 from .robot.subscriber.assembly_queue_notify_subscriber import NotifySubscriber
 from .robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
 from .robot.subscriber.finish_subscriber import FinishSubscriber
@@ -46,9 +44,7 @@ class TransportAssembly(Node):
 
 
     def __create_all_nodes(self):
-        self.__assembly_queue_publisher = AssemblyQueuePublisher(self.__armpi)
         self.__assembly_order_publisher = AssemblyOrderPublisher(self.__armpi)
-        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
         self.__finish_publisher = FinishPublisher(self.__armpi)
 
         self.__grabbed_subscriber = GrabbedSubscriber(self.__armpi)
@@ -58,9 +54,7 @@ class TransportAssembly(Node):
         self.__finish_subscriber = FinishSubscriber(self.__armpi)
 
         publisher_nodes_list = [
-            self.__assembly_queue_publisher,
             self.__assembly_order_publisher,
-            self.__assembly_step_publisher,
             self.__finish_publisher
         ]
 
@@ -123,12 +117,13 @@ class TransportAssembly(Node):
             return
 
         if self.__robot_need_to_handover_pipe():
-            self.__initiate_sending_assembly_order()
+            #self.__initiate_sending_assembly_order()
             handover = Handover(self.__armpi, self.__AK)
             handover.handover_pipe()
         else:
             assembler = Assembler(self.__armpi, self.__AK)
-            assembler.assembling_pipes(detected_object)
+            assembler.assembling_pipes()
+            assembler.put_the_assembled_pipe_down(self.__put_down_movement, detected_object)
 
         self.__armpi.get_assembly_queue().reset()
         self.__duplication_recognition.reset_object_id()

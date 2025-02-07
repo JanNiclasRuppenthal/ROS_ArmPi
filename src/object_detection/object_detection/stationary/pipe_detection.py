@@ -4,7 +4,7 @@ from object_detection.stationary.grab_type import GrabType
 
 class PipeDetection(Detection):
     def __init__(self):
-        super().__init__()
+        super().__init__("pipe_detection_node")
 
     def calculate_upper_parameters(self):
         self._calculate_object_parameters(GrabType.UPPER, color='red')

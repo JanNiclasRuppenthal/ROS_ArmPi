@@ -2,6 +2,9 @@ from object_detection.stationary.detection import Detection
 from object_detection.stationary.grab_type import GrabType
 
 class GrabberDetection(Detection):
+    
+    def __init__(self):
+      super().__init__("grabber_detection_node")
 
     def calculate_middle_between_grabber(self) -> tuple[float, float]:
        self._calculate_object_parameters(GrabType.MIDDLE, color='yellow')

@@ -10,8 +10,8 @@ import math
 
 class Detection(ADetection):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, node_name):
+        super().__init__(node_name)
         self.__my_camera = Camera.Camera()
 
     def __close_camera_and_window(self):

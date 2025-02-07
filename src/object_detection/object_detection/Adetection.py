@@ -8,8 +8,8 @@ from object_detection.object_type import calculate_object_type
 
 class ADetection(Node):
 
-    def __init__(self):
-        super().__init__("detection_node")
+    def __init__(self, node_name):
+        super().__init__(node_name)
         self.sorted_data = []
         self.__object_to_parameter = {}
 

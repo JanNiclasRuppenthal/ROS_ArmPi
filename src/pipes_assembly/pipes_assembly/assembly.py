@@ -55,8 +55,8 @@ class AssemblyPipes(Node):
 
     def __start_executor(self):
         # start the executor in a thread for spinning all subscriber nodes
-        self.thread = Thread(target=self.__executor.start_spinning, args=())
-        self.thread.start()
+        self.__thread = Thread(target=self.__executor.start_spinning, args=())
+        self.__thread.start()
         self.get_logger().info("Started MultiExecutor thread for all subscribers!")
 
     def __end_scenario(self, detected_object : DetectedObject):
@@ -65,6 +65,11 @@ class AssemblyPipes(Node):
         self.__executor.execute_shutdown()
 
     def __assembly_pipes(self):
+
+        if self.__armpi.get_finish_flag():
+            self.__executor.execute_shutdown()
+            return
+
         self.__pipe_detection.calculate_bottom_parameters()
         number_of_objects = self.__pipe_detection.get_number_of_objects()
         object_id = self.__duplication_recognition.get_object_id()
@@ -155,7 +160,7 @@ class AssemblyPipes(Node):
                 for node in self.all_nodes_list:
                     node.destroy_node()
 
-                self.thread.join()
+                self.__thread.join()
                 break
 
         self.get_logger().info("The program terminated!")

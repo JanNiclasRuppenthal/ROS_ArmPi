@@ -44,7 +44,7 @@ class Movement(Node):
         Board.setBusServoPulse(2, value, 500)
         time.sleep(0.8)
 
-    def _rotate_away_from_camera(self):
+    def rotate_away_from_camera(self):
         Board.setBusServoPulse(6, 875, 800)
         time.sleep(0.8)
 

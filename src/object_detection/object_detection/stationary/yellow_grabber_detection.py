@@ -20,4 +20,13 @@ class GrabberDetection(Detection):
 
        self.get_logger().info(f"Real world coordinates: ({pos_x}, {pos_y})")
 
-       return pos_x, pos_y
+       diff_x, diff_y = self.__determine_differece_for_movement(pos_x, pos_y)
+       x, y = self.__convert_coordinates_from_cm_to_m(diff_x, diff_y)
+
+       return x, y
+
+    def __determine_differece_for_movement(self, x, y):
+       return x, y - 20
+
+    def __convert_coordinates_from_cm_to_m(self, x, y):
+       return x / 100, y / 100

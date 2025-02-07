@@ -3,7 +3,7 @@ import time
 from movement.stationary.pipes.common_movement import Movement
 
 
-class HandoverMoves(Movement):
+class HandoverMovement(Movement):
     def __init__(self):
         super().__init__("movement_handover_node")
 

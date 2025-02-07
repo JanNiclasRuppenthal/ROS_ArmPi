@@ -16,6 +16,7 @@ class Detection(ADetection):
 
     def __close_camera_and_window(self):
         self.__my_camera.camera_close()
+        self.__my_camera.reset_last_frame()
         cv2.destroyAllWindows()
 
     def _calculate_real_world_coordinates(self, x, y):
@@ -84,6 +85,7 @@ class Detection(ADetection):
                     data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
                     number_of_data_points += 1
                     start_time = time.time()
+                    print(data_list)
             
                 '''
                 # Display the resulting frame

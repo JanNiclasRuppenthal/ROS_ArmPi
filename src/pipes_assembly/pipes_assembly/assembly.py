@@ -109,7 +109,7 @@ class AssemblyPipes(Node):
             self.get_logger().info("All robots finished their assembly!")
 
             self.__put_down_movement.put_down_assembled_object(detected_object.get_object_type())
-            self.__put_down_movementinit_move()
+            self.__put_down_movement.init_move()
             self.get_logger().info("Finished the assembly cycle!")
 
         else:

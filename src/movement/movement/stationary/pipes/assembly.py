@@ -25,8 +25,6 @@ class AssemblyMovement(Movement):
         self.get_logger().info(f"Move to the assembly position ({-x}, {y}, {z}) and angle {angle} with the following values: {result}")
         time.sleep(result[2]/1000)
 
-        time.sleep(1)
-
         result = self._AK.setPitchRangeMoving((-x, y, z - 6), angle, angle, 0)
         self.get_logger().info(f"Move down to ({-x}, {y}, {z - 6}) and angle {angle} with the following values: {result}")
         time.sleep(result[2]/1000)

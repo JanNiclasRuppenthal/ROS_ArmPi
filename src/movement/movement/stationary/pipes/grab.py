@@ -19,7 +19,7 @@ class GrabMovement(Movement):
 
         self._move_to_detected_object(detected_object)
 
-        grab_pulse = self.__determine_pulse(ID, detected_object.get_object_type())
+        grab_pulse = self._determine_pulse(ID, detected_object.get_object_type())
 
         #close the claw with the above pulse value
         self._close_claw_with_value(grab_pulse)

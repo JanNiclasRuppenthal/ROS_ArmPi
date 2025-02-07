@@ -44,11 +44,11 @@ class Movement(Node):
         Board.setBusServoPulse(2, value, 500)
         time.sleep(0.8)
 
-    def _rotate_away_from_camera(self): #assembly
+    def _rotate_away_from_camera(self):
         Board.setBusServoPulse(6, 875, 800)
         time.sleep(0.8)
 
-    def __get_z_coordinate(self, object_type : ObjectType) -> float:
+    def _get_z_coordinate(self, object_type : ObjectType) -> float:
         if object_type == ObjectType.SMALL:
             result = 1.2
         else:
@@ -83,9 +83,9 @@ class Movement(Node):
                                                    detected_object.get_angle(),
                                                    detected_object.get_rotation_direction())
         self._rotate_claw_with_value(pulse_value)
-        time.sleep(0.8)
+        
         # Go to the position of the object
-        z = self.__get_z_coordinate(detected_object.get_object_type())
+        z = self._get_z_coordinate(detected_object.get_object_type())
         result = self._AK.setPitchRangeMoving((detected_object.get_x(), detected_object.get_y(), z), -90, -90, 0, 600)
         self.get_logger().info(f"Move to detected object at ({detected_object.get_x()}, {detected_object.get_y()}, {z}) with the following values: {result}")
         time.sleep(result[2] / 1000)

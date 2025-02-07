@@ -10,9 +10,9 @@ from object_detection.object_type import ObjectType
 
 
 class Movement(Node):
-    def __init__(self, node_name):
+    def __init__(self, node_name, AK):
         super().__init__(node_name)
-        self._AK = ArmIK()
+        self._AK = AK
 
         self.__grab_pulse_ID_0 = {
             ObjectType.SMALL : 600,

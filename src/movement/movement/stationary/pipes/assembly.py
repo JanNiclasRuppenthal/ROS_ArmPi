@@ -4,8 +4,8 @@ from movement.stationary.pipes.common_movement import Movement
 
 
 class AssemblyMovement(Movement):
-    def __init__(self):
-        super().__init__("movement_assembly_node")
+    def __init__(self, AK):
+        super().__init__("movement_assembly_node", AK)
 
     def go_to_assembly_position(self, x, y, z, angle):
         # Go into the right position

@@ -4,8 +4,8 @@ from movement.stationary.pipes.common_movement import Movement
 
 
 class HandoverMovement(Movement):
-    def __init__(self):
-        super().__init__("movement_handover_node")
+    def __init__(self, AK):
+        super().__init__("movement_handover_node", AK)
 
     def go_to_handover_position(self, ID):
         height = self.__calculate_height(ID)

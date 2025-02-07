@@ -5,8 +5,8 @@ from object_detection.detected_object import DetectedObject
 
 
 class GrabMovement(Movement):
-    def __init__(self):
-        super().__init__("movement_grab_node")
+    def __init__(self, AK):
+        super().__init__("movement_grab_node", AK)
 
 
     def grab_the_object(self, ID, detected_object : DetectedObject):

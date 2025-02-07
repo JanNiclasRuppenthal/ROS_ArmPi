@@ -4,7 +4,6 @@ class ArmPi:
     def __init__(self, ID, number_of_stationary_robots):
         self.__ID = ID
         self.__number_of_stationary_robots = number_of_stationary_robots
-        self.__letting_go_pipe = False
         self.__position_with_angle = None
         self.__object_type = None
         self.__object_type_value_next_robot = None

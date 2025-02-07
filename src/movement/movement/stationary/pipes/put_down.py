@@ -4,8 +4,8 @@ from movement.stationary.pipes.common_movement import Movement
 from object_detection.detected_object import DetectedObject
 
 class PutDownMovement(Movement):
-    def __init__(self):
-        super().__init__("movement_put_down_node")
+    def __init__(self, AK):
+        super().__init__("movement_put_down_node", AK)
 
     def put_down_grabbed_object(self, detected_object : DetectedObject):
         # Go to the position of the object with z = 7

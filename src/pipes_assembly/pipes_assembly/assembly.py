@@ -65,8 +65,7 @@ class AssemblyPipes(Node):
         self.__executor.execute_shutdown()
 
     def __assembly_pipes(self):
-
-        if self.__armpi.get_finish_flag():
+        if self.__one_robot_already_finished_scenario():
             self.__executor.execute_shutdown()
             return
 
@@ -82,13 +81,14 @@ class AssemblyPipes(Node):
             self.__executor.execute_shutdown()
             return
 
-        # If one robot had already finished, send a finish message
-        if self.__armpi.get_finish_flag():
+        if self.__one_robot_already_finished_scenario():
             self.__executor.execute_shutdown()
             return
 
         self.__armpi.set_object_type(detected_object.get_object_type())
-        self.__armpi.set_number_of_objects(number_of_objects - 1 - object_id) # decrement the number because we grabbed one object already
+        # decrement the number because we grabbed one object already
+        self.__armpi.set_number_of_objects(number_of_objects - 1 - object_id)
+
         self.__grab_movement.grab_the_object(self.__armpi.get_ID(), detected_object)
         self.__grab_movement.go_to_waiting_position()
 

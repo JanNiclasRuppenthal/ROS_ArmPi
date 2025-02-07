@@ -12,4 +12,4 @@ class AssemblyQueueSubscriber(RobotSubscriber):
             self.get_logger().info('I heard a assembly queue message from %d with the following type: "%d" and it has "%d" objects.' % (msg.id, msg.type, msg.number_objects))
 
         self.get_armpi().set_object_type_value_next_robot(msg.type)
-        self.get_armpi().get_assembly_queue().add_assemble_request(msg.id, msg.type, msg.number_objects)
+        self.get_armpi().get_assembly_queue().add_assembly_request(msg.id, msg.type, msg.number_objects)

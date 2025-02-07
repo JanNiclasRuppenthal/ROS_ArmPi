@@ -29,7 +29,7 @@ class AssemblyPipes(Node):
         self.__duplication_recognition = DuplicationRecognition(self.__armpi)
 
 
-        self.executor = MultiExecutor(self.subscriber_nodes_list)
+        self.__executor = MultiExecutor(self.subscriber_nodes_list)
         self.__start_executor()
 
     def __create_all_nodes(self):
@@ -47,16 +47,16 @@ class AssemblyPipes(Node):
 
     def __start_executor(self):
         # start the executor in a thread for spinning all subscriber nodes
-        self.thread = Thread(target=self.executor.start_spinning, args=())
+        self.thread = Thread(target=self.__executor.start_spinning, args=())
         self.thread.start()
         self.get_logger().info("Started MultiExecutor thread for all subscribers!")
 
     def __end_scenario(self, detected_object : DetectedObject):
         put_down_grabbed_object(detected_object)
         init_move()
-        self.executor.execute_shutdown()
+        self.__executor.execute_shutdown()
 
-    def process_scenario(self):
+    def __assembly_pipes(self):
         self.__pipe_detection.calculate_bottom_parameters()
         number_of_objects = self.__pipe_detection.get_number_of_objects()
         object_id = self.__duplication_recognition.get_object_id()
@@ -66,12 +66,12 @@ class AssemblyPipes(Node):
         # found no object in the field
         if detected_object.are_coordinates_valid():
             self.finish_publisher.send_msg()
-            self.executor.execute_shutdown()
+            self.__executor.execute_shutdown()
             return
 
         # If one robot had already finished, send a finish message
         if self.__armpi.get_finish_flag():
-            self.executor.execute_shutdown()
+            self.__executor.execute_shutdown()
             return
 
         self.__armpi.set_object_type(detected_object.get_object_type())
@@ -121,9 +121,9 @@ class AssemblyPipes(Node):
         self.__duplication_recognition.reset_object_id()
 
     def __send_position_with_angle_for_assembly(self, detected_object):
-        (assemble_x, assemble_y, assemble_z, assemble_angle) = (detected_object.get_x(), 30, 10, 10)
-        go_to_assemble_position(assemble_x, assemble_y, assemble_z, assemble_angle)
-        self.pos_publisher.send_msg(float(assemble_x), float(assemble_y), float(assemble_z), assemble_angle)
+        (assembly_x, assembly_y, assembly_z, assembly_angle) = (detected_object.get_x(), 30, 10, 10)
+        go_to_assembly_position(assembly_x, assembly_y, assembly_z, assembly_angle)
+        self.pos_publisher.send_msg(float(assembly_x), float(assembly_y), float(assembly_z), assembly_angle)
 
     def __wait_until_all_robots_are_done(self):
         while not self.__armpi.get_assembly_queue().empty():  # all robots are done
@@ -136,14 +136,14 @@ class AssemblyPipes(Node):
     def __movement_for_assembly(self, angle, x, y, z):
         # set the z value a little bit higher so there is no contact between these two objects
         z += 12
-        assemble_objects(x, y, z, angle)
+        assembly_objects(x, y, z, angle)
         move_back_to_y_25(x, z, angle)
 
     def start_scenario(self):
         while True:
-            self.process_scenario()
+            self.__assembly_pipes()
 
-            if self.executor.get_shutdown_status():
+            if self.__executor.get_shutdown_status():
                 for node in self.all_nodes_list:
                     node.destroy_node()
 

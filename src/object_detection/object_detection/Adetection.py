@@ -19,7 +19,7 @@ class ADetection(Node):
         y_pow = math.pow(point_b[1] - point_a[1], 2)
         return math.sqrt(x_pow + y_pow)
 
-    def collect_data_to_dictionary(self):
+    def _collect_data_to_dictionary(self):
         count = 0
         position_of_objects = []
         for data in self.sorted_data:

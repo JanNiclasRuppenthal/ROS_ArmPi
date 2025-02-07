@@ -3,20 +3,20 @@ from object_detection.object_type import ObjectType
 class AssemblyQueue:
     def __init__(self):
         self._queue = []
-        self._assemble_dict = {}
+        self._assembly_dict = {}
         self._set_obj_type = set()
 
     def reset(self):
         self._queue = []
-        self._assemble_dict = {}
+        self._assembly_dict = {}
         self._set_obj_type = set()
 
 
     def calculate_assembly_queue(self, descending_order):
         entries = []
         self._set_obj_type = set()
-        for id in self._assemble_dict:
-            entry = self._assemble_dict[id]
+        for id in self._assembly_dict:
+            entry = self._assembly_dict[id]
             entries.append((id, entry[0]))
             self._set_obj_type.add(entry[0])
 
@@ -32,8 +32,8 @@ class AssemblyQueue:
         # Fill the queue with the IDs
         self._queue = [entry[0] for entry in entries]
 
-    def add_assemble_request(self, id, object_type_value, number_objects):
-        self._assemble_dict[id] = (object_type_value, number_objects)
+    def add_assembly_request(self, id, object_type_value, number_objects):
+        self._assembly_dict[id] = (object_type_value, number_objects)
 
     def test_duplicates_in_queue(self):
         return len(self._queue) != len(self._set_obj_type)
@@ -42,8 +42,8 @@ class AssemblyQueue:
         temp_dict = {}
         for obj_type in ObjectType:
             entry_list = []
-            for id in self._assemble_dict:
-                entry = self._assemble_dict[id]
+            for id in self._assembly_dict:
+                entry = self._assembly_dict[id]
                 if obj_type.value == entry[0]:
                     entry_list.append((id, entry[1]))
             temp_dict[obj_type.value] = entry_list
@@ -59,9 +59,7 @@ class AssemblyQueue:
         return self._queue
     
     def remove_ID_from_queue(self, id):
-        print(str(self._queue))
         self._queue.remove(id)
-        print(str(self._queue))
     
     def first(self):
         if len(self._queue) == 0:
@@ -76,4 +74,4 @@ class AssemblyQueue:
         return len(self._queue) == 0
     
     def count(self):
-        return len(self._assemble_dict)
+        return len(self._assembly_dict)

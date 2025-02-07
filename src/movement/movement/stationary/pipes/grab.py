@@ -137,7 +137,7 @@ def rotate_away_from_camera():
     Board.setBusServoPulse(6, 875, 800)
     time.sleep(0.8)
 
-def go_to_assemble_position(x, y, z, angle):
+def go_to_assembly_position(x, y, z, angle):
     # Go into the right position
     result = AK.setPitchRangeMoving((x, y, z), angle, angle, 0)
     time.sleep(result[2]/1000) 
@@ -148,7 +148,7 @@ def go_to_upper_position():
     time.sleep(result[2]/1000) 
     print(result)
 
-def assemble_objects(x, y, z, angle):
+def assembly_objects(x, y, z, angle):
     # we need to mirror the x coordinate
     # because both robots face each other
     result = AK.setPitchRangeMoving((-x, y, z), angle, angle, 0)

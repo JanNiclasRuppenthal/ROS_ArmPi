@@ -15,15 +15,16 @@ from movement.stationary.pipes.put_down import PutDownMovement
 from object_detection.detected_object import DetectedObject
 from object_detection.stationary.pipe_detection import PipeDetection
 from object_detection.stationary.yellow_grabber_detection import GrabberDetection
-from robot.armpi import ArmPi
-from transport_assembly.stationary.robot.publisher.finish_publisher import FinishPublisher
-from transport_assembly.stationary.robot.publisher.assembly_order_publisher import AssemblyOrderPublisher
-from transport_assembly.stationary.robot.publisher.assembly_position_publisher import AssemblyPositionPublisher
-from transport_assembly.stationary.robot.publisher.holding_publisher import HoldingPublisher
-from transport_assembly.stationary.robot.subscriber.assembly_queue_notify_subscriber import NotifySubscriber
-from transport_assembly.stationary.robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
-from transport_assembly.stationary.robot.subscriber.finish_subscriber import FinishSubscriber
-from transport_assembly.stationary.robot.subscriber.grabbed_subscriber import GrabbedSubscriber
+from .robot.armpi import ArmPi
+from .robot.publisher.finish_publisher import FinishPublisher
+from .robot.publisher.assembly_order_publisher import AssemblyOrderPublisher
+from .robot.publisher.assembly_position_publisher import AssemblyPositionPublisher
+from .robot.publisher.assembly_step_publisher import AssemblyStepPublisher
+from .robot.publisher.holding_publisher import HoldingPublisher
+from .robot.subscriber.assembly_queue_notify_subscriber import NotifySubscriber
+from .robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
+from .robot.subscriber.finish_subscriber import FinishSubscriber
+from .robot.subscriber.grabbed_subscriber import GrabbedSubscriber
 
 
 class TransportAssembly(Node):
@@ -34,7 +35,7 @@ class TransportAssembly(Node):
         self.__grab_movement = GrabMovement()
         self.__put_down_movement = PutDownMovement()
         self.__assembly_movement = AssemblyMovement()
-        self.__handover_movement = HandoverMovement
+        self.__handover_movement = HandoverMovement()
 
         self.__grab_movement.init_move()
 
@@ -52,7 +53,7 @@ class TransportAssembly(Node):
         self.__holding_publisher = HoldingPublisher(self.__armpi)
         self.__assembly_position_publisher = AssemblyPositionPublisher(self.__armpi)
         self.__assembly_order_publisher = AssemblyOrderPublisher(self.__armpi)
-        self.__assembly_step_publisher = AssemblyOrderPublisher(self.__armpi)
+        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
         self.__finish_publisher = FinishPublisher(self.__armpi)
 
         self.__grabbed_subscriber = GrabbedSubscriber(self.__armpi)
@@ -208,9 +209,8 @@ class TransportAssembly(Node):
             self.__armpi.set_permission_to_do_next_assembly_step(False)
 
             # put the assembled object down
-            self.__assembly_movement.put_down_assembled_object(detected_object.get_object_type())
-
-            self.__assembly_movement.init_move()
+            self.__put_down_movement.put_down_assembled_object(detected_object.get_object_type())
+            self.__put_down_movement.init_move()
 
         self.__armpi.get_assembly_queue().reset()
         self.__duplication_recognition.reset_object_id()

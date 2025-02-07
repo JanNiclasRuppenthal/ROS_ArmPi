@@ -1,11 +1,14 @@
+from rclpy.node import Node
+
 import time
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 
 
 
-class Movement:
-    def __init__(self, AK):
+class Movement(Node):
+    def __init__(self, node_name, AK):
+        super().__init__(node_name)
         self.__AK = AK
 
     def init_move(self):

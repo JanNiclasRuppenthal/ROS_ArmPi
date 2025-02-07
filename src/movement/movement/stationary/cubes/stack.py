@@ -1,13 +1,10 @@
-from rclpy.node import Node
-
 from movement.stationary.cubes.common_movement import Movement
 from movement.stationary.cubes.grab import GrabCube
 
 
-class StackCube(Node, Movement):
+class StackCube(Movement):
     def __init__(self, AK):
-        Node.__init__(self, "stationary_stack_node")
-        Movement.__init__(self, AK)
+        Movement.__init__(self, "stationary_stack_node", AK)
         self.__grab_cube = GrabCube(AK)
 
         self.__coordinates = {
@@ -21,7 +18,6 @@ class StackCube(Node, Movement):
             'green': 0,
             'blue':  0
         }
-
 
 
     def move_cube(self, x, y, rotation_angle, detected_color):

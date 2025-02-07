@@ -1,9 +1,14 @@
 from threading import Thread
+import time
 
 from rclpy.node import Node
 
 from assembly_queue.duplication.duplication_recognition import DuplicationRecognition
 from assembly_queue.duplication.recognition_state import RecognitionState
+from movement.stationary.pipes.assembly import AssemblyMovement
+from movement.stationary.pipes.grab import GrabMovement
+from movement.stationary.pipes.put_down import PutDownMovement
+from object_detection.detected_object import DetectedObject
 from robot.armpi import ArmPi
 from robot.publisher.done_publisher import DonePublisher
 from robot.publisher.finish_publisher import FinishPublisher
@@ -15,13 +20,16 @@ from robot.subscriber.position_subscriber import PositionSubscriber
 from assembly_queue.nodes.assembly_queue_subscriber import AssemblyQueueSubscriber
 from object_detection.stationary.pipe_detection import PipeDetection
 from common.executor.executor_subscriptions import MultiExecutor
-from movement.stationary.pipes.grab import *
 
 class AssemblyPipes(Node):
     def __init__(self, ID, number_of_robots):
         super().__init__('assembly_pipes_node')
         self.__armpi = ArmPi(ID, number_of_robots)
-        init_move()
+        self.__grab_movement = GrabMovement()
+        self.__put_down_movement = PutDownMovement()
+        self.__assembly_movement = AssemblyMovement()
+
+        self.__grab_movement.init_move()
 
         self.__create_all_nodes()
 
@@ -52,8 +60,8 @@ class AssemblyPipes(Node):
         self.get_logger().info("Started MultiExecutor thread for all subscribers!")
 
     def __end_scenario(self, detected_object : DetectedObject):
-        put_down_grabbed_object(detected_object)
-        init_move()
+        self.__put_down_movement.put_down_grabbed_object(detected_object)
+        self.__put_down_movement.init_move()
         self.__executor.execute_shutdown()
 
     def __assembly_pipes(self):
@@ -76,8 +84,8 @@ class AssemblyPipes(Node):
 
         self.__armpi.set_object_type(detected_object.get_object_type())
         self.__armpi.set_number_of_objects(number_of_objects - 1 - object_id) # decrement the number because we grabbed one object already
-        grab_the_object(self.__armpi.get_ID(), detected_object)
-        go_to_waiting_position()
+        self.__grab_movement.grab_the_object(self.__armpi.get_ID(), detected_object)
+        self.__grab_movement.go_to_waiting_position()
 
         recognition_state = self.__duplication_recognition.recognize_duplicates()
 
@@ -87,8 +95,8 @@ class AssemblyPipes(Node):
             return
 
         if recognition_state == RecognitionState.PUT_DOWN_OBJECT:
-            put_down_grabbed_object(detected_object)
-            init_move()
+            self.__put_down_movement.put_down_grabbed_object(detected_object)
+            self.__put_down_movement.init_move()
             return
 
 
@@ -100,12 +108,12 @@ class AssemblyPipes(Node):
             self.__wait_until_all_robots_are_done()
             self.get_logger().info("All robots finished their assembly!")
 
-            put_down_assembled_object(detected_object.get_object_type())
-            init_move()
+            self.__put_down_movement.put_down_assembled_object(detected_object.get_object_type())
+            self.__put_down_movementinit_move()
             self.get_logger().info("Finished the assembly cycle!")
 
         else:
-            go_to_upper_position()
+            self.__assembly_movement.go_to_upper_position()
             self.__wait_until_robot_is_allowed_to_assembly()
 
             self.__armpi.set_done_flag(False)
@@ -122,7 +130,7 @@ class AssemblyPipes(Node):
 
     def __send_position_with_angle_for_assembly(self, detected_object):
         (assembly_x, assembly_y, assembly_z, assembly_angle) = (detected_object.get_x(), 30, 10, 10)
-        go_to_assembly_position(assembly_x, assembly_y, assembly_z, assembly_angle)
+        self.__assembly_movement.go_to_assembly_position(assembly_x, assembly_y, assembly_z, assembly_angle)
         self.pos_publisher.send_msg(float(assembly_x), float(assembly_y), float(assembly_z), assembly_angle)
 
     def __wait_until_all_robots_are_done(self):
@@ -136,8 +144,8 @@ class AssemblyPipes(Node):
     def __movement_for_assembly(self, angle, x, y, z):
         # set the z value a little bit higher so there is no contact between these two objects
         z += 12
-        assembly_objects(x, y, z, angle)
-        move_back_to_y_25(x, z, angle)
+        self.__assembly_movement.assembly_objects(x, y, z, angle)
+        self.__assembly_movement.move_back_to_y_25(x, z, angle)
 
     def start_scenario(self):
         while True:

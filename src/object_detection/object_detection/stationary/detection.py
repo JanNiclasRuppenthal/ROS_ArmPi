@@ -85,7 +85,6 @@ class Detection(ADetection):
                     data_list += [(pos_x, pos_y, angle, rotation_direction, min_length)]
                     number_of_data_points += 1
                     start_time = time.time()
-                    print(data_list)
             
                 '''
                 # Display the resulting frame

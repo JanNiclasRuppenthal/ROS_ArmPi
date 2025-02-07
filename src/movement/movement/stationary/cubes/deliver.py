@@ -1,13 +1,10 @@
-from rclpy.node import Node
-
 from movement.stationary.cubes.grab import GrabCube
 from movement.stationary.cubes.common_movement import Movement
 
 
-class DeliverCube(Node, Movement):
+class DeliverCube(Movement):
     def __init__(self, AK):
-        Node.__init__(self, "stationary_deliver_node")
-        Movement.__init__(self, AK)
+        super().__init__(self, "stationary_deliver_node", AK)
         self.__grab_cube = GrabCube(AK)
 
         self.__coordinates = {

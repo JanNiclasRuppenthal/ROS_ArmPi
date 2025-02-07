@@ -16,7 +16,7 @@ from object_detection.detected_object import DetectedObject
 from object_detection.stationary.pipe_detection import PipeDetection
 from object_detection.stationary.yellow_grabber_detection import GrabberDetection
 from robot.armpi import ArmPi
-from transfer_cubes.robot.publisher.finish_publisher import FinishPublisher
+from transport_assembly.stationary.robot.publisher.finish_publisher import FinishPublisher
 from transport_assembly.stationary.robot.publisher.assembly_order_publisher import AssemblyOrderPublisher
 from transport_assembly.stationary.robot.publisher.assembly_position_publisher import AssemblyPositionPublisher
 from transport_assembly.stationary.robot.publisher.holding_publisher import HoldingPublisher
@@ -43,8 +43,7 @@ class TransportAssembly(Node):
         self.__pipe_detection = PipeDetection()
         self.__duplication_recognition = DuplicationRecognition(self.__armpi)
 
-
-        self.__executor = MultiExecutor(self.subscriber_nodes_list)
+        self.__executor = MultiExecutor(self.__subscriber_nodes_list)
         self.__start_executor()
 
 
@@ -101,7 +100,7 @@ class TransportAssembly(Node):
             self.__executor.execute_shutdown()
             return
 
-        self.__pipe_detection.calculate_bottom_parameters()
+        self.__pipe_detection.calculate_middle_parameters()
         number_of_objects = self.__pipe_detection.get_number_of_objects()
         object_id = self.__duplication_recognition.get_object_id()
 

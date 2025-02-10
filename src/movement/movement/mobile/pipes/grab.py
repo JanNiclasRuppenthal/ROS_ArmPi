@@ -4,7 +4,7 @@ import time
 
 from hiwonder_servo_msgs.msg import MultiRawIdPosDur
 from armpi_pro_kinematics import ik_transform
-from armpi_pro import bus_servo_control, pid
+from armpi_pro import bus_servo_control
 from armpi_pro_service_client.client import call_service
 from distance_ultrasonic.srv import Distance
 
@@ -43,6 +43,9 @@ class GrabMovement(Node):
                 (6, servo_data['servo6'])
             ))
             time.sleep(2)
+
+    def get_tracking_pipe_node(self):
+        return self.__pipe_tracker
 
     def set_grab_pipe_from_robot_id(self, id):
         self.__grab_pipe_from_robot_id = id

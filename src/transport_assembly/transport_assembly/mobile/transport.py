@@ -43,7 +43,7 @@ class Transporter(Node):
     def __create_nodes(self):
         self.__list_subscriber_nodes = [
             get_driving_node(),
-            self.__grab_movement,
+            self.__grab_movement.get_tracking_pipe_node(),
             self.__assembly_movement,
             HoldingSubscriber(self.__armpi),
             AssemblyOrderSubscriber(self.__armpi),

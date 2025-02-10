@@ -3,15 +3,13 @@ from rclpy.node import Node
 import time
 from threading import Thread
 
+from hiwonder_servo_msgs.msg import MultiRawIdPosDur
 from visual_processing.msg import Result
 from armpi_pro_kinematics import ik_transform
 from armpi_pro import bus_servo_control, pid
 
-from movement.mobile.pipes.grab import GrabMovement
-
-
 class PipeTracking(Node):
-    def __init__(self, grab_movement: GrabMovement):
+    def __init__(self, grab_movement):
         super().__init__('pipe_tracking_node')
 
         self.__img_w = 640
@@ -27,6 +25,7 @@ class PipeTracking(Node):
         self.__enable_rotation = False
         self.__count_messages = 0
         self.__ik = ik_transform.ArmIK()
+        self.__joints_publisher = self.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
         self.__result_sub = self.create_subscription(Result, '/visual_processing/result/rectangle_detection', self.__track_point_at_pipe, 1)
 
     def enable_rotation(self):

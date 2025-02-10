@@ -39,7 +39,7 @@ class ADetection(Node):
                     found_new_object = False
                     break
 
-            
+
             if found_new_object:
                 self.__object_to_parameter[count] = []
                 count += 1
@@ -60,7 +60,7 @@ class ADetection(Node):
             rotation_direction = 1
         return min_length, rotation_direction
 
-    def __calculate_angle_based_on_rotation_direction(self, angle, rotation_direction):
+    def _calculate_angle_based_on_rotation_direction(self, angle, rotation_direction):
         if rotation_direction == 1:
             # If the object is right-rotated, then we need to subtract 90 from the angle
             # because the angle from cv2.minAreaRect is between the contour and the y-axis
@@ -130,19 +130,19 @@ class ADetection(Node):
         mean_y = sum([y for (x, y) in points]) / len(points)
 
         return mean_x, mean_y
-    
+
     def get_angle_of_ith_object(self, i):
         angles = [(data[2]) for data in self.__object_to_parameter[i]]
         mean_angle = sum(angles) / len(angles)
         return mean_angle
-    
+
     def get_rotation_direction_of_ith_object(self, i):
         # The value should be for one object consistent.
         # Therefore, we do not need to calculate the mean of the rotation direction
         # So we can just use the first value in the list
         rotation_direction = self.__object_to_parameter[i][0][3]
         return rotation_direction
-    
+
     def get_object_type_of_ith_object(self, i):
         lengths = [(data[4]) for data in self.__object_to_parameter[i]]
 
@@ -150,7 +150,7 @@ class ADetection(Node):
         object_type = calculate_object_type(mean_length)
 
         return object_type
-    
+
     def get_number_of_objects(self):
         # Decrement the length because we have always one default entry [(-1, -1, -1, -1, -1)]
         number_of_objects = len(self.__object_to_parameter) - 1

@@ -18,7 +18,7 @@ class Handover(Node):
         self.__go_to_position()
 
         log_text = "Waiting until I can let go the pipe!"
-        self.__wait_until_receiving_notification_for_next_assembly_step(log_text)
+        self.__wait_until_able_to_let_go_pipe(log_text)
 
         # we wait because we do not want to open the grabber immediately
         time.sleep(2)
@@ -40,9 +40,9 @@ class Handover(Node):
         self.__handover_movement.move_down_from_handover_position()
         self.__handover_movement.init_move()
 
-    def __wait_until_receiving_notification_for_next_assembly_step(self, log_text : str):
+    def __wait_until_able_to_let_go_pipe(self, log_text : str):
         self.get_logger().info(log_text)
-        while not self.__armpi.get_permission_to_do_next_assembly_step():
+        while not self.__armpi.need_to_let_go_pipe():
             time.sleep(0.5)
 
-        self.__armpi.set_permission_to_do_next_assembly_step(False)
+        self.__armpi.set_letting_go_pipe(False)

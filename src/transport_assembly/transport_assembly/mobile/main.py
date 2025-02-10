@@ -1,6 +1,6 @@
 import sys
 import rclpy
-
+rclpy.init()
 from transport_assembly.mobile.transport import Transporter
 
 def read_argument():
@@ -9,7 +9,7 @@ def read_argument():
     return number_of_stationary_robots, allow_buzzer
 
 def main():
-    rclpy.init()
+
     number_of_stationary_robots, allow_buzzer = read_argument()
 
     transporter = Transporter(number_of_stationary_robots, allow_buzzer)

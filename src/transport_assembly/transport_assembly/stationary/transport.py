@@ -117,7 +117,7 @@ class TransportAssembly(Node):
             return
 
         if self.__robot_need_to_handover_pipe():
-            #self.__initiate_sending_assembly_order()
+            self.__initiate_sending_assembly_order()
             handover = Handover(self.__armpi, self.__AK)
             handover.handover_pipe()
         else:

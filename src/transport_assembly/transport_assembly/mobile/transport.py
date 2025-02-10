@@ -1,4 +1,6 @@
 import copy
+import time
+from threading import Thread
 
 from rclpy.node import Node
 
@@ -32,10 +34,10 @@ class Transporter(Node):
 
         grab_init_move()
 
-        set_master_node_driving(node)
-        set_master_node_grabbing(node)
+        set_master_node_driving(self)
+        set_master_node_grabbing(self)
 
-        call_service(node, Trigger, '/visual_processing/enter', Trigger.Request())
+        call_service(self, Trigger, '/visual_processing/enter', Trigger.Request())
 
     def __create_nodes(self):
         self.__list_subscriber_nodes = [
@@ -48,7 +50,7 @@ class Transporter(Node):
             FinishSubscriber(self.__armpi)
         ]
         self.__notify_publisher = NotifyPublisher(self.__armpi)
-        self.__list_all_nodes = [self.__notify_publishe] + self.__list_subscriber_nodes
+        self.__list_all_nodes = [self.__notify_publisher] + self.__list_subscriber_nodes
 
     def __start_executor(self):
         self.__executor = MultiExecutor(self.__list_subscriber_nodes)
@@ -58,7 +60,7 @@ class Transporter(Node):
     def __end_scenario(self):
         self.__notify_publisher.send_msg()
         self.get_logger().warn("Exit the visual_processing!")
-        call_service(node, Trigger, '/visual_processing/exit', Trigger.Request())
+        call_service(self, Trigger, '/visual_processing/exit', Trigger.Request())
 
         if self.__id_from_last_stationary_robot != -1:
             self.get_logger().info("I can park now!")
@@ -127,6 +129,7 @@ class Transporter(Node):
         start_to_drive()
         id_from_stationary_robot_to_assembly = self.__armpi.pop_IDList()
 
+        self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_assembly})!")
         self.__waiting_until_next_stationary_robot_is_reached()
         self.get_logger().info("Reached the next stationary robot!")
 

@@ -4,7 +4,7 @@ from position_interface.msg import Position2D
 class AssemblyPositionPublisher(RobotPublisher):
     def __init__(self, armpi):
         super().__init__('assembly_position_publisher', armpi)
-        self.__publisher = self.create_publisher(Position2D, 'assembly_position_publisher', 10)
+        self.__publisher = self.create_publisher(Position2D, 'assembly_position', 10)
 
     def create_msg(self, x, y):
         message = Position2D()

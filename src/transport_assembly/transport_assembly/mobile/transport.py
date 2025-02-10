@@ -8,7 +8,7 @@ from std_srvs.srv import Trigger
 from armpi_pro_service_client.client import call_service
 
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe, set_grab_robot_id
-from movement.mobile.pipes.assembly import *
+from movement.mobile.pipes.assembly import AssemblyMovement
 from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot, rotate_180_deg
 from .robot.armpi import ArmPi
 from .robot.subscriber.holding_subscriber import HoldingSubscriber
@@ -16,6 +16,7 @@ from .robot.subscriber.assembly_order_subscriber import AssemblyOrderSubscriber
 from .robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
 from .robot.subscriber.finish_subscriber import FinishSubscriber
 from .robot.publisher.assembly_queue_notify_publisher import NotifyPublisher
+from .robot.publisher.assembly_step_publisher import AssemblyStepPublisher
 
 from common.executor.executor_subscriptions import MultiExecutor
 
@@ -24,6 +25,8 @@ class Transporter(Node):
         super().__init__("transporter")
         self.__id_from_last_stationary_robot = -1
         self.__armpi = ArmPi(number_of_stationary_robots)
+
+        self.__assembly_movement = AssemblyMovement()
 
         set_allow_buzzer(allow_buzzer)
         set_armpi(self.__armpi)
@@ -43,14 +46,15 @@ class Transporter(Node):
         self.__list_subscriber_nodes = [
             get_driving_node(),
             get_grabbing_node(),
-            get_assembly_node(),
             HoldingSubscriber(self.__armpi),
             AssemblyOrderSubscriber(self.__armpi),
             AssemblyStepSubscriber(self.__armpi),
             FinishSubscriber(self.__armpi)
-        ]
+        ] + self.__assembly_movement.get_subscriber_list()
+
         self.__notify_publisher = NotifyPublisher(self.__armpi)
-        self.__list_all_nodes = [self.__notify_publisher] + self.__list_subscriber_nodes
+        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
+        self.__list_all_nodes = [self.__notify_publisher, self.__assembly_step_publisher] + self.__list_subscriber_nodes
 
     def __start_executor(self):
         self.__executor = MultiExecutor(self.__list_subscriber_nodes)
@@ -133,23 +137,23 @@ class Transporter(Node):
         self.__waiting_until_next_stationary_robot_is_reached()
         self.get_logger().info("Reached the next stationary robot!")
 
-        assembly_init_move()
+        self.__assembly_movement.init_move()
         drive_forward(1.3)
 
         self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
         self.__waiting_for_receiving_assembly_position()
 
         self.get_logger().info("Moving arm up!")
-        move_arm_up()
+        self.__assembly_movement.move_arm_up()
 
         self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
         self.__waiting_for_permission_to_do_next_assembly_step()
 
         self.get_logger().info("Moving arm down!")
-        move_arm_down()
+        self.__assembly_movement.move_arm_down()
 
         self.get_logger().info("Opening claw!")
-        open_claw()
+        self.__assembly_movement.open_claw()
         grab_init_move()
 
         self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
@@ -158,7 +162,7 @@ class Transporter(Node):
         self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
 
     def __waiting_for_receiving_assembly_position(self):
-        while not got_position():
+        while not self.__assembly_movement.received_assembly_position():
             time.sleep(0.5)
         self.get_logger().info("Got position to move my arm to the assembly position!")
 
@@ -169,8 +173,7 @@ class Transporter(Node):
         self.__armpi.set_permission_to_do_next_assembly_step(False)
 
     def __notify_next_robot_for_next_assembly_step(self, next_id):
-        self.get_logger().info(f"Notify the stationary robot (with ID = {next_id}) to initiate the next assembly step!")
-        notify_stationary_robot_for_the_next_assembly_step(next_id)
+        self.__assembly_step_publisher.send_msg(next_id)
 
     def __waiting_until_next_stationary_robot_is_reached(self):
         while not reached_the_next_stationary_robot():

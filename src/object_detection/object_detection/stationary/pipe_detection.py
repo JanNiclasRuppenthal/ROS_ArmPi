@@ -1,6 +1,6 @@
 from object_detection.detected_object import DetectedObject
 from object_detection.stationary.detection import Detection
-from object_detection.stationary.grab_type import GrabType
+from object_detection.grab_type import GrabType
 
 class PipeDetection(Detection):
     def __init__(self):

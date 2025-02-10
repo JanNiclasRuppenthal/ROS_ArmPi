@@ -26,7 +26,6 @@ position = None
 def get_assembly_node():
     return node
 
-
 def assembly_init_move():
     time.sleep(0.5)
     target = ik.setPitchRanges((0, 0.24, 0.12), -90, -92, -88) 

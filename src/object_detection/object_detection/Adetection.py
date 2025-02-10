@@ -5,6 +5,8 @@ import math
 import numpy as np
 
 from object_detection.object_type import calculate_object_type
+from object_detection.grab_type import GrabType
+
 
 class ADetection(Node):
 
@@ -12,6 +14,13 @@ class ADetection(Node):
         super().__init__(node_name)
         self.sorted_data = []
         self.__object_to_parameter = {}
+
+    def _calculate_contours(self, frame_mask):
+        opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Opening (morphology)
+        closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Closing (morphology)
+        # Find contours in the image
+        contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]
+        return contours
 
     # euclidean distance
     def _calculate_distance(self, point_a, point_b):
@@ -41,7 +50,37 @@ class ADetection(Node):
         # Setup one default tuple
         self.__object_to_parameter[count] = [(-1, -1, -1, -1, -1)]
 
-    def _calculate_upper_points(self, frame_out, box, center_x, center_y):
+    def _determine_rotation_direction(self, box):
+        length01 = self._calculate_distance(box[0], box[1])
+        length02 = self._calculate_distance(box[1], box[2])
+        min_length = length01
+        rotation_direction = -1
+        if min_length > length02:
+            min_length = length02
+            rotation_direction = 1
+        return min_length, rotation_direction
+
+    def __calculate_angle_based_on_rotation_direction(self, angle, rotation_direction):
+        if rotation_direction == 1:
+            # If the object is right-rotated, then we need to subtract 90 from the angle
+            # because the angle from cv2.minAreaRect is between the contour and the y-axis
+            angle = angle
+        else:
+            # If the object is left-rotated, then we need to subtract 90 from the angle
+            # because the angle from cv2.minAreaRect is between the contour and the x-axis
+            angle = 90 - angle
+        return angle
+
+    def _calculate_x_y_coordinates(self, frame_out, box, center_x, center_y,  grab_type):
+        if grab_type == GrabType.UPPER:
+            x, y = self.__calculate_upper_points(frame_out, box, center_x, center_y)
+        elif grab_type == GrabType.MIDDLE:
+            x, y = center_x, center_y
+        elif grab_type == GrabType.BOTTOM:
+            x, y = self.__calculate_bottom_points(frame_out, box, center_x, center_y)
+        return x, y
+
+    def __calculate_upper_points(self, frame_out, box, center_x, center_y):
         # sort the points of the box with their y coordinate
         box = sorted(box, key=lambda p: p[1])
 
@@ -51,7 +90,7 @@ class ADetection(Node):
 
         return upper_x, upper_y
 
-    def _calculate_bottom_points(self, frame_out, box, center_x, center_y):
+    def __calculate_bottom_points(self, frame_out, box, center_x, center_y):
         # sort the points of the box with their y coordinate
         box = sorted(box, key=lambda p: p[1])
 
@@ -94,16 +133,13 @@ class ADetection(Node):
     
     def get_angle_of_ith_object(self, i):
         angles = [(data[2]) for data in self.__object_to_parameter[i]]
-
         mean_angle = sum(angles) / len(angles)
-
         return mean_angle
     
     def get_rotation_direction_of_ith_object(self, i):
         # The value should be for one object consistent.
         # Therefore, we do not need to calculate the mean of the rotation direction
         # So we can just use the first value in the list
-
         rotation_direction = self.__object_to_parameter[i][0][3]
         return rotation_direction
     
@@ -116,8 +152,6 @@ class ADetection(Node):
         return object_type
     
     def get_number_of_objects(self):
-        # Decrement the length because we have always one default entry [(-1, -1, -1, -1, -1)] 
-
+        # Decrement the length because we have always one default entry [(-1, -1, -1, -1, -1)]
         number_of_objects = len(self.__object_to_parameter) - 1
-        
         return number_of_objects

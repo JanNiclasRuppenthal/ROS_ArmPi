@@ -11,7 +11,7 @@ from CameraCalibration.CalibrationConfig import *
 from rclpy.node import Node
 
 
-class CoordinatesCaluclation(Node):
+class CoordinatesCalculation(Node):
     def __init__(self):
         super().__init__("coordinates_calculation_node")
 

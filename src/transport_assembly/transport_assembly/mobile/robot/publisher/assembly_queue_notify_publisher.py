@@ -12,9 +12,4 @@ class NotifyPublisher(RobotPublisher):
     def send_msg(self):
         message = self.create_msg()
         self.__publisher.publish(message)
-        self.get_logger().info(f"Notify all stationary ArmPis to initalte the scenario!")
-
-
-def create_notify_publisher_node(armpi):
-    __publisher = NotifyPublisher(armpi)
-    return __publisher
+        self.get_logger().info(f"Notify all stationary ArmPis to initate the scenario!")

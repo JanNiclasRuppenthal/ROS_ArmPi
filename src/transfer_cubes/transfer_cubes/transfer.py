@@ -12,9 +12,8 @@ from robot.publisher.delivery_publisher import DeliveryPublisher
 from robot.publisher.finish_publisher import FinishPublisher
 from robot.subscriber.delivery_subscriber import DeliverySubscriber
 from robot.subscriber.finish_subscriber import FinishSubscriber
-
 from common.executor.executor_subscriptions import MultiExecutor
-from movement.stationary.cubes.coordinates import CoordinatesCaluclation
+from movement.stationary.cubes.coordinates import CoordinatesCalculation
 from movement.stationary.cubes.deliver import DeliverCube
 
 from util.cam import Cam
@@ -28,25 +27,25 @@ class TransferCubes(Node):
         self.__armpi = ArmPi(ID, last_robot)
         self.__first_start = ID == 0
         self.__cam = Cam()
-        self.__coordinates_calculation = CoordinatesCaluclation()
+        self.__coordinates_calculation = CoordinatesCalculation()
 
         if last_robot:
             self.__movement = StackCube(AK)
         else:
             self.__movement = DeliverCube(AK)
 
-        self.create_nodes()
+        self.__create_nodes()
 
         # start executor for all subscribers
-        self.start_executor()
+        self.__start_executor()
 
-    def create_nodes(self):
+    def __create_nodes(self):
         self.__delivery_publisher = DeliveryPublisher(self.__armpi)
         self.__finish_publisher = FinishPublisher(self.__armpi)
         self.__delivery_subscriber = DeliverySubscriber(self.__armpi)
         self.__finish_subscriber = FinishSubscriber(self.__armpi)
 
-    def start_executor(self):
+    def __start_executor(self):
         subscriber_nodes = [self.__delivery_subscriber, self.__finish_subscriber]
         self.__executor = MultiExecutor(subscriber_nodes)
         thread = Thread(target=self.__executor.start_spinning)

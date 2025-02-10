@@ -175,7 +175,7 @@ def track_point_at_pipe(msg):
 
     print(f"Distance: ({distance_x}, {distance_y})")
 
-    if (enable_rotation and abs(distance_x) <= 1.0 and abs(distance_y) < 0.05):
+    if enable_rotation and abs(distance_x) <= 1.0 and abs(distance_y) < 0.05:
         enable_rotation = False
         t1 = Thread(target=grab_pipe, args=(x_dis, z_dis, rotation_angle_of_pipe))
         t1.start()

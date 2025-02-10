@@ -1,15 +1,11 @@
 class ArmPi():
-    def __init__(self, id, number):
-        self.__ID = id
+    def __init__(self, number):
         self.__number_of_stationary_robots = number
         self.__first_robot_hold_pipe = True
         self.__permission_to_do_next_step_for_assembly = False
         self.__finish_flag = False
         self.__IDList = []
         self.__assembly_order_status = False
-
-    def get_ID(self):
-        return self.__ID
     
     def get_number_of_stationary_robots(self):
         return self.__number_of_stationary_robots

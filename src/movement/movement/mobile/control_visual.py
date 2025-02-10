@@ -18,7 +18,7 @@ class ControlVisualProcessing(Node):
         self.get_logger().info(f"Set set_running in visual_processing with request {req.type}!")
 
     def enter_visual_processing(self):
-        call_service(self.__control_visual_processing, Trigger, '/visual_processing/enter', Trigger.Request())
+        call_service(self, Trigger, '/visual_processing/enter', Trigger.Request())
 
     def stop_visual_processing(self):
         time.sleep(0.5)
@@ -27,4 +27,4 @@ class ControlVisualProcessing(Node):
 
     def exit_visual_processing(self):
         self.get_logger().warn("Exit the visual_processing!")
-        call_service(self.__control_visual_processing, Trigger, '/visual_processing/exit', Trigger.Request())
+        call_service(self, Trigger, '/visual_processing/exit', Trigger.Request())

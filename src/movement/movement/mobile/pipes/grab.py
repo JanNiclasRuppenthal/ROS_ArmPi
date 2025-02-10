@@ -1,3 +1,4 @@
+import rclpy
 from rclpy.node import Node
 
 import time
@@ -30,7 +31,6 @@ class GrabMovement(Node):
 
         self.__control_visual_processing = control_visual_processing
 
-        #temp_grab_node = rclpy.create_node('temp_grab_node')
         self.__joints_publisher = self.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
         self.__trigger_grab_publisher = self.create_publisher(IDArmPi, 'grabbed', 1)
         self.__result_sub = self.create_subscription(Result, '/visual_processing/result/rectangle_detection', self.__track_point_at_pipe, 1)
@@ -78,7 +78,7 @@ class GrabMovement(Node):
         if target:
             servo_data = target[1]
             bus_servo_control.set_servos(self.__joints_publisher, 0.5, (
-                (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+                (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, self.__x_dis)))
             time.sleep(0.5)
 
         return dx, dy
@@ -96,7 +96,7 @@ class GrabMovement(Node):
         height = 0.21 # height if height <= 0.22 else 0.22
         target = self.__ik.setPitchRanges((0, 0.12, height), -90, -92, -88)
         if target:
-            self.get_logger().info(target)
+            self.get_logger().info(f"I can reach the target with the following settings: {target}!")
             servo_data = target[1]
             bus_servo_control.set_servos(self.__joints_publisher, 1, (
                 (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
@@ -110,7 +110,7 @@ class GrabMovement(Node):
 
         target = self.__ik.setPitchRanges((0, 0.12 + distance, height), -90, -85, -95)
         if target:
-            self.get_logger().info(target)
+            self.get_logger().info(f"I can reach the target with the following settings: {target}!")
             servo_data = target[1]
             bus_servo_control.set_servos(self.__joints_publisher, 1, (
                 (2, self.__convert_angle_to_pulse(angle)), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))

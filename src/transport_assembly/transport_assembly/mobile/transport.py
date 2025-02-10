@@ -51,13 +51,14 @@ class Transporter(Node):
             FinishSubscriber(self.__armpi)
         ]
 
+        self.__notify_receiving_assembly_queue_publisher = NotifyReceivingAssemblyQueuePublisher(self.__armpi)
+        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
+
         list_publisher_nodes = [
             self.__notify_receiving_assembly_queue_publisher,
             self.__assembly_step_publisher
         ]
 
-        self.__notify_receiving_assembly_queue_publisher = NotifyReceivingAssemblyQueuePublisher(self.__armpi)
-        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
         self.__list_all_nodes = list_publisher_nodes + self.__list_subscriber_nodes
 
     def __start_executor(self):

@@ -3,8 +3,8 @@ from id_interface.msg import IDArmPi
 
 class AssemblyStepPublisher(RobotPublisher):
     def __init__(self, armpi):
-        super().__init__('notify_publisher', armpi)
-        self.__publisher = self.create_publisher(IDArmPi, 'notify_assembly_queue', 10)
+        super().__init__('assembly_step_publisher', armpi)
+        self.__publisher = self.create_publisher(IDArmPi, 'assembly_step/stationary', 10)
 
     def create_msg(self, ID):
         id_armpi_message = IDArmPi()

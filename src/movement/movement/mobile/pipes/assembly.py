@@ -19,8 +19,8 @@ class AssemblyMovement(Node):
 
         self.__received_position = None
 
-    def get_subscriber_list(self):
-        return [self.__assembly_position_subscriber]
+    def get_node(self):
+        return self
 
     def init_move(self):
         time.sleep(0.5)
@@ -28,10 +28,10 @@ class AssemblyMovement(Node):
         self.__try_to_move_arm_to_target(target)
 
     def received_assembly_position(self):
-        return self.__position is not None
+        return self.__received_position is not None
 
     def __save_assembly_position(self, position2D_message):
-        self.__position = position2D_message.x, position2D_message.y
+        self.__received_position = position2D_message.x, position2D_message.y
 
     def open_claw(self):
         time.sleep(0.5)
@@ -56,23 +56,23 @@ class AssemblyMovement(Node):
         self.__try_to_move_arm_to_target(target)
 
     def __constraint_the_assembly_position(self):
-        if self.__position[0] > 0:
-            x_pos = 0 + self.__position[0] if 0 + self.__position[0] <= 0.03 else 0.03
+        if self.__received_position[0] > 0:
+            x_pos = 0 + self.__received_position[0] if 0 + self.__received_position[0] <= 0.03 else 0.03
         else:
-            x_pos = 0 + self.__position[0] if 0 + self.__position[0] >= -0.03 else -0.03
-        if self.__position[1] > 0:
-            y_pos = 0.22 + self.__position[1] if 0.22 + self.__position[1] <= 0.24 else 0.24
+            x_pos = 0 + self.__received_position[0] if 0 + self.__received_position[0] >= -0.03 else -0.03
+        if self.__received_position[1] > 0:
+            y_pos = 0.22 + self.__received_position[1] if 0.22 + self.__received_position[1] <= 0.24 else 0.24
         else:
-            y_pos = 0.22 + self.__position[1] if 0.22 + self.__position[1] >= 0.20 else 0.20
+            y_pos = 0.22 + self.__received_position[1] if 0.22 + self.__received_position[1] >= 0.20 else 0.20
 
-        self.get_logger().info(f"The received position ({self.__position[0]}, {self.__position[1]}) was constrained "
+        self.get_logger().info(f"The received position ({self.__received_position[0]}, {self.__received_position[1]}) was constrained "
                                f"to the position ({x_pos}, {y_pos})!")
 
         return x_pos, y_pos
 
     def __try_to_move_arm_to_target(self, target):
         if target:
-            self.get_logger().info(f"I can reach the target with the following settings for the servos: {target}!")
+            self.get_logger().info(f"I can reach the target with the following settings: {target}!")
             servo_data = target[1]
             bus_servo_control.set_servos(self.__joints_publisher, 1.5, (
                 (2, 500),

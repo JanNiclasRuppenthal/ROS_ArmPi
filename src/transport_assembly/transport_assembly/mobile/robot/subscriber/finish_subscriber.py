@@ -10,4 +10,4 @@ class FinishSubscriber(RobotSubscriber):
         # Do this only once
         if not self.get_armpi().get_finish_flag():
             self.get_armpi().set_finish_flag(True)
-            self.get_logger().info("I can now end the scenario!")
+            self.get_logger().info("I am now allowed to end my program after I finished my task!")

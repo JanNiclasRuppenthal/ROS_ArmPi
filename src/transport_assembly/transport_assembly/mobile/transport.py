@@ -46,11 +46,12 @@ class Transporter(Node):
         self.__list_subscriber_nodes = [
             get_driving_node(),
             get_grabbing_node(),
+            self.__assembly_movement.get_node(),
             HoldingSubscriber(self.__armpi),
             AssemblyOrderSubscriber(self.__armpi),
             AssemblyStepSubscriber(self.__armpi),
             FinishSubscriber(self.__armpi)
-        ] + self.__assembly_movement.get_subscriber_list()
+        ]
 
         self.__notify_publisher = NotifyPublisher(self.__armpi)
         self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
@@ -74,6 +75,7 @@ class Transporter(Node):
         self.__executor.execute_shutdown()
 
     def __transport_pipe(self):
+        self.get_logger().info("Waiting for an assembly order of one stationary robot!")
         while not self.__received_assembly_order():
             if self.__armpi.get_finish_flag():
                 self.__end_scenario()

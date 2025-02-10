@@ -109,9 +109,7 @@ class Transporter(Node):
         self.__grab_movement.init_move()
         drive_forward(1)
 
-        self.__grab_movement.enable_rotation()
-        self.__control_visual_processing.detect_pipe()
-
+        self.__grab_movement.track_pipe()
 
         self.__waiting_until_handover_of_pipe_finished()
 

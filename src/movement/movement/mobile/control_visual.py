@@ -10,7 +10,7 @@ class ControlVisualProcessing(Node):
     def __init__(self):
         super().__init__('control_visual_processing_node')
 
-    def detect_pipe(self):
+    def set_visual_processing_to_tracking_pipe(self):
         req = SetParam.Request()
         req.type = 'rectangle_detection'
         time.sleep(0.5)

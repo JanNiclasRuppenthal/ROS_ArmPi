@@ -1,7 +1,9 @@
-import rclpy
+from rclpy.node import Node
+
+import time
+from threading import Thread
 
 from hiwonder_servo_msgs.msg import MultiRawIdPosDur
-from visual_processing.srv import SetParam
 from visual_processing.msg import Result
 from armpi_pro_kinematics import ik_transform
 from armpi_pro import bus_servo_control, pid
@@ -9,176 +11,143 @@ from armpi_pro_service_client.client import call_service
 from distance_ultrasonic.srv import Distance
 
 from id_interface.msg import IDArmPi
-
-import time
-from threading import Thread
+from movement.mobile.control_visual import ControlVisualProcessing
 
 
+class GrabMovement(Node):
+    def __init__(self, control_visual_processing : ControlVisualProcessing):
+        super().__init__('movement_grab_pro_node')
+        self.__img_w = 640
+        self.__img_h = 480
+        self.__x_dis = 500
+        self.__Z_DIS = 0.2
+        self.__z_dis = self.__Z_DIS
+        self.__x_pid = pid.PID(P=0.08, I=0.001, D=0)  # pid initialization
+        self.__z_pid = pid.PID(P=0.00003, I=0, D=0)
 
-img_w = 640
-img_h = 480
-x_dis = 500
-Z_DIS = 0.2
-z_dis = Z_DIS
-x_pid = pid.PID(P=0.08, I=0.001, D=0)  # pid initialization
-z_pid = pid.PID(P=0.00003, I=0, D=0)
+        self.__DISTANCE_CAMERA_ULTRASONIC = 0.07 # cm
+        self.__ik = ik_transform.ArmIK()
 
-DISTANCE_CAMERA_ULTRASONIC = 0.07 # cm
-count_messages = 0
+        self.__control_visual_processing = control_visual_processing
 
-enable_rotation = True
+        #temp_grab_node = rclpy.create_node('temp_grab_node')
+        self.__joints_publisher = self.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
+        self.__trigger_grab_publisher = self.create_publisher(IDArmPi, 'grabbed', 1)
+        self.__result_sub = self.create_subscription(Result, '/visual_processing/result/rectangle_detection', self.__track_point_at_pipe, 1)
 
-ik = ik_transform.ArmIK()
-
-node = rclpy.create_node('grabbing_armpi_pro')
-temp_grab_node = rclpy.create_node('temp_grab_node')
-joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
-trigger_grab_pub = node.create_publisher(IDArmPi, 'grabbed', 1)
-
-master_node = None
-grab_robot_id = -1
-
-
-def get_grabbing_node():
-    return node
-
-def grab_init_move():
-    time.sleep(0.5)
-
-    target = ik.setPitchRanges((0, 0.12, 0.16), -90, -92, -88)
-    if target:
-        servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 2, ((1, 50), (2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
-        time.sleep(2)
-
-def set_master_node_grabbing(n):
-    global master_node 
-    master_node = n
-
-def set_grab_robot_id(id):
-    global grab_robot_id
-
-    grab_robot_id = id
-
-def detect_pipe():
-    global master_node, enable_rotation
-
-    #req = SetParam.Request()
-    #req.type = 'rectangle_detection'
-    #time.sleep(0.5)
-    #call_service(master_node, SetParam, '/visual_processing/set_running', req)
-    enable_rotation = True
-
-def stop_detecting():
-    #global master_node
-    #time.sleep(0.5)
-    #call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
-    #print("Stop visual_processing service!")
-    pass
+        self.__count_messages = 0
+        self.__enable_rotation = True
+        self.__grab_pipe_from_robot_id = -1
 
 
-def rotate_towards_object(x, y):
-    global x_dis, z_dis
-
-    # tracking along the X-axis
-    x_pid.SetPoint = img_w / 2.0
-    x_pid.update(x)
-    dx = x_pid.output
-    x_dis += int(dx)
-
-    x_dis = 200 if x_dis < 200 else x_dis
-    x_dis = 800 if x_dis > 800 else x_dis
-
-    #tracking along the Z-axis
-    z_pid.SetPoint = img_h / 2.0
-    z_pid.update(y)
-    dy = z_pid.output
-    z_dis += dy
-
-    z_dis = 0.22 if z_dis > 0.22 else z_dis
-    z_dis = 0.17 if z_dis < 0.17 else z_dis
-
-    target = ik.setPitchRanges((0, 0.12, 0.16,'''round(z_dis, 4)'''), -90, -92, -88)
-    if target:
-        servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 0.5, (
-            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+    def init_move(self):
         time.sleep(0.5)
-        
-    return dx, dy, x_dis, z_dis
 
-def __convert_angle_to_pulse(angle):
-    pulse = int(500 + angle * (1000 / 240))
-    return pulse
+        target = self.__ik.setPitchRanges((0, 0.12, 0.16), -90, -92, -88)
+        if target:
+            servo_data = target[1]
+            bus_servo_control.set_servos(self.__joints_publisher, 2, ((1, 50), (2, 500), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']),(6, servo_data['servo6'])))
+            time.sleep(2)
 
-def grab_pipe(x_dis, z_dis, angle):
-    global DISTANCE_CAMERA_ULTRASONIC
+    def set_grab_pipe_from_robot_id(self, id):
+        self.__grab_pipe_from_robot_id = id
 
-    stop_detecting()
+    def enable_rotation(self):
+        self.__enable_rotation = True
 
-    x_dis += 5
-    
-    #height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
-    height = 0.21 # height if height <= 0.22 else 0.22
-    print(f"new Height for ultrasonic sensor {height}")
-    target = ik.setPitchRanges((0, 0.12, height), -90, -92, -88)
-    if target:
-        print(target)
-        servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 1, (
-            (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
-        time.sleep(2)
+    def __rotate_towards_object(self, x, y): #tracking
+        # tracking along the X-axis
+        self.__x_pid.SetPoint = self.__img_w / 2.0
+        self.__x_pid.update(x)
+        dx = self.__x_pid.output
+        self.__x_dis += int(dx)
 
-    dist_response = call_service(temp_grab_node, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
-    distance = (dist_response.distance_cm - 3.5) / 100
-    print(f"Ultrasonic distance: {distance}")
+        self.__x_dis = 200 if self.__x_dis < 200 else self.__x_dis
+        self.__x_dis = 800 if self.__x_dis > 800 else self.__x_dis
 
-    target = ik.setPitchRanges((0, 0.12 + distance, height), -90, -85, -95)
-    if target:
-        print(target)
-        servo_data = target[1]
-        bus_servo_control.set_servos(joints_pub, 1, (
-            (2, __convert_angle_to_pulse(angle)), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
-        time.sleep(2)
-        print("I should be in the correct position!")
-    else:
-        print("not reachable!")
-        return
+        #tracking along the Z-axis
+        self.__z_pid.SetPoint = self.__img_h / 2.0
+        self.__z_pid.update(y)
+        dy = self.__z_pid.output
+        self.__z_dis += dy
 
-    print("Grab the pipe!")
-    time.sleep(0.5)
-    bus_servo_control.set_servos(joints_pub, 0.5, ((1, 350), ))
-    time.sleep(1)
+        self.__z_dis = 0.22 if self.__z_dis > 0.22 else self.__z_dis
+        self.__z_dis = 0.17 if self.__z_dis < 0.17 else self.__z_dis
 
-    id_armpi_message = IDArmPi()
-    id_armpi_message.id = grab_robot_id
-    trigger_grab_pub.publish(id_armpi_message)
-    node.get_logger().info(f"Send IDArmPi Message to {id_armpi_message.id}")
+        target = self.__ik.setPitchRanges((0, 0.12, 0.16,'''round(z_dis, 4)'''), -90, -92, -88)
+        if target:
+            servo_data = target[1]
+            bus_servo_control.set_servos(self.__joints_publisher, 0.5, (
+                (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+            time.sleep(0.5)
 
-dist = None
-def track_point_at_pipe(msg):
-    global enable_rotation, dist, count_messages
-    x = msg.center_x
-    y = msg.center_y
-    rotation_angle_of_pipe = msg.angle
-    distance_x = None
-    distance_y = None
+        return dx, dy
 
-    count_messages = (count_messages + 1) % 5
+    def __convert_angle_to_pulse(self, angle):
+        pulse = int(500 + angle * (1000 / 240))
+        return pulse
 
-    if count_messages != 0:
-        return
+    def __grab_pipe(self, x_dis, z_dis, angle):
+        self.__control_visual_processing.stop_visual_processing()
 
-    # Do not rotate towards the object, if the robot is already aligned to the object
-    if enable_rotation:
-        distance_x, distance_y, x_dis, z_dis = rotate_towards_object(x, y)
+        x_dis += 5
 
-    print(f"Distance: ({distance_x}, {distance_y})")
+        #height = round(z_dis, 2) + (DISTANCE_CAMERA_ULTRASONIC - 0.05) # 5 cm below the tracked point
+        height = 0.21 # height if height <= 0.22 else 0.22
+        target = self.__ik.setPitchRanges((0, 0.12, height), -90, -92, -88)
+        if target:
+            self.get_logger().info(target)
+            servo_data = target[1]
+            bus_servo_control.set_servos(self.__joints_publisher, 1, (
+                (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+            time.sleep(2)
+        else:
+            self.get_logger().warn(f"I could not reach the target!")
 
-    if enable_rotation and abs(distance_x) <= 1.0 and abs(distance_y) < 0.05:
-        enable_rotation = False
-        t1 = Thread(target=grab_pipe, args=(x_dis, z_dis, rotation_angle_of_pipe))
-        t1.start()
+        dist_response = call_service(self, Distance, '/distance_ultrasonic/get_distance', Distance.Request())
+        distance = (dist_response.distance_cm - 3.5) / 100
+        self.get_logger().info(f"Ultrasonic distance: {distance}")
 
+        target = self.__ik.setPitchRanges((0, 0.12 + distance, height), -90, -85, -95)
+        if target:
+            self.get_logger().info(target)
+            servo_data = target[1]
+            bus_servo_control.set_servos(self.__joints_publisher, 1, (
+                (2, self.__convert_angle_to_pulse(angle)), (3, servo_data['servo3']), (4, servo_data['servo4']), (5, servo_data['servo5']), (6, x_dis)))
+            time.sleep(2)
+        else:
+            self.get_logger().info("not reachable!")
+            return
 
-result_sub = node.create_subscription(Result, '/visual_processing/result/rectangle_detection', track_point_at_pipe, 1)
+        self.get_logger().info("Grab the pipe!")
+        time.sleep(0.5)
+        bus_servo_control.set_servos(self.__joints_publisher, 0.5, ((1, 350), ))
+        time.sleep(1)
+
+        id_armpi_message = IDArmPi()
+        id_armpi_message.id = self.__grab_pipe_from_robot_id
+        self.__trigger_grab_publisher.publish(id_armpi_message)
+        self.get_logger().info(f"Send IDArmPi Message to {id_armpi_message.id}")
+
+    def __track_point_at_pipe(self, msg): #tracking
+        x = msg.center_x
+        y = msg.center_y
+        rotation_angle_of_pipe = msg.angle
+        distance_x = None
+        distance_y = None
+
+        self.__count_messages = (self.__count_messages + 1) % 5
+
+        if self.__count_messages != 0:
+            return
+
+        # Do not rotate towards the object, if the robot is already aligned to the object
+        if self.__enable_rotation:
+            distance_x, distance_y = self.__rotate_towards_object(x, y)
+
+        print(f"Calculated distance to the detected pipe: ({distance_x}, {distance_y})!")
+
+        if self.__enable_rotation and abs(distance_x) <= 1.0 and abs(distance_y) < 0.05:
+            self.__enable_rotation = False
+            t1 = Thread(target=self.__grab_pipe, args=(self.__x_dis, self.__z_dis, rotation_angle_of_pipe))
+            t1.start()

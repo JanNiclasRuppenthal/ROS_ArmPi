@@ -4,12 +4,9 @@ from threading import Thread
 
 from rclpy.node import Node
 
-from std_srvs.srv import Trigger
-from armpi_pro_service_client.client import call_service
-
 from movement.mobile.control_visual import ControlVisualProcessing
-from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe, set_grab_robot_id
 from movement.mobile.pipes.assembly import AssemblyMovement
+from movement.mobile.pipes.grab import GrabMovement
 from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot, rotate_180_deg
 from .robot.armpi import ArmPi
 from .robot.subscriber.holding_subscriber import HoldingSubscriber
@@ -30,6 +27,7 @@ class Transporter(Node):
         self.__control_visual_processing = ControlVisualProcessing()
 
         self.__assembly_movement = AssemblyMovement()
+        self.__grab_movement = GrabMovement(self.__control_visual_processing)
 
         set_allow_buzzer(allow_buzzer)
         set_armpi(self.__armpi)
@@ -37,18 +35,16 @@ class Transporter(Node):
         self.__create_nodes()
         self.__start_executor()
 
-        grab_init_move()
-        call_service(self.__control_visual_processing, Trigger, '/visual_processing/enter', Trigger.Request())
+        self.__grab_movement.init_move()
+        self.__control_visual_processing.enter_visual_processing()
         set_master_node_driving(self.__control_visual_processing)
-        set_master_node_grabbing(self.__control_visual_processing)
-
 
 
     def __create_nodes(self):
         self.__list_subscriber_nodes = [
             get_driving_node(),
-            get_grabbing_node(),
-            self.__assembly_movement.get_node(),
+            self.__grab_movement,
+            self.__assembly_movement,
             HoldingSubscriber(self.__armpi),
             AssemblyOrderSubscriber(self.__armpi),
             AssemblyStepSubscriber(self.__armpi),
@@ -70,12 +66,11 @@ class Transporter(Node):
         self.__thread.start()
 
     def __end_scenario(self):
-        self.get_logger().warn("Exit the visual_processing!")
-        call_service(self, Trigger, '/visual_processing/exit', Trigger.Request())
+        self.__control_visual_processing.exit_visual_processing()
 
         if self.__id_from_last_stationary_robot != -1:
             self.get_logger().info("I can park now!")
-            grab_init_move()
+            self.__grab_movement.init_move()
             park()
 
         self.__executor.execute_shutdown()
@@ -108,12 +103,14 @@ class Transporter(Node):
         self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_drive})!")
         self.__waiting_until_next_stationary_robot_is_reached()
 
-        set_grab_robot_id(id_from_stationary_robot_to_drive)
+        self.__grab_movement.set_grab_pipe_from_robot_id(id_from_stationary_robot_to_drive)
 
-        grab_init_move()
+        self.__grab_movement.init_move()
         drive_forward(1)
 
-        detect_pipe()
+        self.__grab_movement.enable_rotation()
+        self.__control_visual_processing.detect_pipe()
+
 
         self.__waiting_until_handover_of_pipe_finished()
 
@@ -162,7 +159,7 @@ class Transporter(Node):
 
         self.get_logger().info("Opening claw!")
         self.__assembly_movement.open_claw()
-        grab_init_move()
+        self.__grab_movement.init_move()
 
         self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
         drive_away_from_robot(id_from_stationary_robot_to_assembly)

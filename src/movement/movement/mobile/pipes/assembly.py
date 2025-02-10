@@ -19,9 +19,6 @@ class AssemblyMovement(Node):
 
         self.__received_position = None
 
-    def get_node(self):
-        return self
-
     def init_move(self):
         time.sleep(0.5)
         target = self.__ik.setPitchRanges((0, 0.24, 0.12), -90, -92, -88)

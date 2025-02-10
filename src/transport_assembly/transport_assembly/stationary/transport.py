@@ -18,7 +18,7 @@ from .steps.handover import Handover
 from .robot.armpi import ArmPi
 from .robot.publisher.finish_publisher import FinishPublisher
 from .robot.publisher.assembly_order_publisher import AssemblyOrderPublisher
-from .robot.subscriber.assembly_queue_notify_subscriber import NotifySubscriber
+from .robot.subscriber.assembly_queue_receiving_subscriber import NotifyReceivingAssemblyQueueSubscriber
 from .robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
 from .robot.subscriber.finish_subscriber import FinishSubscriber
 from .robot.subscriber.grabbed_subscriber import GrabbedSubscriber
@@ -48,7 +48,7 @@ class TransportAssembly(Node):
         self.__finish_publisher = FinishPublisher(self.__armpi)
 
         self.__grabbed_subscriber = GrabbedSubscriber(self.__armpi)
-        self.__notify_subscriber = NotifySubscriber(self.__armpi)
+        self.__notify_receiving_assembly_queue_subscriber = NotifyReceivingAssemblyQueueSubscriber(self.__armpi)
         self.__assembly_queue_subscriber = AssemblyQueueSubscriber(self.__armpi)
         self.__assembly_step_subscriber = AssemblyStepSubscriber(self.__armpi)
         self.__finish_subscriber = FinishSubscriber(self.__armpi)
@@ -60,7 +60,7 @@ class TransportAssembly(Node):
 
         self.__subscriber_nodes_list = [
             self.__grabbed_subscriber,
-            self.__notify_subscriber,
+            self.__notify_receiving_assembly_queue_subscriber,
             self.__assembly_queue_subscriber,
             self.__assembly_step_subscriber,
             self.__finish_subscriber
@@ -90,7 +90,7 @@ class TransportAssembly(Node):
 
         detected_object = self.__pipe_detection.get_ith_detected_object(object_id)
         if detected_object.are_coordinates_valid():
-            self.__send_finish_messages()
+            self.__finish_publisher.send_msg()
             self.__executor.execute_shutdown()
             return
 
@@ -130,12 +130,6 @@ class TransportAssembly(Node):
 
     def __one_robot_already_finished_scenario(self):
         return self.__armpi.get_finish_flag()
-
-    def __send_finish_messages(self):
-        self.__finish_publisher.send_msg()
-        while not self.__armpi.did_transporter_received_list():
-            self.__finish_publisher.send_msg()
-            time.sleep(0.5)
 
     def __robot_need_to_handover_pipe(self):
         return self.__armpi.get_ID() == self.__armpi.get_assembly_queue().first()

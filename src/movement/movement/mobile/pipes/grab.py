@@ -30,7 +30,6 @@ enable_rotation = True
 
 ik = ik_transform.ArmIK()
 
-# TODO: Maybe I need to save the nodes somewhere
 node = rclpy.create_node('grabbing_armpi_pro')
 temp_grab_node = rclpy.create_node('temp_grab_node')
 joints_pub = node.create_publisher(MultiRawIdPosDur, '/servo_controllers/port_id_1/multi_id_pos_dur', 1)
@@ -64,17 +63,18 @@ def set_grab_robot_id(id):
 def detect_pipe():
     global master_node, enable_rotation
 
-    req = SetParam.Request()
-    req.type = 'rectangle_detection'
-    time.sleep(0.5)
-    call_service(master_node, SetParam, '/visual_processing/set_running', req)
+    #req = SetParam.Request()
+    #req.type = 'rectangle_detection'
+    #time.sleep(0.5)
+    #call_service(master_node, SetParam, '/visual_processing/set_running', req)
     enable_rotation = True
 
 def stop_detecting():
-    global master_node
-    time.sleep(0.5)
-    call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
-    print("Stop visual_processing service!")
+    #global master_node
+    #time.sleep(0.5)
+    #call_service(master_node, SetParam, '/visual_processing/set_running', SetParam.Request())
+    #print("Stop visual_processing service!")
+    pass
 
 
 def rotate_towards_object(x, y):

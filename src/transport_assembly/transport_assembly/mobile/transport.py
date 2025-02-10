@@ -7,6 +7,7 @@ from rclpy.node import Node
 from std_srvs.srv import Trigger
 from armpi_pro_service_client.client import call_service
 
+from movement.mobile.control_visual import ControlVisualProcessing
 from movement.mobile.pipes.grab import set_master_node_grabbing, grab_init_move, get_grabbing_node, detect_pipe, set_grab_robot_id
 from movement.mobile.pipes.assembly import AssemblyMovement
 from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot, rotate_180_deg
@@ -15,7 +16,7 @@ from .robot.subscriber.holding_subscriber import HoldingSubscriber
 from .robot.subscriber.assembly_order_subscriber import AssemblyOrderSubscriber
 from .robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
 from .robot.subscriber.finish_subscriber import FinishSubscriber
-from .robot.publisher.assembly_queue_notify_publisher import NotifyPublisher
+from .robot.publisher.assembly_queue_notify_publisher import NotifyReceivingAssemblyQueuePublisher
 from .robot.publisher.assembly_step_publisher import AssemblyStepPublisher
 
 from common.executor.executor_subscriptions import MultiExecutor
@@ -26,21 +27,22 @@ class Transporter(Node):
         self.__id_from_last_stationary_robot = -1
         self.__armpi = ArmPi(number_of_stationary_robots)
 
+        self.__control_visual_processing = ControlVisualProcessing()
+
         self.__assembly_movement = AssemblyMovement()
 
         set_allow_buzzer(allow_buzzer)
         set_armpi(self.__armpi)
 
         self.__create_nodes()
-
         self.__start_executor()
 
         grab_init_move()
+        call_service(self.__control_visual_processing, Trigger, '/visual_processing/enter', Trigger.Request())
+        set_master_node_driving(self.__control_visual_processing)
+        set_master_node_grabbing(self.__control_visual_processing)
 
-        set_master_node_driving(self)
-        set_master_node_grabbing(self)
 
-        call_service(self, Trigger, '/visual_processing/enter', Trigger.Request())
 
     def __create_nodes(self):
         self.__list_subscriber_nodes = [
@@ -53,9 +55,14 @@ class Transporter(Node):
             FinishSubscriber(self.__armpi)
         ]
 
-        self.__notify_publisher = NotifyPublisher(self.__armpi)
+        list_publisher_nodes = [
+            self.__notify_receiving_assembly_queue_publisher,
+            self.__assembly_step_publisher
+        ]
+
+        self.__notify_receiving_assembly_queue_publisher = NotifyReceivingAssemblyQueuePublisher(self.__armpi)
         self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
-        self.__list_all_nodes = [self.__notify_publisher, self.__assembly_step_publisher] + self.__list_subscriber_nodes
+        self.__list_all_nodes = list_publisher_nodes + self.__list_subscriber_nodes
 
     def __start_executor(self):
         self.__executor = MultiExecutor(self.__list_subscriber_nodes)
@@ -63,7 +70,6 @@ class Transporter(Node):
         self.__thread.start()
 
     def __end_scenario(self):
-        self.__notify_publisher.send_msg()
         self.get_logger().warn("Exit the visual_processing!")
         call_service(self, Trigger, '/visual_processing/exit', Trigger.Request())
 
@@ -88,7 +94,7 @@ class Transporter(Node):
         set_id_list_for_driving(copy.deepcopy(self.__armpi.get_IDList()))
 
         id_from_stationary_robot_to_drive = self.__armpi.pop_IDList()
-        self.__notify_publisher.send_msg()
+        self.__notify_receiving_assembly_queue_publisher.send_msg()
 
         if id_from_stationary_robot_to_drive == self.__id_from_last_stationary_robot:
             self.get_logger().info("Rotate 180 degrees!")

@@ -93,7 +93,7 @@ class Transporter(Node):
         if self.__id_from_last_stationary_robot == -1:
             self.__drive_movement.init_move()
 
-        handover_step = HandoverStep(self.__armpi, self.__drive_movement, self.__grab_movement)
+        handover_step = HandoverStep(self)
         handover_step.grab_handover_pipe_process(id_from_stationary_robot_to_drive)
 
         assembly_step = AssemblyStep(self)

@@ -76,7 +76,7 @@ class PipeTracking(Node):
         if self.__enable_rotation:
             distance_x, distance_y = self.__rotate_towards_object(x, y)
 
-        print(f"Calculated distance to the detected pipe: ({distance_x}, {distance_y})!")
+        self.get_logger().info(f"Calculated distance to the detected pipe: ({distance_x}, {distance_y})!")
 
         if self.__enable_rotation and self.__distance_to_pipe_is_small_enough(distance_x, distance_y):
             self.__enable_rotation = False

@@ -34,7 +34,6 @@ class DriveMovement(Node):
         self.__follow_line_movement.set_id_list_for_following_lines(id_list)
 
     def reached_the_next_stationary_robot(self):
-        self.get_logger().info(f"Is the robot following the line? {self.__follow_line_movement.is_robot_following_line()}")
         if not self.__follow_line_movement.is_robot_following_line():
             self.__follow_line_movement.stop_visual_processing_for_following_lines()
             return True

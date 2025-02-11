@@ -7,7 +7,7 @@ from transport_assembly.stationary.robot.armpi import ArmPi
 from transport_assembly.stationary.robot.publisher.holding_publisher import HoldingPublisher
 
 
-class Handover(Node):
+class HandoverStep(Node):
     def __init__(self, armpi : ArmPi, AK):
         super().__init__('process_handover_node')
         self.__handover_movement = HandoverMovement(AK)

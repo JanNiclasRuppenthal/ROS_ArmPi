@@ -13,8 +13,8 @@ from movement.stationary.pipes.grab import GrabMovement
 from movement.stationary.pipes.put_down import PutDownMovement
 from object_detection.detected_object import DetectedObject
 from object_detection.stationary.pipe_detection import PipeDetection
-from .steps.assembly import Assembler
-from .steps.handover import Handover
+from .steps.assembly import AssemblyStep
+from .steps.handover import HandoverStep
 from .robot.armpi import ArmPi
 from .robot.publisher.finish_publisher import FinishPublisher
 from .robot.publisher.assembly_order_publisher import AssemblyOrderPublisher
@@ -118,12 +118,12 @@ class TransportAssembly(Node):
 
         if self.__robot_need_to_handover_pipe():
             self.__initiate_sending_assembly_order()
-            handover = Handover(self.__armpi, self.__AK)
-            handover.handover_pipe()
+            handover_step = HandoverStep(self.__armpi, self.__AK)
+            handover_step.handover_pipe()
         else:
-            assembler = Assembler(self.__armpi, self.__AK)
-            assembler.assembling_pipes()
-            assembler.put_the_assembled_pipe_down(self.__put_down_movement, detected_object)
+            assembly_step = AssemblyStep(self.__armpi, self.__AK)
+            assembly_step.assembling_pipes()
+            assembly_step.put_the_assembled_pipe_down(self.__put_down_movement, detected_object)
 
         self.__armpi.get_assembly_queue().reset()
         self.__duplication_recognition.reset_object_id()

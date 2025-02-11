@@ -11,7 +11,7 @@ from transport_assembly.stationary.robot.publisher.assembly_position_publisher i
 from transport_assembly.stationary.robot.publisher.assembly_step_publisher import AssemblyStepPublisher
 
 
-class Assembler(Node):
+class AssemblyStep(Node):
     def __init__(self, armpi : ArmPi, AK):
         super().__init__('process_assembly_node')
         self.__assembly_movement = AssemblyMovement(AK)

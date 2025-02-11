@@ -36,7 +36,6 @@ class AssemblyPipes(Node):
         self.__pipe_detection = PipeDetection()
         self.__duplication_recognition = DuplicationRecognition(self.__armpi)
 
-
         self.__executor = MultiExecutor(self.subscriber_nodes_list)
         self.__start_executor()
 

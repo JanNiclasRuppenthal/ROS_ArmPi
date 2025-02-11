@@ -9,12 +9,13 @@ from movement.mobile.pipes.assembly import AssemblyMovement
 from movement.mobile.pipes.grab import GrabMovement
 from movement.mobile.driving.drive import DriveMovement
 from .robot.armpi import ArmPi
+from .robot.steps.assembly import AssemblyStep
+from .robot.steps.handover import HandoverStep
 from .robot.subscriber.holding_subscriber import HoldingSubscriber
 from .robot.subscriber.assembly_order_subscriber import AssemblyOrderSubscriber
 from .robot.subscriber.assembly_step_subscriber import AssemblyStepSubscriber
 from .robot.subscriber.finish_subscriber import FinishSubscriber
 from .robot.publisher.assembly_queue_notify_publisher import NotifyReceivingAssemblyQueuePublisher
-from .robot.publisher.assembly_step_publisher import AssemblyStepPublisher
 
 from common.executor.executor_subscriptions import MultiExecutor
 
@@ -49,11 +50,9 @@ class Transporter(Node):
         ]
 
         self.__notify_receiving_assembly_queue_publisher = NotifyReceivingAssemblyQueuePublisher(self.__armpi)
-        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
 
         list_publisher_nodes = [
-            self.__notify_receiving_assembly_queue_publisher,
-            self.__assembly_step_publisher
+            self.__notify_receiving_assembly_queue_publisher
         ]
 
         self.__list_all_nodes = list_publisher_nodes + self.__list_subscriber_nodes
@@ -86,16 +85,6 @@ class Transporter(Node):
         self.__armpi.set_assembly_order_status(False)
         self.__drive_movement.set_id_list_for_following_lines(copy.deepcopy(self.__armpi.get_IDList()))
 
-        self.__handover_process()
-
-        while not self.__armpi.is_empty_IDList():
-            self.__assembly_process()
-
-        self.__drive_movement.init_move()
-        self.__drive_movement.start_to_drive()
-        self.__waiting_until_next_stationary_robot_is_reached()
-
-    def __handover_process(self):
         id_from_stationary_robot_to_drive = self.__armpi.pop_IDList()
         self.__notify_receiving_assembly_queue_publisher.send_msg()
 
@@ -105,81 +94,20 @@ class Transporter(Node):
         if self.__id_from_last_stationary_robot == -1:
             self.__drive_movement.init_move()
 
+        handover_step = HandoverStep(self.__armpi, self.__drive_movement, self.__grab_movement)
+        handover_step.grab_handover_pipe_process(id_from_stationary_robot_to_drive)
+
+        assembly_step = AssemblyStep(self.__armpi, self.__assembly_movement, self.__drive_movement, self.__grab_movement)
+        while not self.__armpi.is_empty_IDList():
+            id_from_stationary_robot_to_assembly = assembly_step.assembly_grabbed_pipe_process()
+            self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
+
+        self.__drive_movement.init_move()
         self.__drive_movement.start_to_drive()
-
-        self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_drive})!")
         self.__waiting_until_next_stationary_robot_is_reached()
-
-        self.__grab_movement.set_grab_pipe_from_robot_id(id_from_stationary_robot_to_drive)
-        self.__grab_movement.init_move()
-
-        self.__drive_movement.drive_forward(1)
-
-        self.__grab_movement.track_pipe()
-
-        self.__waiting_until_handover_of_pipe_finished()
-        self.get_logger().info("Drive backwards and rotate based on the position of the stationary robot!")
-        self.__drive_movement.drive_away_from_stationary_robot(id_from_stationary_robot_to_drive)
 
     def __received_assembly_order(self):
         return self.__armpi.get_assembly_order_status()
-
-    def __waiting_until_handover_of_pipe_finished(self):
-        self.get_logger().info("Waiting until I can drive away.")
-        while self.__armpi.get_first_robot_hold_pipe():
-            time.sleep(0.5)
-        self.__armpi.reset_first_robot_hold_pipe()
-
-    def __assembly_process(self):
-        self.__drive_movement.init_move()
-        self.__drive_movement.start_to_drive()
-        id_from_stationary_robot_to_assembly = self.__armpi.pop_IDList()
-
-        self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_assembly})!")
-        self.__waiting_until_next_stationary_robot_is_reached()
-        self.get_logger().info("Reached the next stationary robot!")
-
-        self.__assembly_movement.init_move()
-        self.__drive_movement.drive_forward(1.3)
-
-        self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
-        self.__waiting_for_receiving_assembly_position()
-
-        self.get_logger().info("Moving arm up!")
-        self.__assembly_movement.move_arm_up()
-
-        self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
-        self.__waiting_for_permission_to_do_next_assembly_step()
-
-        self.get_logger().info("Moving arm down!")
-        self.__assembly_movement.move_arm_down()
-
-        self.get_logger().info("Opening claw!")
-        self.__assembly_movement.open_claw()
-        self.__grab_movement.init_move()
-
-        self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
-        self.__drive_movement.drive_away_from_stationary_robot(id_from_stationary_robot_to_assembly)
-
-        self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
-
-    def __waiting_for_receiving_assembly_position(self):
-        while not self.__assembly_movement.received_assembly_position():
-            time.sleep(0.5)
-        self.get_logger().info("Got position to move my arm to the assembly position!")
-
-    def __waiting_for_permission_to_do_next_assembly_step(self):
-        self.get_logger().info("Waiting until stationary robot moved its arm to (0, 20)!")
-        while not self.__armpi.get_permission_to_do_next_assembly_step():
-            time.sleep(0.5)
-        self.__armpi.set_permission_to_do_next_assembly_step(False)
-
-    def __notify_next_robot_for_next_assembly_step(self, next_id):
-        self.__assembly_step_publisher.send_msg(next_id)
-
-    def __waiting_until_next_stationary_robot_is_reached(self):
-        while not self.__drive_movement.reached_the_next_stationary_robot():
-            time.sleep(0.5)
 
     def start_scenario(self):
         while True:

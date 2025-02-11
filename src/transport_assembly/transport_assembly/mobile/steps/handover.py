@@ -2,24 +2,22 @@ from rclpy.node import Node
 
 import time
 
-from movement.mobile.driving.drive import DriveMovement
-from movement.mobile.pipes.grab import GrabMovement
-from transport_assembly.mobile.robot.armpi import ArmPi
-
+from transport_assembly.mobile.transport import Transporter
 
 class HandoverStep(Node):
-    def __init__(self, armpi : ArmPi, drive_movement : DriveMovement, grab_movement : GrabMovement):
+    def __init__(self, transporter : Transporter):
         super().__init__('process_handover_step_node')
-        self.__armpi = armpi
-        self.__drive_movement = drive_movement
-        self.__grab_movement = grab_movement
+        self.__transporter = transporter
+        self.__armpi = transporter.get_armpi()
+        self.__drive_movement = transporter.get_drive_movement()
+        self.__grab_movement = transporter.get_grab_movement()
 
 
     def grab_handover_pipe_process(self, id_from_stationary_robot_to_drive):
         self.__drive_movement.start_to_drive()
         self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_drive})!")
 
-        self.__waiting_until_next_stationary_robot_is_reached()
+        self.__transporter.waiting_until_next_stationary_robot_is_reached()
 
         self.__grab_movement.set_grab_pipe_from_robot_id(id_from_stationary_robot_to_drive)
         self.__grab_movement.init_move()

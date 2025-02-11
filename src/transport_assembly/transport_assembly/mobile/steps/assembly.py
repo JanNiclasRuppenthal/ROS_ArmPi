@@ -2,21 +2,19 @@ from rclpy.node import Node
 
 import time
 
-from movement.mobile.driving.drive import DriveMovement
-from movement.mobile.pipes.assembly import AssemblyMovement
-from movement.mobile.pipes.grab import GrabMovement
-from transport_assembly.mobile.robot.armpi import ArmPi
 from transport_assembly.mobile.robot.publisher.assembly_step_publisher import AssemblyStepPublisher
+from transport_assembly.mobile.transport import Transporter
 
 
 class AssemblyStep(Node):
-    def __init__(self, armpi : ArmPi, assembly_movement : AssemblyMovement, drive_movement : DriveMovement, grab_movement : GrabMovement):
+    def __init__(self, transporter : Transporter):
         super().__init__('process_assembly_step_node')
-        self.__armpi = armpi
-        self.__assembly_movement = assembly_movement
-        self.__drive_movement = drive_movement
-        self.__grab_movement = grab_movement
-        self.__assembly_step_publisher = AssemblyStepPublisher(armpi)
+        self.__transporter = transporter
+        self.__armpi = transporter.get_armpi()
+        self.__assembly_movement = transporter.get_assembly_movement()
+        self.__drive_movement = transporter.get_drive_movement()
+        self.__grab_movement = transporter.get_grab_movement()
+        self.__assembly_step_publisher = AssemblyStepPublisher(self.__armpi)
 
 
     def assembly_grabbed_pipe_process(self) -> int:
@@ -25,7 +23,7 @@ class AssemblyStep(Node):
         id_from_stationary_robot_to_assembly = self.__armpi.pop_IDList()
 
         self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_assembly})!")
-        self.__waiting_until_next_stationary_robot_is_reached()
+        self.__transporter.waiting_until_next_stationary_robot_is_reached()
         self.get_logger().info("Reached the next stationary robot!")
 
         self.__assembly_movement.init_move()
@@ -65,7 +63,3 @@ class AssemblyStep(Node):
 
     def __notify_next_robot_for_next_assembly_step(self, next_id):
         self.__assembly_step_publisher.send_msg(next_id)
-
-    def __waiting_until_next_stationary_robot_is_reached(self):
-        while not self.__drive_movement.reached_the_next_stationary_robot():
-            time.sleep(0.5)

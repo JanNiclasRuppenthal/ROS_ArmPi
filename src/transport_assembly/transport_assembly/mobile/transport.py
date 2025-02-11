@@ -96,17 +96,21 @@ class Transporter(Node):
         handover_step = HandoverStep(self.__armpi, self.__drive_movement, self.__grab_movement)
         handover_step.grab_handover_pipe_process(id_from_stationary_robot_to_drive)
 
-        assembly_step = AssemblyStep(self.__armpi, self.__assembly_movement, self.__drive_movement, self.__grab_movement)
+        assembly_step = AssemblyStep(self)
         while not self.__armpi.is_empty_IDList():
             id_from_stationary_robot_to_assembly = assembly_step.assembly_grabbed_pipe_process()
             self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
 
         self.__drive_movement.init_move()
         self.__drive_movement.start_to_drive()
-        self.__waiting_until_next_stationary_robot_is_reached()
+        self.waiting_until_next_stationary_robot_is_reached()
 
     def __received_assembly_order(self):
         return self.__armpi.get_assembly_order_status()
+
+    def waiting_until_next_stationary_robot_is_reached(self):
+        while not self.__drive_movement.reached_the_next_stationary_robot():
+            time.sleep(0.5)
 
     def start_scenario(self):
         while True:
@@ -119,3 +123,14 @@ class Transporter(Node):
                 self.__thread.join()
                 break
 
+    def get_armpi(self) -> ArmPi:
+        return self.__armpi
+
+    def get_assembly_movement(self) -> AssemblyMovement:
+        return self.__assembly_movement
+
+    def get_grab_movement(self) -> GrabMovement:
+        return self.__grab_movement
+
+    def get_drive_movement(self) -> DriveMovement:
+        return self.__drive_movement

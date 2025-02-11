@@ -1,4 +1,4 @@
-class ArmPi():
+class ArmPi:
     def __init__(self, number):
         self.__ID = 0
         self.__number_of_stationary_robots = number

@@ -17,6 +17,15 @@ class ControlVisualProcessing(Node):
         call_service(self, SetParam, '/visual_processing/set_running', req)
         self.get_logger().info(f"Set set_running in visual_processing with request {req.type}!")
 
+
+    def set_visual_processing_to_following_line(self):
+        req = SetParam.Request()
+        req.type = 'line'
+        req.color = 'frogtape'
+        time.sleep(0.5)
+        call_service(self, SetParam, '/visual_processing/set_running', req)
+        self.get_logger().info(f"Set set_running in visual_processing with request {req.type}!")
+
     def enter_visual_processing(self):
         call_service(self, Trigger, '/visual_processing/enter', Trigger.Request())
 

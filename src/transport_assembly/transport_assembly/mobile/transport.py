@@ -7,7 +7,7 @@ from rclpy.node import Node
 from movement.mobile.control_visual import ControlVisualProcessing
 from movement.mobile.pipes.assembly import AssemblyMovement
 from movement.mobile.pipes.grab import GrabMovement
-from movement.mobile.drive import set_allow_buzzer, set_armpi, set_master_node_driving, drive_init_move, start_to_drive, get_driving_node, reached_the_next_stationary_robot, drive_forward, drive_backward, rotate_90_deg_right, rotate_90_deg_left, park, set_id_list_for_driving, drive_away_from_robot, rotate_180_deg
+from movement.mobile.driving.drive import DriveMovement
 from .robot.armpi import ArmPi
 from .robot.subscriber.holding_subscriber import HoldingSubscriber
 from .robot.subscriber.assembly_order_subscriber import AssemblyOrderSubscriber
@@ -28,21 +28,18 @@ class Transporter(Node):
 
         self.__assembly_movement = AssemblyMovement()
         self.__grab_movement = GrabMovement(self.__control_visual_processing)
-
-        set_allow_buzzer(allow_buzzer)
-        set_armpi(self.__armpi)
+        self.__drive_movement = DriveMovement(self.__armpi, self.__control_visual_processing, allow_buzzer)
 
         self.__create_nodes()
         self.__start_executor()
 
         self.__grab_movement.init_move()
         self.__control_visual_processing.enter_visual_processing()
-        set_master_node_driving(self.__control_visual_processing)
 
 
     def __create_nodes(self):
         self.__list_subscriber_nodes = [
-            get_driving_node(),
+            self.__drive_movement,
             self.__grab_movement.get_tracking_pipe_node(),
             self.__assembly_movement,
             HoldingSubscriber(self.__armpi),
@@ -72,7 +69,7 @@ class Transporter(Node):
         if self.__id_from_last_stationary_robot != -1:
             self.get_logger().info("I can park now!")
             self.__grab_movement.init_move()
-            park()
+            self.__drive_movement.park()
 
         self.__executor.execute_shutdown()
 
@@ -87,41 +84,42 @@ class Transporter(Node):
 
         self.get_logger().info("I received a list with all the order of the stationary robots!")
         self.__armpi.set_assembly_order_status(False)
-        set_id_list_for_driving(copy.deepcopy(self.__armpi.get_IDList()))
+        self.__drive_movement.set_id_list_for_following_lines(copy.deepcopy(self.__armpi.get_IDList()))
 
+        self.__handover_process()
+
+        while not self.__armpi.is_empty_IDList():
+            self.__assembly_process()
+
+        self.__drive_movement.init_move()
+        self.__drive_movement.start_to_drive()
+        self.__waiting_until_next_stationary_robot_is_reached()
+
+    def __handover_process(self):
         id_from_stationary_robot_to_drive = self.__armpi.pop_IDList()
         self.__notify_receiving_assembly_queue_publisher.send_msg()
 
         if id_from_stationary_robot_to_drive == self.__id_from_last_stationary_robot:
             self.get_logger().info("Rotate 180 degrees!")
-            rotate_180_deg()
-
+            self.__drive_movement.rotate_180_deg()
         if self.__id_from_last_stationary_robot == -1:
-            drive_init_move()
+            self.__drive_movement.init_move()
 
-        start_to_drive()
+        self.__drive_movement.start_to_drive()
 
         self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_drive})!")
         self.__waiting_until_next_stationary_robot_is_reached()
 
         self.__grab_movement.set_grab_pipe_from_robot_id(id_from_stationary_robot_to_drive)
-
         self.__grab_movement.init_move()
-        drive_forward(1)
+
+        self.__drive_movement.drive_forward(1)
 
         self.__grab_movement.track_pipe()
 
         self.__waiting_until_handover_of_pipe_finished()
-
-        self.get_logger().info("Drive backwards and rotate!")
-        drive_away_from_robot(id_from_stationary_robot_to_drive)
-
-        while not self.__armpi.is_empty_IDList():
-            self.__assembly_process()
-
-        drive_init_move()
-        start_to_drive()
-        self.__waiting_until_next_stationary_robot_is_reached()
+        self.get_logger().info("Drive backwards and rotate based on the position of the stationary robot!")
+        self.__drive_movement.drive_away_from_stationary_robot(id_from_stationary_robot_to_drive)
 
     def __received_assembly_order(self):
         return self.__armpi.get_assembly_order_status()
@@ -133,8 +131,8 @@ class Transporter(Node):
         self.__armpi.reset_first_robot_hold_pipe()
 
     def __assembly_process(self):
-        drive_init_move()
-        start_to_drive()
+        self.__drive_movement.init_move()
+        self.__drive_movement.start_to_drive()
         id_from_stationary_robot_to_assembly = self.__armpi.pop_IDList()
 
         self.get_logger().info(f"Driving to the next robot (ID = {id_from_stationary_robot_to_assembly})!")
@@ -142,7 +140,7 @@ class Transporter(Node):
         self.get_logger().info("Reached the next stationary robot!")
 
         self.__assembly_movement.init_move()
-        drive_forward(1.3)
+        self.__drive_movement.drive_forward(1.3)
 
         self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
         self.__waiting_for_receiving_assembly_position()
@@ -161,7 +159,7 @@ class Transporter(Node):
         self.__grab_movement.init_move()
 
         self.__notify_next_robot_for_next_assembly_step(id_from_stationary_robot_to_assembly)
-        drive_away_from_robot(id_from_stationary_robot_to_assembly)
+        self.__drive_movement.drive_away_from_stationary_robot(id_from_stationary_robot_to_assembly)
 
         self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
 
@@ -180,7 +178,7 @@ class Transporter(Node):
         self.__assembly_step_publisher.send_msg(next_id)
 
     def __waiting_until_next_stationary_robot_is_reached(self):
-        while not reached_the_next_stationary_robot():
+        while not self.__drive_movement.reached_the_next_stationary_robot():
             time.sleep(0.5)
 
     def start_scenario(self):

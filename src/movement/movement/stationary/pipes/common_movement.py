@@ -6,6 +6,7 @@ import math
 from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 
+from object_detection.detected_object import DetectedObject
 from object_detection.object_type import ObjectType
 
 
@@ -78,7 +79,7 @@ class Movement(Node):
         pulse = int(500 + calculated_angle * (1000 / 240))
         return pulse
 
-    def _move_to_detected_object(self, detected_object):
+    def _move_to_detected_object(self, detected_object : DetectedObject):
         pulse_value = self.__convert_angle_to_pulse(detected_object.get_x(), detected_object.get_y(),
                                                    detected_object.get_angle(),
                                                    detected_object.get_rotation_direction())

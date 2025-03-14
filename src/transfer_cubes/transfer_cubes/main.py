@@ -1,6 +1,5 @@
 import sys
 import rclpy
-import rclpy.context
 
 from transfer_cubes.transfer import TransferCubes
 

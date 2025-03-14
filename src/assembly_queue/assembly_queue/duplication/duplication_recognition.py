@@ -5,11 +5,11 @@ from rclpy.node import Node
 from assembly_queue.duplication.recognition_state import RecognitionState
 from assembly_queue.nodes.assembly_queue_publisher import AssemblyQueuePublisher
 from object_detection.object_type import ObjectType
-from pipes_assembly.robot.armpi import ArmPi #TODO: Change this for the third scenario!
+from pipes_assembly.robot.armpi import ArmPi
 
 
 class DuplicationRecognition(Node):
-    def __init__ (self, armpi: ArmPi):
+    def __init__ (self, armpi : ArmPi):
         super().__init__('duplication_recognition_node')
         self.__object_id = 0
         self.__armpi = armpi
@@ -37,18 +37,19 @@ class DuplicationRecognition(Node):
 
             self.get_logger().info("All available robots grabbed a pipe!")
 
-            self.__armpi.get_assembly_queue().calculate_assembly_queue(descending_order)
+            assembly_queue = self.__armpi.get_assembly_queue()
+            assembly_queue.calculate_assembly_queue(descending_order)
             if not self.__multiple_elements_in_dictionary():
                 self.get_logger().info("No duplicates found!")
                 break
 
 
             self.__armpi.set_assembly_queue_flag(False)
-            dict_duplicates = self.__armpi.get_assembly_queue().get_dict_with_duplicates()
+            dict_duplicates = assembly_queue.get_dict_with_duplicates()
 
             put_down_object = self.__determine_the_need_to_put_down_the_object(dict_duplicates)
 
-            self.__armpi.get_assembly_queue().reset()
+            assembly_queue.reset()
             if put_down_object:
                 self.get_logger().info("This robot needs to put down the pipe!")
                 self.__object_id += 1

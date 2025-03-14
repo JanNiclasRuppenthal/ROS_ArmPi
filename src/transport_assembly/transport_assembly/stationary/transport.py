@@ -135,7 +135,7 @@ class TransportAssembly(Node):
         return self.__armpi.get_ID() == self.__armpi.get_assembly_queue().first()
 
     def __initiate_sending_assembly_order(self):
-        order_queue = self.__armpi.get_assembly_queue().get_queue()
+        order_queue = self.__armpi.get_assembly_queue().get_queue_of_ids()
 
         self.get_logger().info("Waiting until the driving robot received the order for the assembly")
         while not self.__armpi.did_transporter_received_list():

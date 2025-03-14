@@ -5,11 +5,10 @@ from rclpy.node import Node
 from assembly_queue.duplication.recognition_state import RecognitionState
 from assembly_queue.nodes.assembly_queue_publisher import AssemblyQueuePublisher
 from object_detection.object_type import ObjectType
-from pipes_assembly.robot.armpi import ArmPi
 
 
 class DuplicationRecognition(Node):
-    def __init__ (self, armpi : ArmPi):
+    def __init__ (self, armpi):
         super().__init__('duplication_recognition_node')
         self.__object_id = 0
         self.__armpi = armpi

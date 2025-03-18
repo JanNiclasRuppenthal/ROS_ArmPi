@@ -97,9 +97,8 @@ class Transporter(Node):
         handover_step.grab_handover_pipe_process(id_from_stationary_robot_to_drive)
 
         assembly_step = AssemblyStep(self)
-        while not self.__armpi.is_empty_IDList():
-            id_from_stationary_robot_to_assembly = assembly_step.assembly_grabbed_pipe_process()
-            self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
+        id_from_stationary_robot_to_assembly = assembly_step.assembly_grabbed_pipe_process()
+        self.__id_from_last_stationary_robot = id_from_stationary_robot_to_assembly
 
         self.__drive_movement.init_move()
         self.__drive_movement.start_to_drive()

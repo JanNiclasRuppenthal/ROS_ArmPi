@@ -2,8 +2,11 @@ from rclpy.node import Node
 
 import time
 
+from transport_assembly.mobile.transport import Transporter
+
+
 class HandoverStep(Node):
-    def __init__(self, transporter):
+    def __init__(self, transporter : Transporter):
         super().__init__('process_handover_step_node')
         self.__transporter = transporter
         self.__armpi = transporter.get_armpi()

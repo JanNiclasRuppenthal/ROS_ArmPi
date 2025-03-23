@@ -3,6 +3,8 @@ import time
 
 from rclpy.node import Node
 
+from ArmIK.ArmMoveIK import *
+
 from assembly_queue.duplication.duplication_recognition import DuplicationRecognition
 from assembly_queue.duplication.recognition_state import RecognitionState
 from movement.stationary.pipes.assembly import AssemblyMovement
@@ -25,16 +27,17 @@ class AssemblyPipes(Node):
     def __init__(self, ID, number_of_robots):
         super().__init__('assembly_pipes_node')
         self.__armpi = ArmPi(ID, number_of_robots)
-        self.__grab_movement = GrabMovement()
-        self.__put_down_movement = PutDownMovement()
-        self.__assembly_movement = AssemblyMovement()
+        self.__AK = ArmIK()
+        self.__grab_movement = GrabMovement(self.__AK)
+        self.__put_down_movement = PutDownMovement(self.__AK)
+        self.__assembly_movement = AssemblyMovement(self.__AK)
+
+        self.__pipe_detection = PipeDetection()
+        self.__duplication_recognition = DuplicationRecognition(self.__armpi)
 
         self.__grab_movement.init_move()
 
         self.__create_all_nodes()
-
-        self.__pipe_detection = PipeDetection()
-        self.__duplication_recognition = DuplicationRecognition(self.__armpi)
 
         self.__executor = MultiExecutor(self.subscriber_nodes_list)
         self.__start_executor()
@@ -91,8 +94,7 @@ class AssemblyPipes(Node):
         self.__grab_movement.grab_the_object(self.__armpi.get_ID(), detected_object)
         self.__grab_movement.go_to_waiting_position()
 
-        recognition_state = self.__duplication_recognition.recognize_duplicates()
-
+        recognition_state = self.__duplication_recognition.recognize_duplicates_for_assembly_queue()
 
         if recognition_state == RecognitionState.END_SCENARIO:
             self.__end_scenario(detected_object)
@@ -131,6 +133,9 @@ class AssemblyPipes(Node):
 
         self.__armpi.get_assembly_queue().reset()
         self.__duplication_recognition.reset_object_id()
+
+    def __one_robot_already_finished_scenario(self):
+        return self.__armpi.get_finish_flag()
 
     def __send_position_with_angle_for_assembly(self, detected_object):
         (assembly_x, assembly_y, assembly_z, assembly_angle) = (detected_object.get_x(), 30, 10, 10)

@@ -22,7 +22,7 @@ class DuplicationRecognition(Node):
     def reset_object_id(self):
         self.__object_id = 0
 
-    def recognize_duplicates(self, descending_order=False) -> RecognitionState:
+    def recognize_duplicates_for_assembly_queue(self, descending_order=False) -> RecognitionState:
         while True:
             self.assembly_queue_publisher.send_msg()
 

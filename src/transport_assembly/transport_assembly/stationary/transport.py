@@ -105,7 +105,7 @@ class TransportAssembly(Node):
         self.__grab_movement.grab_the_object(self.__armpi.get_ID(), detected_object)
         self.__grab_movement.go_to_waiting_position()
 
-        recognition_state = self.__duplication_recognition.recognize_duplicates(True)
+        recognition_state = self.__duplication_recognition.recognize_duplicates_for_assembly_queue(True)
 
         if recognition_state == RecognitionState.END_SCENARIO:
             self.__end_scenario(detected_object)

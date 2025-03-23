@@ -23,9 +23,9 @@ from util.cam import Cam
 class TransferCubes(Node):
     def __init__(self, ID, last_robot):
         super().__init__("transfer_cubes_node")
+        self.__first_start = ID == 0
         AK = ArmIK()
         self.__armpi = ArmPi(ID, last_robot)
-        self.__first_start = ID == 0
         self.__cam = Cam()
         self.__coordinates_calculation = CoordinatesCalculation()
 

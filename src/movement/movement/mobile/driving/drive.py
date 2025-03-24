@@ -52,13 +52,13 @@ class DriveMovement(Node):
         return set_velocity_message
 
     def stop_armpi_pro(self):
-        self.get_logger().info("Sending SetVelocityMessage to stop driving!")
+        self.get_logger().info("Sending SetVelocity Message to stop driving!")
         stop_message = self.__create_set_velocity_message(0, 90, 0)
         self.__set_velocity_publisher.publish(stop_message)
         time.sleep(0.5)
 
     def drive_forward(self, duration_in_s):
-        self.get_logger().info("Sending SetVelocityMessage to drive forward!")
+        self.get_logger().info("Sending SetVelocity Message to drive forward!")
         forward_message = self.__create_set_velocity_message(100, 90, 0)
         self.__set_velocity_publisher.publish(forward_message)
         time.sleep(duration_in_s)
@@ -68,13 +68,13 @@ class DriveMovement(Node):
         self.__set_velocity_publisher.publish(self.__create_set_velocity_message(100, 90, dx))
 
     def drive_forward_without_stopping(self, duration_in_s):
-        self.get_logger().info("Sending SetVelocityMessage to drive forward without stopping!")
+        self.get_logger().info("Sending SetVelocity Message to drive forward without stopping!")
         forward_message = self.__create_set_velocity_message(100, 90, 0)
         self.__set_velocity_publisher.publish(forward_message)
         time.sleep(duration_in_s)
 
     def __drive_backward(self, duration_in_s):
-        self.get_logger().info("Sending SetVelocityMessage to drive backward!")
+        self.get_logger().info("Sending SetVelocity Message to drive backward!")
         backwards_message = self.__create_set_velocity_message(75, -90, 0)
         self.__set_velocity_publisher.publish(backwards_message)
 
@@ -89,14 +89,14 @@ class DriveMovement(Node):
             self.__backwards_buzzer.buzz(1200, 0.0, 0.0, 1)
 
     def rotate_90_deg_right(self):
-        self.get_logger().info("Sending SetVelocityMessage to rotate 90 degrees to the right!")
+        self.get_logger().info("Sending SetVelocity Message to rotate 90 degrees to the right!")
         rotation_message = self.__create_set_velocity_message(0, 90, -0.45)
         self.__set_velocity_publisher.publish(rotation_message)
         time.sleep(self.__TWO_AND_HALF_SECONDS)
         self.stop_armpi_pro()
 
     def rotate_90_deg_left(self):
-        self.get_logger().info("Sending SetVelocityMessage to rotate 90 degrees to the left!")
+        self.get_logger().info("Sending SetVelocity Message to rotate 90 degrees to the left!")
         rotation_message = self.__create_set_velocity_message(0, 90, 0.45)
         self.__set_velocity_publisher.publish(rotation_message)
         time.sleep(self.__TWO_AND_HALF_SECONDS)
@@ -110,7 +110,7 @@ class DriveMovement(Node):
             self.rotate_90_deg_left()
 
     def rotate_180_deg(self):
-        self.get_logger().info("Sending SetVelocityMessage to rotate 180 degrees!")
+        self.get_logger().info("Sending SetVelocity Message to rotate 180 degrees!")
         rotation_message = self.__create_set_velocity_message(0, 90, 0.45)
         self.__set_velocity_publisher.publish(rotation_message)
         time.sleep(self.__TWO_AND_HALF_SECONDS * 2)

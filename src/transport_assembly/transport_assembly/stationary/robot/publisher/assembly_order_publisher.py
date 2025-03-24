@@ -12,6 +12,7 @@ class AssemblyOrderPublisher(RobotPublisher):
         return message
     
     def send_msg(self, list):
+        self.get_logger().info(f"Sending the order for the assembly to the ArmPi Pro.")
         message = self.create_msg(list)
         self.__publisher.publish(message)
 

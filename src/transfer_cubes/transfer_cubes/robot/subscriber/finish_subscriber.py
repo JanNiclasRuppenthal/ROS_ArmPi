@@ -8,6 +8,6 @@ class FinishSubscriber(RobotSubscriber):
         self.subscription = self.create_subscription(IDArmPi,'finish',self.callback,10)
 
     def callback(self, msg):
-        if not self._received_same_id(msg.id):
+        if self._received_same_id(msg.id):
             self.get_logger().info('My predecessor detected no cube!')
             self.get_armpi().set_finish_flag(True)

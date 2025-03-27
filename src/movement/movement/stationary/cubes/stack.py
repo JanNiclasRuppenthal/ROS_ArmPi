@@ -4,7 +4,7 @@ from movement.stationary.cubes.grab import GrabCube
 
 class StackCube(Movement):
     def __init__(self, AK):
-        Movement.__init__(self, "stationary_stack_node", AK)
+        super().__init__("stationary_stack_node", AK)
         self.__grab_cube = GrabCube(AK)
 
         self.__coordinates = {

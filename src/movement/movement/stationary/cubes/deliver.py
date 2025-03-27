@@ -4,7 +4,7 @@ from movement.stationary.cubes.common_movement import Movement
 
 class DeliverCube(Movement):
     def __init__(self, AK):
-        super().__init__(self, "stationary_deliver_node", AK)
+        super().__init__("stationary_deliver_node", AK)
         self.__grab_cube = GrabCube(AK)
 
         self.__coordinates = {
